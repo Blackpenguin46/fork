@@ -1,0 +1,241 @@
+import { supabase } from '@/lib/supabase'
+import { AuthError } from '@supabase/supabase-js'
+
+export interface AuthResult {
+  success: boolean
+  error?: string
+  data?: any
+}
+
+export interface RegisterData {
+  email: string
+  password: string
+  username: string
+  fullName: string
+}
+
+export interface LoginData {
+  email: string
+  password: string
+}
+
+export async function registerUser(data: RegisterData): Promise<AuthResult> {
+  try {
+    // Check if username is already taken
+    const { data: existingUser } = await supabase
+      .from('profiles')
+      .select('username')
+      .eq('username', data.username)
+      .single()
+
+    if (existingUser) {
+      return {
+        success: false,
+        error: 'Username is already taken. Please choose a different username.'
+      }
+    }
+
+    // Sign up the user
+    const { data: authData, error: authError } = await supabase.auth.signUp({
+      email: data.email,
+      password: data.password,
+      options: {
+        emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?verified=true`,
+        data: {
+          full_name: data.fullName,
+          username: data.username,
+        }
+      }
+    })
+
+    if (authError) {
+      return {
+        success: false,
+        error: getAuthErrorMessage(authError)
+      }
+    }
+
+    // Create profile (handled by database trigger, but we can verify)
+    if (authData.user) {
+      // Wait a moment for the trigger to complete
+      await new Promise(resolve => setTimeout(resolve, 1000))
+      
+      // Update profile with additional data if needed
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({
+          username: data.username,
+          full_name: data.fullName,
+        })
+        .eq('id', authData.user.id)
+
+      if (profileError) {
+        console.error('Profile update error:', profileError)
+        // Don't fail registration for profile update errors
+      }
+    }
+
+    return {
+      success: true,
+      data: authData
+    }
+  } catch (error) {
+    console.error('Registration error:', error)
+    return {
+      success: false,
+      error: 'An unexpected error occurred during registration. Please try again.'
+    }
+  }
+}
+
+export async function loginUser(data: LoginData): Promise<AuthResult> {
+  try {
+    const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+      email: data.email,
+      password: data.password,
+    })
+
+    if (authError) {
+      return {
+        success: false,
+        error: getAuthErrorMessage(authError)
+      }
+    }
+
+    return {
+      success: true,
+      data: authData
+    }
+  } catch (error) {
+    console.error('Login error:', error)
+    return {
+      success: false,
+      error: 'An unexpected error occurred during login. Please try again.'
+    }
+  }
+}
+
+export async function logoutUser(): Promise<AuthResult> {
+  try {
+    const { error } = await supabase.auth.signOut()
+
+    if (error) {
+      return {
+        success: false,
+        error: getAuthErrorMessage(error)
+      }
+    }
+
+    return {
+      success: true
+    }
+  } catch (error) {
+    console.error('Logout error:', error)
+    return {
+      success: false,
+      error: 'An unexpected error occurred during logout. Please try again.'
+    }
+  }
+}
+
+export async function resetPassword(email: string): Promise<AuthResult> {
+  try {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/reset-password`,
+    })
+
+    if (error) {
+      return {
+        success: false,
+        error: getAuthErrorMessage(error)
+      }
+    }
+
+    return {
+      success: true
+    }
+  } catch (error) {
+    console.error('Password reset error:', error)
+    return {
+      success: false,
+      error: 'An unexpected error occurred. Please try again.'
+    }
+  }
+}
+
+export async function updatePassword(newPassword: string): Promise<AuthResult> {
+  try {
+    const { error } = await supabase.auth.updateUser({
+      password: newPassword
+    })
+
+    if (error) {
+      return {
+        success: false,
+        error: getAuthErrorMessage(error)
+      }
+    }
+
+    return {
+      success: true
+    }
+  } catch (error) {
+    console.error('Password update error:', error)
+    return {
+      success: false,
+      error: 'An unexpected error occurred while updating your password.'
+    }
+  }
+}
+
+export async function resendConfirmation(email: string): Promise<AuthResult> {
+  try {
+    const { error } = await supabase.auth.resend({
+      type: 'signup',
+      email: email,
+      options: {
+        emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?verified=true`
+      }
+    })
+
+    if (error) {
+      return {
+        success: false,
+        error: getAuthErrorMessage(error)
+      }
+    }
+
+    return {
+      success: true
+    }
+  } catch (error) {
+    console.error('Resend confirmation error:', error)
+    return {
+      success: false,
+      error: 'An unexpected error occurred. Please try again.'
+    }
+  }
+}
+
+function getAuthErrorMessage(error: AuthError): string {
+  switch (error.message) {
+    case 'Invalid email or password':
+      return 'Invalid email or password. Please check your credentials and try again.'
+    case 'Email not confirmed':
+      return 'Please check your email and click the confirmation link before signing in.'
+    case 'User already registered':
+      return 'An account with this email already exists. Please sign in instead.'
+    case 'Password should be at least 6 characters':
+      return 'Password must be at least 6 characters long.'
+    case 'Invalid email':
+      return 'Please enter a valid email address.'
+    case 'Signup disabled':
+      return 'New registrations are currently disabled. Please contact support.'
+    case 'Email rate limit exceeded':
+      return 'Too many requests. Please wait a moment before trying again.'
+    default:
+      // Log unknown errors for debugging
+      console.error('Unknown auth error:', error.message)
+      return error.message || 'An unexpected error occurred. Please try again.'
+  }
+}
