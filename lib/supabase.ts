@@ -2,29 +2,43 @@ import { createClient } from '@supabase/supabase-js'
 
 // Create a function to get or create Supabase client
 function createSupabaseClient() {
+  console.log('createSupabaseClient called')
+  
   // Check for both naming conventions
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.STORAGE_NEXT_PUBLIC_SUPABASE_URL
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.STORAGE_NEXT_PUBLIC_SUPABASE_ANON_KEY
 
+  console.log('Environment variables found:', {
+    url: !!supabaseUrl,
+    key: !!supabaseAnonKey,
+    urlLength: supabaseUrl?.length || 0,
+    keyLength: supabaseAnonKey?.length || 0,
+    NEXT_PUBLIC_SUPABASE_URL: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
+    STORAGE_NEXT_PUBLIC_SUPABASE_URL: !!process.env.STORAGE_NEXT_PUBLIC_SUPABASE_URL,
+    NEXT_PUBLIC_SUPABASE_ANON_KEY: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    STORAGE_NEXT_PUBLIC_SUPABASE_ANON_KEY: !!process.env.STORAGE_NEXT_PUBLIC_SUPABASE_ANON_KEY
+  })
+
   if (!supabaseUrl || !supabaseAnonKey) {
-    console.log('Supabase env check:', {
-      url: !!supabaseUrl,
-      key: !!supabaseAnonKey,
-      NEXT_PUBLIC_SUPABASE_URL: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
-      STORAGE_NEXT_PUBLIC_SUPABASE_URL: !!process.env.STORAGE_NEXT_PUBLIC_SUPABASE_URL,
-      NEXT_PUBLIC_SUPABASE_ANON_KEY: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-      STORAGE_NEXT_PUBLIC_SUPABASE_ANON_KEY: !!process.env.STORAGE_NEXT_PUBLIC_SUPABASE_ANON_KEY
-    })
+    console.error('Missing Supabase environment variables')
     return null
   }
 
-  return createClient(supabaseUrl, supabaseAnonKey, {
-    auth: {
-      autoRefreshToken: true,
-      persistSession: true,
-      detectSessionInUrl: true
-    }
-  })
+  try {
+    console.log('Attempting to create Supabase client...')
+    const client = createClient(supabaseUrl, supabaseAnonKey, {
+      auth: {
+        autoRefreshToken: true,
+        persistSession: true,
+        detectSessionInUrl: true
+      }
+    })
+    console.log('Supabase client created successfully')
+    return client
+  } catch (error) {
+    console.error('Error creating Supabase client:', error)
+    return null
+  }
 }
 
 // Initialize Supabase instance
@@ -43,13 +57,19 @@ export const supabase = supabaseInstance
 
 // Helper function to get Supabase instance with error handling
 export function getSupabase() {
+  console.log('getSupabase called, current instance:', !!supabaseInstance)
+  
   // Try to create client if not already initialized and env vars are available
   if (!supabaseInstance) {
+    console.log('Creating new Supabase client...')
     supabaseInstance = createSupabaseClient()
+    console.log('New client created:', !!supabaseInstance)
   }
   
   if (!supabaseInstance) {
-    throw new Error('Supabase is not configured. Please set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY environment variables.')
+    const errorMsg = 'Supabase is not configured. Please check environment variables.'
+    console.error(errorMsg)
+    throw new Error(errorMsg)
   }
   return supabaseInstance
 }

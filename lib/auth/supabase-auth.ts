@@ -126,10 +126,10 @@ export async function registerUser(data: RegisterData): Promise<AuthResult> {
         }
       }
       
-      if (error.message.includes('NEXT_PUBLIC_SUPABASE')) {
+      if (error.message.includes('NEXT_PUBLIC_SUPABASE') || error.message.includes('not configured')) {
         return {
           success: false,
-          error: 'Configuration error. Please contact support.'
+          error: `Config Debug: ${error.message}`
         }
       }
       
