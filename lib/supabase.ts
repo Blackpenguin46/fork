@@ -5,10 +5,20 @@ function createSupabaseClient() {
   console.log('createSupabaseClient called')
   
   // Check for both naming conventions
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.STORAGE_NEXT_PUBLIC_SUPABASE_URL
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.STORAGE_NEXT_PUBLIC_SUPABASE_ANON_KEY
+  // Note: STORAGE_ prefixed vars are server-side only, so we need a different approach for client-side
+  let supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.STORAGE_NEXT_PUBLIC_SUPABASE_URL
+  let supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.STORAGE_NEXT_PUBLIC_SUPABASE_ANON_KEY
+  
+  // If we're on the client side and don't have NEXT_PUBLIC vars, try to get them from a different source
+  if (typeof window !== 'undefined' && (!supabaseUrl || !supabaseAnonKey)) {
+    // On client side, we need to use the standard NEXT_PUBLIC_ vars
+    // Let's check if we can get them from window or other client-side source
+    supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+    supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  }
 
-  console.log('Environment variables found:', {
+  console.log('Environment debug info:', {
+    clientSide: typeof window !== 'undefined',
     url: !!supabaseUrl,
     key: !!supabaseAnonKey,
     urlLength: supabaseUrl?.length || 0,
@@ -16,7 +26,11 @@ function createSupabaseClient() {
     NEXT_PUBLIC_SUPABASE_URL: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
     STORAGE_NEXT_PUBLIC_SUPABASE_URL: !!process.env.STORAGE_NEXT_PUBLIC_SUPABASE_URL,
     NEXT_PUBLIC_SUPABASE_ANON_KEY: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-    STORAGE_NEXT_PUBLIC_SUPABASE_ANON_KEY: !!process.env.STORAGE_NEXT_PUBLIC_SUPABASE_ANON_KEY
+    STORAGE_NEXT_PUBLIC_SUPABASE_ANON_KEY: !!process.env.STORAGE_NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    // Log available environment variable keys
+    availableKeys: Object.keys(process.env).filter(key => 
+      key.includes('SUPABASE') || key.startsWith('NEXT_PUBLIC') || key.startsWith('STORAGE')
+    ).slice(0, 10) // Limit to first 10 to avoid too much output
   })
 
   if (!supabaseUrl || !supabaseAnonKey) {
