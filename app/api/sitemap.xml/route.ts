@@ -4,7 +4,23 @@ import { SEOService } from '@/lib/services/seo-service';
 export async function GET(request: NextRequest) {
   try {
     const seoService = new SEOService();
-    const sitemapEntries = await seoService.generateSitemap();
+    let sitemapEntries;
+    
+    try {
+      sitemapEntries = await seoService.generateSitemap();
+    } catch (error) {
+      console.error('Error generating sitemap:', error);
+      // Fallback to basic sitemap
+      sitemapEntries = [
+        {
+          url: `${process.env.NEXT_PUBLIC_APP_URL || 'https://cybernexacademy.com'}/`,
+          lastModified: new Date().toISOString(),
+          changeFrequency: 'weekly',
+          priority: 1.0,
+          images: []
+        }
+      ];
+    }
 
     // Generate XML sitemap
     const xml = `<?xml version="1.0" encoding="UTF-8"?>

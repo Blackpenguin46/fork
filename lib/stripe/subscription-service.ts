@@ -1,6 +1,5 @@
 import { stripe } from './stripe-client';
-import { createServerComponentClient } from '@supabase/auth-helpers-nextjs';
-import { cookies } from 'next/headers';
+import { supabase } from '@/lib/supabase';
 import Stripe from 'stripe';
 
 export interface SubscriptionPlan {
@@ -70,7 +69,7 @@ export class SubscriptionService {
       });
 
       // Store Stripe customer ID in user profile
-      const supabase = createServerComponentClient({ cookies });
+      // Use client-side supabase instance
       await supabase
         .from('profiles')
         .update({ stripe_customer_id: customer.id })
@@ -116,7 +115,7 @@ export class SubscriptionService {
       }
 
       // Get user and customer
-      const supabase = createServerComponentClient({ cookies });
+      // Use client-side supabase instance
       const { data: user, error } = await supabase
         .from('profiles')
         .select('*')
@@ -189,7 +188,7 @@ export class SubscriptionService {
     status: string;
   }> {
     try {
-      const supabase = createServerComponentClient({ cookies });
+      // Use client-side supabase instance
       const { data: user } = await supabase
         .from('profiles')
         .select('stripe_customer_id, subscription_status, subscription_plan')
@@ -271,7 +270,7 @@ export class SubscriptionService {
     subscription: Stripe.Subscription
   ): Promise<void> {
     try {
-      const supabase = createServerComponentClient({ cookies });
+      // Use client-side supabase instance
       
       // Determine plan
       const priceId = subscription.items.data[0]?.price.id;
@@ -283,7 +282,7 @@ export class SubscriptionService {
           subscription_status: subscription.status,
           subscription_plan: plan?.id || 'free',
           subscription_id: subscription.id,
-          subscription_current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
+          subscription_current_period_end: new Date((subscription as any).current_period_end * 1000).toISOString(),
           updated_at: new Date().toISOString()
         })
         .eq('id', userId);
@@ -314,7 +313,7 @@ export class SubscriptionService {
         active: options?.active ?? true,
         expires_at: options?.expiresAt,
         max_redemptions: options?.maxRedemptions,
-        restrictions: options?.restrictions,
+        restrictions: options?.restrictions as any,
       });
 
       return promoCode;

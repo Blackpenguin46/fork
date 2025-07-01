@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/app/providers'
 import { Button } from '@/components/ui/button'
@@ -64,7 +64,7 @@ const DashboardTab: React.FC<TabProps & { isActive: boolean; onClick: () => void
   );
 };
 
-export default function DashboardPage() {
+function DashboardContent() {
   const { user, loading } = useAuth()
   const router = useRouter();
   const searchParams = useSearchParams()
@@ -373,5 +373,23 @@ export default function DashboardPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function DashboardPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-pulse flex space-x-4">
+          <div className="rounded-full bg-slate-700 h-10 w-10"></div>
+          <div className="space-y-2">
+            <div className="h-4 bg-slate-700 rounded w-40"></div>
+            <div className="h-4 bg-slate-700 rounded w-32"></div>
+          </div>
+        </div>
+      </div>
+    }>
+      <DashboardContent />
+    </Suspense>
   )
 }

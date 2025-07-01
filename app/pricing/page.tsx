@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/app/providers';
 import { useSearchParams } from 'next/navigation';
@@ -9,7 +9,7 @@ import { Shield, Zap, Users, Award, TrendingUp, BookOpen } from 'lucide-react';
 import PricingCard from '@/components/pricing/PricingCard';
 import { SUBSCRIPTION_PLANS, SubscriptionService } from '@/lib/stripe/subscription-service';
 
-const PricingPage: React.FC = () => {
+const PricingContent: React.FC = () => {
   const { user } = useAuth();
   const searchParams = useSearchParams();
   const [currentPlan, setCurrentPlan] = useState<string>('free');
@@ -272,5 +272,17 @@ const PricingPage: React.FC = () => {
     </div>
   );
 };
+
+const PricingPage: React.FC = () => {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-pulse">Loading...</div>
+      </div>
+    }>
+      <PricingContent />
+    </Suspense>
+  )
+}
 
 export default PricingPage;

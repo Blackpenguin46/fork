@@ -99,9 +99,9 @@ export async function POST(req: NextRequest) {
         const invoice = event.data.object as Stripe.Invoice;
         console.log('✅ Payment succeeded for invoice:', invoice.id);
 
-        if (invoice.subscription) {
-          const subscription = await stripe.subscriptions.retrieve(invoice.subscription as string);
-          const userId = subscription.metadata?.user_id;
+        if ((invoice as any).subscription) {
+          const subscription = await stripe.subscriptions.retrieve((invoice as any).subscription as string);
+          const userId = (subscription as any).metadata?.user_id;
 
           if (userId) {
             // Update subscription status and period end
@@ -109,7 +109,7 @@ export async function POST(req: NextRequest) {
               .from('profiles')
               .update({
                 subscription_status: 'active',
-                subscription_current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
+                subscription_current_period_end: new Date((subscription as any).current_period_end * 1000).toISOString(),
                 updated_at: new Date().toISOString()
               })
               .eq('id', userId);
@@ -124,9 +124,9 @@ export async function POST(req: NextRequest) {
         const invoice = event.data.object as Stripe.Invoice;
         console.log('❌ Payment failed for invoice:', invoice.id);
 
-        if (invoice.subscription) {
-          const subscription = await stripe.subscriptions.retrieve(invoice.subscription as string);
-          const userId = subscription.metadata?.user_id;
+        if ((invoice as any).subscription) {
+          const subscription = await stripe.subscriptions.retrieve((invoice as any).subscription as string);
+          const userId = (subscription as any).metadata?.user_id;
 
           if (userId) {
             // Mark subscription as past due

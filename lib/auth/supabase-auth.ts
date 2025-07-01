@@ -40,7 +40,7 @@ export async function registerUser(data: RegisterData): Promise<AuthResult> {
       email: data.email,
       password: data.password,
       options: {
-        emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?verified=true`,
+        emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback?type=signup`,
         data: {
           full_name: data.fullName,
           username: data.username,
@@ -141,7 +141,7 @@ export async function logoutUser(): Promise<AuthResult> {
 export async function resetPassword(email: string): Promise<AuthResult> {
   try {
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/reset-password`,
+      redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback?type=recovery`,
     })
 
     if (error) {
@@ -194,7 +194,7 @@ export async function resendConfirmation(email: string): Promise<AuthResult> {
       type: 'signup',
       email: email,
       options: {
-        emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?verified=true`
+        emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback?type=signup`
       }
     })
 
@@ -223,6 +223,8 @@ function getAuthErrorMessage(error: AuthError): string {
       return 'Invalid email or password. Please check your credentials and try again.'
     case 'Email not confirmed':
       return 'Please check your email and click the confirmation link before signing in.'
+    case 'Invalid login credentials':
+      return 'Invalid email or password. If you just registered, please verify your email first.'
     case 'User already registered':
       return 'An account with this email already exists. Please sign in instead.'
     case 'Password should be at least 6 characters':
@@ -233,6 +235,8 @@ function getAuthErrorMessage(error: AuthError): string {
       return 'New registrations are currently disabled. Please contact support.'
     case 'Email rate limit exceeded':
       return 'Too many requests. Please wait a moment before trying again.'
+    case 'For security purposes, you can only request this once every 60 seconds':
+      return 'Please wait 60 seconds before requesting another email.'
     default:
       // Log unknown errors for debugging
       console.error('Unknown auth error:', error.message)

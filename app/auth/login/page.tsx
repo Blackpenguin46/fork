@@ -1,18 +1,19 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { loginUser } from '@/lib/auth/supabase-auth'
+import { loginUser, resendConfirmation } from '@/lib/auth/supabase-auth'
 import { validateLoginForm, ValidationError } from '@/lib/auth/validation'
 import { Shield, Mail, Lock, Eye, EyeOff, Loader2 } from 'lucide-react'
 
-export default function LoginPage() {
+function LoginContent() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -22,6 +23,35 @@ export default function LoginPage() {
   const [errors, setErrors] = useState<ValidationError[]>([])
   const [submitError, setSubmitError] = useState('')
   const [rememberMe, setRememberMe] = useState(false)
+  const [showResendVerification, setShowResendVerification] = useState(false)
+  const [resendLoading, setResendLoading] = useState(false)
+  const [resendSuccess, setResendSuccess] = useState(false)
+
+  // Check for error messages from URL params (from auth callback)
+  useEffect(() => {
+    const error = searchParams.get('error')
+    const message = searchParams.get('message')
+    
+    if (error) {
+      let errorMessage = 'An error occurred during authentication.'
+      
+      switch (error) {
+        case 'auth_error':
+          errorMessage = message ? decodeURIComponent(message) : 'Authentication failed. Please try again.'
+          break
+        case 'callback_error':
+          errorMessage = 'Authentication callback failed. Please try again.'
+          break
+        case 'no_code':
+          errorMessage = 'Invalid authentication link. Please try again.'
+          break
+        default:
+          errorMessage = message ? decodeURIComponent(message) : 'An unexpected error occurred.'
+      }
+      
+      setSubmitError(errorMessage)
+    }
+  }, [searchParams])
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }))
@@ -55,11 +85,40 @@ export default function LoginPage() {
       // Redirect to dashboard or intended page
       const redirectTo = new URLSearchParams(window.location.search).get('redirect') || '/dashboard'
       router.push(redirectTo)
+      router.refresh() // Ensure the page refreshes to update auth state
     } else {
-      setSubmitError(result.error || 'Login failed. Please try again.')
+      const errorMessage = result.error || 'Login failed. Please try again.'
+      setSubmitError(errorMessage)
+      
+      // Show resend verification option if it's an email confirmation issue
+      if (errorMessage.includes('email') || errorMessage.includes('confirm') || errorMessage.includes('verify')) {
+        setShowResendVerification(true)
+      }
     }
     
     setLoading(false)
+  }
+
+  const handleResendVerification = async () => {
+    if (!formData.email) {
+      setSubmitError('Please enter your email address first.')
+      return
+    }
+
+    setResendLoading(true)
+    setResendSuccess(false)
+
+    const result = await resendConfirmation(formData.email)
+    
+    if (result.success) {
+      setResendSuccess(true)
+      setShowResendVerification(false)
+      setSubmitError('')
+    } else {
+      setSubmitError(result.error || 'Failed to resend verification email. Please try again.')
+    }
+    
+    setResendLoading(false)
   }
 
   return (
@@ -84,6 +143,31 @@ export default function LoginPage() {
           {submitError && (
             <Alert variant="destructive" className="mb-6">
               <AlertDescription>{submitError}</AlertDescription>
+            </Alert>
+          )}
+
+          {resendSuccess && (
+            <Alert variant="default" className="mb-6 border-green-500/30 bg-green-500/10">
+              <AlertDescription className="text-green-400">
+                Verification email sent! Please check your inbox and click the link to verify your account.
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {showResendVerification && (
+            <Alert variant="default" className="mb-6 border-blue-500/30 bg-blue-500/10">
+              <AlertDescription className="text-blue-400">
+                Need to verify your email? 
+                <Button
+                  type="button"
+                  variant="link"
+                  onClick={handleResendVerification}
+                  disabled={resendLoading}
+                  className="p-0 ml-2 h-auto text-blue-400 hover:text-blue-300"
+                >
+                  {resendLoading ? 'Sending...' : 'Resend verification email'}
+                </Button>
+              </AlertDescription>
             </Alert>
           )}
 
@@ -225,5 +309,17 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-pulse">Loading...</div>
+      </div>
+    }>
+      <LoginContent />
+    </Suspense>
   )
 }
