@@ -25,11 +25,20 @@ export interface LoginData {
 export async function registerUser(data: RegisterData): Promise<AuthResult> {
   try {
     // Check if username is already taken
-    const { data: existingUser } = await getSupabase()
+    const { data: existingUser, error: usernameCheckError } = await getSupabase()
       .from('profiles')
       .select('username')
       .eq('username', data.username)
-      .single()
+      .maybeSingle()
+
+    // If there's an error other than "no rows found", something went wrong
+    if (usernameCheckError && usernameCheckError.code !== 'PGRST116') {
+      console.error('Username check error:', usernameCheckError)
+      return {
+        success: false,
+        error: 'Unable to verify username availability. Please try again.'
+      }
+    }
 
     if (existingUser) {
       return {
@@ -84,6 +93,24 @@ export async function registerUser(data: RegisterData): Promise<AuthResult> {
     }
   } catch (error) {
     console.error('Registration error:', error)
+    
+    // Provide more specific error messages based on the error
+    if (error instanceof Error) {
+      if (error.message.includes('not configured')) {
+        return {
+          success: false,
+          error: 'Authentication service is temporarily unavailable. Please try again later.'
+        }
+      }
+      
+      if (error.message.includes('fetch')) {
+        return {
+          success: false,
+          error: 'Network error. Please check your connection and try again.'
+        }
+      }
+    }
+    
     return {
       success: false,
       error: 'An unexpected error occurred during registration. Please try again.'
@@ -111,6 +138,14 @@ export async function loginUser(data: LoginData): Promise<AuthResult> {
     }
   } catch (error) {
     console.error('Login error:', error)
+    
+    if (error instanceof Error && error.message.includes('not configured')) {
+      return {
+        success: false,
+        error: 'Authentication service is temporarily unavailable. Please try again later.'
+      }
+    }
+    
     return {
       success: false,
       error: 'An unexpected error occurred during login. Please try again.'
@@ -134,6 +169,14 @@ export async function logoutUser(): Promise<AuthResult> {
     }
   } catch (error) {
     console.error('Logout error:', error)
+    
+    if (error instanceof Error && error.message.includes('not configured')) {
+      return {
+        success: false,
+        error: 'Authentication service is temporarily unavailable.'
+      }
+    }
+    
     return {
       success: false,
       error: 'An unexpected error occurred during logout. Please try again.'
