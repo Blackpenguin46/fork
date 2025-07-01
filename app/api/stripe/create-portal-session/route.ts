@@ -5,6 +5,14 @@ import { cookies } from 'next/headers';
 
 export async function POST(request: NextRequest) {
   try {
+    // Check if Stripe is configured
+    if (!process.env.STRIPE_SECRET_KEY) {
+      return NextResponse.json(
+        { error: 'Payment processing is not configured' },
+        { status: 503 }
+      );
+    }
+
     // Get current user
     const supabase = createServerComponentClient({ cookies });
     const { data: { user }, error: authError } = await supabase.auth.getUser();

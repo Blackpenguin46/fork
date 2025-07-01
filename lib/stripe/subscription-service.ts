@@ -54,12 +54,23 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
 ];
 
 export class SubscriptionService {
+  private checkStripeAvailable(): boolean {
+    if (!stripe) {
+      console.warn('Stripe is not configured - payment functionality is disabled');
+      return false;
+    }
+    return true;
+  }
+
   async createCustomer(user: {
     id: string;
     email: string;
     full_name?: string;
   }): Promise<Stripe.Customer> {
     try {
+      if (!this.checkStripeAvailable()) {
+        throw new Error('Stripe is not configured');
+      }
       const customer = await stripe.customers.create({
         email: user.email,
         name: user.full_name || undefined,
@@ -88,6 +99,10 @@ export class SubscriptionService {
     full_name?: string;
     stripe_customer_id?: string;
   }): Promise<Stripe.Customer> {
+    if (!this.checkStripeAvailable()) {
+      throw new Error('Stripe is not configured');
+    }
+    
     if (user.stripe_customer_id) {
       try {
         const customer = await stripe.customers.retrieve(user.stripe_customer_id);

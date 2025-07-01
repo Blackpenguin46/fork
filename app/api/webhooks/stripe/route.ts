@@ -6,9 +6,14 @@ import { createServerComponentClient } from '@supabase/auth-helpers-nextjs';
 import { cookies } from 'next/headers';
 import Stripe from 'stripe';
 
-const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!;
+const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
 export async function POST(req: NextRequest) {
+  // Check if Stripe is configured
+  if (!stripe || !webhookSecret) {
+    console.warn('Stripe webhook not configured');
+    return NextResponse.json({ error: 'Webhook not configured' }, { status: 503 });
+  }
   const body = await req.text();
   const headersList = headers();
   const sig = headersList.get('stripe-signature');
