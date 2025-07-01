@@ -24,8 +24,11 @@ export interface LoginData {
 
 export async function registerUser(data: RegisterData): Promise<AuthResult> {
   try {
+    // Get Supabase client
+    const supabase = getSupabase()
+    
     // Check if username is already taken
-    const { data: existingUser, error: usernameCheckError } = await getSupabase()
+    const { data: existingUser, error: usernameCheckError } = await supabase
       .from('profiles')
       .select('username')
       .eq('username', data.username)
@@ -48,11 +51,11 @@ export async function registerUser(data: RegisterData): Promise<AuthResult> {
     }
 
     // Sign up the user
-    const { data: authData, error: authError } = await getSupabase().auth.signUp({
+    const { data: authData, error: authError } = await supabase.auth.signUp({
       email: data.email,
       password: data.password,
       options: {
-        emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback?type=signup`,
+        emailRedirectTo: `${typeof window !== 'undefined' ? window.location.origin : process.env.NEXT_PUBLIC_APP_URL}/auth/callback?type=signup`,
         data: {
           full_name: data.fullName,
           username: data.username,
@@ -73,7 +76,7 @@ export async function registerUser(data: RegisterData): Promise<AuthResult> {
       await new Promise(resolve => setTimeout(resolve, 1000))
       
       // Update profile with additional data if needed
-      const { error: profileError } = await getSupabase()
+      const { error: profileError } = await supabase
         .from('profiles')
         .update({
           username: data.username,
@@ -94,14 +97,12 @@ export async function registerUser(data: RegisterData): Promise<AuthResult> {
   } catch (error) {
     console.error('Registration error:', error)
     
-    // Provide more specific error messages based on the error
+    // Log the full error for debugging
     if (error instanceof Error) {
-      if (error.message.includes('not configured')) {
-        return {
-          success: false,
-          error: 'Authentication service is temporarily unavailable. Please try again later.'
-        }
-      }
+      console.error('Error details:', {
+        message: error.message,
+        stack: error.stack
+      })
       
       if (error.message.includes('fetch')) {
         return {
@@ -120,7 +121,8 @@ export async function registerUser(data: RegisterData): Promise<AuthResult> {
 
 export async function loginUser(data: LoginData): Promise<AuthResult> {
   try {
-    const { data: authData, error: authError } = await getSupabase().auth.signInWithPassword({
+    const supabase = getSupabase()
+    const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
       email: data.email,
       password: data.password,
     })
@@ -138,14 +140,6 @@ export async function loginUser(data: LoginData): Promise<AuthResult> {
     }
   } catch (error) {
     console.error('Login error:', error)
-    
-    if (error instanceof Error && error.message.includes('not configured')) {
-      return {
-        success: false,
-        error: 'Authentication service is temporarily unavailable. Please try again later.'
-      }
-    }
-    
     return {
       success: false,
       error: 'An unexpected error occurred during login. Please try again.'
@@ -155,7 +149,8 @@ export async function loginUser(data: LoginData): Promise<AuthResult> {
 
 export async function logoutUser(): Promise<AuthResult> {
   try {
-    const { error } = await getSupabase().auth.signOut()
+    const supabase = getSupabase()
+    const { error } = await supabase.auth.signOut()
 
     if (error) {
       return {
@@ -169,14 +164,6 @@ export async function logoutUser(): Promise<AuthResult> {
     }
   } catch (error) {
     console.error('Logout error:', error)
-    
-    if (error instanceof Error && error.message.includes('not configured')) {
-      return {
-        success: false,
-        error: 'Authentication service is temporarily unavailable.'
-      }
-    }
-    
     return {
       success: false,
       error: 'An unexpected error occurred during logout. Please try again.'
@@ -186,8 +173,9 @@ export async function logoutUser(): Promise<AuthResult> {
 
 export async function resetPassword(email: string): Promise<AuthResult> {
   try {
-    const { error } = await getSupabase().auth.resetPasswordForEmail(email, {
-      redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback?type=recovery`,
+    const supabase = getSupabase()
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${typeof window !== 'undefined' ? window.location.origin : process.env.NEXT_PUBLIC_APP_URL}/auth/callback?type=recovery`,
     })
 
     if (error) {
@@ -211,7 +199,8 @@ export async function resetPassword(email: string): Promise<AuthResult> {
 
 export async function updatePassword(newPassword: string): Promise<AuthResult> {
   try {
-    const { error } = await getSupabase().auth.updateUser({
+    const supabase = getSupabase()
+    const { error } = await supabase.auth.updateUser({
       password: newPassword
     })
 
@@ -236,11 +225,12 @@ export async function updatePassword(newPassword: string): Promise<AuthResult> {
 
 export async function resendConfirmation(email: string): Promise<AuthResult> {
   try {
-    const { error } = await getSupabase().auth.resend({
+    const supabase = getSupabase()
+    const { error } = await supabase.auth.resend({
       type: 'signup',
       email: email,
       options: {
-        emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback?type=signup`
+        emailRedirectTo: `${typeof window !== 'undefined' ? window.location.origin : process.env.NEXT_PUBLIC_APP_URL}/auth/callback?type=signup`
       }
     })
 
