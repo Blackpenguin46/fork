@@ -1,27 +1,44 @@
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+// Create a function to get or create Supabase client
+function createSupabaseClient() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-// Initialize Supabase only if environment variables are available
-let supabaseInstance: ReturnType<typeof createClient> | null = null
+  if (!supabaseUrl || !supabaseAnonKey) {
+    return null
+  }
 
-if (supabaseUrl && supabaseAnonKey) {
-  supabaseInstance = createClient(supabaseUrl, supabaseAnonKey, {
+  return createClient(supabaseUrl, supabaseAnonKey, {
     auth: {
       autoRefreshToken: true,
       persistSession: true,
       detectSessionInUrl: true
     }
   })
-} else {
-  console.warn('NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY is not defined - Supabase functionality will be disabled')
+}
+
+// Initialize Supabase instance
+let supabaseInstance: any = null
+
+try {
+  supabaseInstance = createSupabaseClient()
+  if (!supabaseInstance) {
+    console.warn('NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY is not defined - Supabase functionality will be disabled')
+  }
+} catch (error) {
+  console.error('Failed to initialize Supabase:', error)
 }
 
 export const supabase = supabaseInstance
 
 // Helper function to get Supabase instance with error handling
 export function getSupabase() {
+  // Try to create client if not already initialized and env vars are available
+  if (!supabaseInstance) {
+    supabaseInstance = createSupabaseClient()
+  }
+  
   if (!supabaseInstance) {
     throw new Error('Supabase is not configured. Please set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY environment variables.')
   }

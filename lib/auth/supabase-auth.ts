@@ -19,23 +19,11 @@ export interface LoginData {
   password: string
 }
 
-function checkSupabaseAvailable(): boolean {
-  if (!supabase) {
-    console.warn('Supabase is not configured - auth functionality is disabled')
-    return false
-  }
-  return true
-}
+// Remove the overly strict check - let individual functions handle errors
+// This allows auth to work when environment variables are present
 
 export async function registerUser(data: RegisterData): Promise<AuthResult> {
   try {
-    if (!checkSupabaseAvailable()) {
-      return {
-        success: false,
-        error: 'Authentication service is not available'
-      }
-    }
-
     // Check if username is already taken
     const { data: existingUser } = await getSupabase()
       .from('profiles')
@@ -105,13 +93,6 @@ export async function registerUser(data: RegisterData): Promise<AuthResult> {
 
 export async function loginUser(data: LoginData): Promise<AuthResult> {
   try {
-    if (!checkSupabaseAvailable()) {
-      return {
-        success: false,
-        error: 'Authentication service is not available'
-      }
-    }
-
     const { data: authData, error: authError } = await getSupabase().auth.signInWithPassword({
       email: data.email,
       password: data.password,
@@ -139,13 +120,6 @@ export async function loginUser(data: LoginData): Promise<AuthResult> {
 
 export async function logoutUser(): Promise<AuthResult> {
   try {
-    if (!checkSupabaseAvailable()) {
-      return {
-        success: false,
-        error: 'Authentication service is not available'
-      }
-    }
-
     const { error } = await getSupabase().auth.signOut()
 
     if (error) {
@@ -169,13 +143,6 @@ export async function logoutUser(): Promise<AuthResult> {
 
 export async function resetPassword(email: string): Promise<AuthResult> {
   try {
-    if (!checkSupabaseAvailable()) {
-      return {
-        success: false,
-        error: 'Authentication service is not available'
-      }
-    }
-
     const { error } = await getSupabase().auth.resetPasswordForEmail(email, {
       redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback?type=recovery`,
     })
@@ -201,13 +168,6 @@ export async function resetPassword(email: string): Promise<AuthResult> {
 
 export async function updatePassword(newPassword: string): Promise<AuthResult> {
   try {
-    if (!checkSupabaseAvailable()) {
-      return {
-        success: false,
-        error: 'Authentication service is not available'
-      }
-    }
-
     const { error } = await getSupabase().auth.updateUser({
       password: newPassword
     })
@@ -233,13 +193,6 @@ export async function updatePassword(newPassword: string): Promise<AuthResult> {
 
 export async function resendConfirmation(email: string): Promise<AuthResult> {
   try {
-    if (!checkSupabaseAvailable()) {
-      return {
-        success: false,
-        error: 'Authentication service is not available'
-      }
-    }
-
     const { error } = await getSupabase().auth.resend({
       type: 'signup',
       email: email,
