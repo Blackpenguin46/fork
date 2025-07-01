@@ -1,5 +1,5 @@
 import { stripe, getStripe } from './stripe-client';
-import { supabase } from '@/lib/supabase';
+import { supabase, getSupabase } from '@/lib/supabase';
 import Stripe from 'stripe';
 
 export interface SubscriptionPlan {
@@ -62,6 +62,14 @@ export class SubscriptionService {
     return true;
   }
 
+  private checkSupabaseAvailable(): boolean {
+    if (!supabase) {
+      console.warn('Supabase is not configured - database functionality is disabled');
+      return false;
+    }
+    return true;
+  }
+
   async createCustomer(user: {
     id: string;
     email: string;
@@ -70,6 +78,9 @@ export class SubscriptionService {
     try {
       if (!this.checkStripeAvailable()) {
         throw new Error('Stripe is not configured');
+      }
+      if (!this.checkSupabaseAvailable()) {
+        throw new Error('Supabase is not configured');
       }
       const customer = await getStripe().customers.create({
         email: user.email,
@@ -81,7 +92,7 @@ export class SubscriptionService {
 
       // Store Stripe customer ID in user profile
       // Use client-side supabase instance
-      await supabase
+      await getSupabase()
         .from('profiles')
         .update({ stripe_customer_id: customer.id })
         .eq('id', user.id);
@@ -131,7 +142,7 @@ export class SubscriptionService {
 
       // Get user and customer
       // Use client-side supabase instance
-      const { data: user, error } = await supabase
+      const { data: user, error } = await getSupabase()
         .from('profiles')
         .select('*')
         .eq('id', userId)
@@ -141,7 +152,7 @@ export class SubscriptionService {
         throw new Error('User not found');
       }
 
-      const customer = await this.getOrCreateCustomer(user);
+      const customer = await this.getOrCreateCustomer(user as any);
 
       const session = await getStripe().checkout.sessions.create({
         customer: customer.id,
@@ -204,7 +215,7 @@ export class SubscriptionService {
   }> {
     try {
       // Use client-side supabase instance
-      const { data: user } = await supabase
+      const { data: user } = await getSupabase()
         .from('profiles')
         .select('stripe_customer_id, subscription_status, subscription_plan')
         .eq('id', userId)
@@ -220,7 +231,7 @@ export class SubscriptionService {
 
       // Get active subscriptions for customer
       const subscriptions = await getStripe().subscriptions.list({
-        customer: user.stripe_customer_id,
+        customer: user.stripe_customer_id as string,
         status: 'active',
         limit: 1,
       });
@@ -291,7 +302,7 @@ export class SubscriptionService {
       const priceId = subscription.items.data[0]?.price.id;
       const plan = SUBSCRIPTION_PLANS.find(p => p.stripePriceId === priceId);
       
-      await supabase
+      await getSupabase()
         .from('profiles')
         .update({
           subscription_status: subscription.status,

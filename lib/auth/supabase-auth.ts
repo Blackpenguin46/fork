@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase'
+import { supabase, getSupabase } from '@/lib/supabase'
 import { AuthError } from '@supabase/supabase-js'
 
 export interface AuthResult {
@@ -19,10 +19,25 @@ export interface LoginData {
   password: string
 }
 
+function checkSupabaseAvailable(): boolean {
+  if (!supabase) {
+    console.warn('Supabase is not configured - auth functionality is disabled')
+    return false
+  }
+  return true
+}
+
 export async function registerUser(data: RegisterData): Promise<AuthResult> {
   try {
+    if (!checkSupabaseAvailable()) {
+      return {
+        success: false,
+        error: 'Authentication service is not available'
+      }
+    }
+
     // Check if username is already taken
-    const { data: existingUser } = await supabase
+    const { data: existingUser } = await getSupabase()
       .from('profiles')
       .select('username')
       .eq('username', data.username)
@@ -36,7 +51,7 @@ export async function registerUser(data: RegisterData): Promise<AuthResult> {
     }
 
     // Sign up the user
-    const { data: authData, error: authError } = await supabase.auth.signUp({
+    const { data: authData, error: authError } = await getSupabase().auth.signUp({
       email: data.email,
       password: data.password,
       options: {
@@ -61,7 +76,7 @@ export async function registerUser(data: RegisterData): Promise<AuthResult> {
       await new Promise(resolve => setTimeout(resolve, 1000))
       
       // Update profile with additional data if needed
-      const { error: profileError } = await supabase
+      const { error: profileError } = await getSupabase()
         .from('profiles')
         .update({
           username: data.username,
@@ -90,7 +105,14 @@ export async function registerUser(data: RegisterData): Promise<AuthResult> {
 
 export async function loginUser(data: LoginData): Promise<AuthResult> {
   try {
-    const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+    if (!checkSupabaseAvailable()) {
+      return {
+        success: false,
+        error: 'Authentication service is not available'
+      }
+    }
+
+    const { data: authData, error: authError } = await getSupabase().auth.signInWithPassword({
       email: data.email,
       password: data.password,
     })
@@ -117,7 +139,14 @@ export async function loginUser(data: LoginData): Promise<AuthResult> {
 
 export async function logoutUser(): Promise<AuthResult> {
   try {
-    const { error } = await supabase.auth.signOut()
+    if (!checkSupabaseAvailable()) {
+      return {
+        success: false,
+        error: 'Authentication service is not available'
+      }
+    }
+
+    const { error } = await getSupabase().auth.signOut()
 
     if (error) {
       return {
@@ -140,7 +169,14 @@ export async function logoutUser(): Promise<AuthResult> {
 
 export async function resetPassword(email: string): Promise<AuthResult> {
   try {
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    if (!checkSupabaseAvailable()) {
+      return {
+        success: false,
+        error: 'Authentication service is not available'
+      }
+    }
+
+    const { error } = await getSupabase().auth.resetPasswordForEmail(email, {
       redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback?type=recovery`,
     })
 
@@ -165,7 +201,14 @@ export async function resetPassword(email: string): Promise<AuthResult> {
 
 export async function updatePassword(newPassword: string): Promise<AuthResult> {
   try {
-    const { error } = await supabase.auth.updateUser({
+    if (!checkSupabaseAvailable()) {
+      return {
+        success: false,
+        error: 'Authentication service is not available'
+      }
+    }
+
+    const { error } = await getSupabase().auth.updateUser({
       password: newPassword
     })
 
@@ -190,7 +233,14 @@ export async function updatePassword(newPassword: string): Promise<AuthResult> {
 
 export async function resendConfirmation(email: string): Promise<AuthResult> {
   try {
-    const { error } = await supabase.auth.resend({
+    if (!checkSupabaseAvailable()) {
+      return {
+        success: false,
+        error: 'Authentication service is not available'
+      }
+    }
+
+    const { error } = await getSupabase().auth.resend({
       type: 'signup',
       email: email,
       options: {

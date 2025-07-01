@@ -13,6 +13,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Check if Supabase is configured
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+      return NextResponse.json(
+        { error: 'Database is not configured' },
+        { status: 503 }
+      );
+    }
+
     const { planId } = await request.json();
 
     if (!planId) {

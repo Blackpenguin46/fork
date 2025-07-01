@@ -36,6 +36,11 @@ export function Providers({ children }: ProvidersProps) {
 
   const refreshUser = async () => {
     try {
+      if (!supabase) {
+        console.warn('Supabase not configured')
+        setUser(null)
+        return
+      }
       const { data: { user } } = await supabase.auth.getUser()
       setUser(user)
     } catch (error) {
@@ -48,6 +53,11 @@ export function Providers({ children }: ProvidersProps) {
 
   const signOut = async () => {
     try {
+      if (!supabase) {
+        console.warn('Supabase not configured')
+        setUser(null)
+        return
+      }
       await supabase.auth.signOut()
       setUser(null)
     } catch (error) {
@@ -56,6 +66,13 @@ export function Providers({ children }: ProvidersProps) {
   }
 
   useEffect(() => {
+    // Check if supabase is configured
+    if (!supabase) {
+      console.warn('Supabase not configured - auth functionality disabled')
+      setLoading(false)
+      return
+    }
+
     // Get initial user
     refreshUser()
 

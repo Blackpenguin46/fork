@@ -13,6 +13,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Check if Supabase is configured
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+      return NextResponse.json(
+        { error: 'Database is not configured' },
+        { status: 503 }
+      );
+    }
+
     // Get current user
     const supabase = createServerComponentClient({ cookies });
     const { data: { user }, error: authError } = await supabase.auth.getUser();

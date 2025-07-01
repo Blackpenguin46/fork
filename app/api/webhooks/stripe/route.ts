@@ -14,6 +14,12 @@ export async function POST(req: NextRequest) {
     console.warn('Stripe webhook not configured');
     return NextResponse.json({ error: 'Webhook not configured' }, { status: 503 });
   }
+
+  // Check if Supabase is configured
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+    console.warn('Supabase not configured for webhook');
+    return NextResponse.json({ error: 'Database not configured' }, { status: 503 });
+  }
   const body = await req.text();
   const headersList = headers();
   const sig = headersList.get('stripe-signature');
