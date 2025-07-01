@@ -23,16 +23,22 @@ export interface LoginData {
 // This allows auth to work when environment variables are present
 
 export async function registerUser(data: RegisterData): Promise<AuthResult> {
+  console.log('Starting registration process for:', data.email)
   try {
     // Get Supabase client
+    console.log('Getting Supabase client...')
     const supabase = getSupabase()
+    console.log('Supabase client obtained successfully')
     
     // Check if username is already taken
+    console.log('Checking username availability for:', data.username)
     const { data: existingUser, error: usernameCheckError } = await supabase
       .from('profiles')
       .select('username')
       .eq('username', data.username)
       .maybeSingle()
+
+    console.log('Username check result:', { existingUser, usernameCheckError })
 
     // If there's an error other than "no rows found", something went wrong
     if (usernameCheckError && usernameCheckError.code !== 'PGRST116') {
@@ -51,11 +57,15 @@ export async function registerUser(data: RegisterData): Promise<AuthResult> {
     }
 
     // Sign up the user
+    console.log('Starting Supabase auth.signUp...')
+    const redirectUrl = typeof window !== 'undefined' ? window.location.origin : process.env.NEXT_PUBLIC_APP_URL
+    console.log('Using redirect URL:', redirectUrl)
+    
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email: data.email,
       password: data.password,
       options: {
-        emailRedirectTo: `${typeof window !== 'undefined' ? window.location.origin : process.env.NEXT_PUBLIC_APP_URL}/auth/callback?type=signup`,
+        emailRedirectTo: `${redirectUrl}/auth/callback?type=signup`,
         data: {
           full_name: data.fullName,
           username: data.username,
@@ -63,7 +73,10 @@ export async function registerUser(data: RegisterData): Promise<AuthResult> {
       }
     })
 
+    console.log('Auth signUp result:', { user: authData?.user?.id, error: authError })
+
     if (authError) {
+      console.error('Auth error:', authError)
       return {
         success: false,
         error: getAuthErrorMessage(authError)
@@ -101,14 +114,29 @@ export async function registerUser(data: RegisterData): Promise<AuthResult> {
     if (error instanceof Error) {
       console.error('Error details:', {
         message: error.message,
+        name: error.name,
         stack: error.stack
       })
       
-      if (error.message.includes('fetch')) {
+      // Check for specific error types
+      if (error.message.includes('fetch') || error.message.includes('network')) {
         return {
           success: false,
           error: 'Network error. Please check your connection and try again.'
         }
+      }
+      
+      if (error.message.includes('NEXT_PUBLIC_SUPABASE')) {
+        return {
+          success: false,
+          error: 'Configuration error. Please contact support.'
+        }
+      }
+      
+      // Return the actual error message for debugging (temporarily)
+      return {
+        success: false,
+        error: `Debug: ${error.message}`
       }
     }
     
