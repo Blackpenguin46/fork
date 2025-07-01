@@ -1,5 +1,5 @@
 import { stripe, getStripe } from './stripe-client';
-import { supabase, getSupabase } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase';
 import Stripe from 'stripe';
 
 export interface SubscriptionPlan {
@@ -92,10 +92,12 @@ export class SubscriptionService {
 
       // Store Stripe customer ID in user profile
       // Use client-side supabase instance
-      await getSupabase()
-        .from('profiles')
-        .update({ stripe_customer_id: customer.id })
-        .eq('id', user.id);
+      if (supabase) {
+        await supabase
+          .from('profiles')
+          .update({ stripe_customer_id: customer.id })
+          .eq('id', user.id);
+      }
 
       return customer;
     } catch (error) {
@@ -142,7 +144,10 @@ export class SubscriptionService {
 
       // Get user and customer
       // Use client-side supabase instance
-      const { data: user, error } = await getSupabase()
+      if (!supabase) {
+        throw new Error('Database not available');
+      }
+      const { data: user, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', userId)
@@ -215,7 +220,14 @@ export class SubscriptionService {
   }> {
     try {
       // Use client-side supabase instance
-      const { data: user } = await getSupabase()
+      if (!supabase) {
+        return {
+          subscription: null,
+          plan: SUBSCRIPTION_PLANS[0],
+          status: 'error'
+        };
+      }
+      const { data: user } = await supabase
         .from('profiles')
         .select('stripe_customer_id, subscription_status, subscription_plan')
         .eq('id', userId)
@@ -302,16 +314,18 @@ export class SubscriptionService {
       const priceId = subscription.items.data[0]?.price.id;
       const plan = SUBSCRIPTION_PLANS.find(p => p.stripePriceId === priceId);
       
-      await getSupabase()
-        .from('profiles')
-        .update({
-          subscription_status: subscription.status,
-          subscription_plan: plan?.id || 'free',
-          subscription_id: subscription.id,
-          subscription_current_period_end: new Date((subscription as any).current_period_end * 1000).toISOString(),
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', userId);
+      if (supabase) {
+        await supabase
+          .from('profiles')
+          .update({
+            subscription_status: subscription.status,
+            subscription_plan: plan?.id || 'free',
+            subscription_id: subscription.id,
+            subscription_current_period_end: new Date((subscription as any).current_period_end * 1000).toISOString(),
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', userId);
+      }
     } catch (error) {
       console.error('Error updating user subscription status:', error);
       throw new Error('Failed to update subscription status');

@@ -1,4 +1,4 @@
-import { supabase, getSupabase } from '@/lib/supabase'
+import { supabase } from '@/lib/supabase'
 import { AuthError } from '@supabase/supabase-js'
 
 export interface AuthResult {
@@ -19,35 +19,22 @@ export interface LoginData {
   password: string
 }
 
-// Remove the overly strict check - let individual functions handle errors
-// This allows auth to work when environment variables are present
-
 export async function registerUser(data: RegisterData): Promise<AuthResult> {
-  console.log('Starting registration process for:', data.email)
   try {
-    // Get Supabase client
-    console.log('Getting Supabase client...')
-    const supabase = getSupabase()
-    console.log('Supabase client obtained successfully')
-    
-    // Check if username is already taken
-    console.log('Checking username availability for:', data.username)
-    const { data: existingUser, error: usernameCheckError } = await supabase
+    // Quick check if Supabase is available
+    if (!supabase) {
+      return {
+        success: false,
+        error: 'Authentication service is not available. Please try again later.'
+      }
+    }
+
+    // Check if username is already taken (use .single() like the original working version)
+    const { data: existingUser } = await supabase
       .from('profiles')
       .select('username')
       .eq('username', data.username)
-      .maybeSingle()
-
-    console.log('Username check result:', { existingUser, usernameCheckError })
-
-    // If there's an error other than "no rows found", something went wrong
-    if (usernameCheckError && usernameCheckError.code !== 'PGRST116') {
-      console.error('Username check error:', usernameCheckError)
-      return {
-        success: false,
-        error: 'Unable to verify username availability. Please try again.'
-      }
-    }
+      .single()
 
     if (existingUser) {
       return {
@@ -56,16 +43,12 @@ export async function registerUser(data: RegisterData): Promise<AuthResult> {
       }
     }
 
-    // Sign up the user
-    console.log('Starting Supabase auth.signUp...')
-    const redirectUrl = typeof window !== 'undefined' ? window.location.origin : process.env.NEXT_PUBLIC_APP_URL
-    console.log('Using redirect URL:', redirectUrl)
-    
+    // Sign up the user (use direct dashboard redirect like the original)
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email: data.email,
       password: data.password,
       options: {
-        emailRedirectTo: `${redirectUrl}/auth/callback?type=signup`,
+        emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL || window.location.origin}/dashboard?verified=true`,
         data: {
           full_name: data.fullName,
           username: data.username,
@@ -73,10 +56,7 @@ export async function registerUser(data: RegisterData): Promise<AuthResult> {
       }
     })
 
-    console.log('Auth signUp result:', { user: authData?.user?.id, error: authError })
-
     if (authError) {
-      console.error('Auth error:', authError)
       return {
         success: false,
         error: getAuthErrorMessage(authError)
@@ -109,37 +89,6 @@ export async function registerUser(data: RegisterData): Promise<AuthResult> {
     }
   } catch (error) {
     console.error('Registration error:', error)
-    
-    // Log the full error for debugging
-    if (error instanceof Error) {
-      console.error('Error details:', {
-        message: error.message,
-        name: error.name,
-        stack: error.stack
-      })
-      
-      // Check for specific error types
-      if (error.message.includes('fetch') || error.message.includes('network')) {
-        return {
-          success: false,
-          error: 'Network error. Please check your connection and try again.'
-        }
-      }
-      
-      if (error.message.includes('NEXT_PUBLIC_SUPABASE') || error.message.includes('not configured')) {
-        return {
-          success: false,
-          error: `Config Debug: ${error.message}`
-        }
-      }
-      
-      // Return the actual error message for debugging (temporarily)
-      return {
-        success: false,
-        error: `Debug: ${error.message}`
-      }
-    }
-    
     return {
       success: false,
       error: 'An unexpected error occurred during registration. Please try again.'
@@ -149,7 +98,13 @@ export async function registerUser(data: RegisterData): Promise<AuthResult> {
 
 export async function loginUser(data: LoginData): Promise<AuthResult> {
   try {
-    const supabase = getSupabase()
+    if (!supabase) {
+      return {
+        success: false,
+        error: 'Authentication service is not available. Please try again later.'
+      }
+    }
+
     const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
       email: data.email,
       password: data.password,
@@ -177,7 +132,13 @@ export async function loginUser(data: LoginData): Promise<AuthResult> {
 
 export async function logoutUser(): Promise<AuthResult> {
   try {
-    const supabase = getSupabase()
+    if (!supabase) {
+      return {
+        success: false,
+        error: 'Authentication service is not available.'
+      }
+    }
+
     const { error } = await supabase.auth.signOut()
 
     if (error) {
@@ -201,9 +162,15 @@ export async function logoutUser(): Promise<AuthResult> {
 
 export async function resetPassword(email: string): Promise<AuthResult> {
   try {
-    const supabase = getSupabase()
+    if (!supabase) {
+      return {
+        success: false,
+        error: 'Authentication service is not available. Please try again later.'
+      }
+    }
+
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${typeof window !== 'undefined' ? window.location.origin : process.env.NEXT_PUBLIC_APP_URL}/auth/callback?type=recovery`,
+      redirectTo: `${process.env.NEXT_PUBLIC_APP_URL || window.location.origin}/auth/reset-password`,
     })
 
     if (error) {
@@ -227,7 +194,13 @@ export async function resetPassword(email: string): Promise<AuthResult> {
 
 export async function updatePassword(newPassword: string): Promise<AuthResult> {
   try {
-    const supabase = getSupabase()
+    if (!supabase) {
+      return {
+        success: false,
+        error: 'Authentication service is not available. Please try again later.'
+      }
+    }
+
     const { error } = await supabase.auth.updateUser({
       password: newPassword
     })
@@ -253,12 +226,18 @@ export async function updatePassword(newPassword: string): Promise<AuthResult> {
 
 export async function resendConfirmation(email: string): Promise<AuthResult> {
   try {
-    const supabase = getSupabase()
+    if (!supabase) {
+      return {
+        success: false,
+        error: 'Authentication service is not available. Please try again later.'
+      }
+    }
+
     const { error } = await supabase.auth.resend({
       type: 'signup',
       email: email,
       options: {
-        emailRedirectTo: `${typeof window !== 'undefined' ? window.location.origin : process.env.NEXT_PUBLIC_APP_URL}/auth/callback?type=signup`
+        emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL || window.location.origin}/dashboard?verified=true`
       }
     })
 

@@ -1,92 +1,24 @@
 import { createClient } from '@supabase/supabase-js'
 
-// Create a function to get or create Supabase client
-function createSupabaseClient() {
-  console.log('createSupabaseClient called')
-  
-  // Check for both naming conventions
-  // Note: STORAGE_ prefixed vars are server-side only, so we need a different approach for client-side
-  let supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.STORAGE_NEXT_PUBLIC_SUPABASE_URL
-  let supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.STORAGE_NEXT_PUBLIC_SUPABASE_ANON_KEY
-  
-  // If we're on the client side and don't have NEXT_PUBLIC vars, try to get them from a different source
-  if (typeof window !== 'undefined' && (!supabaseUrl || !supabaseAnonKey)) {
-    // On client side, we need to use the standard NEXT_PUBLIC_ vars
-    // Let's check if we can get them from window or other client-side source
-    supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-    supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-  }
+// Get environment variables with fallback to STORAGE_ prefixed versions
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.STORAGE_NEXT_PUBLIC_SUPABASE_URL
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.STORAGE_NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-  console.log('Environment debug info:', {
-    clientSide: typeof window !== 'undefined',
-    url: !!supabaseUrl,
-    key: !!supabaseAnonKey,
-    urlLength: supabaseUrl?.length || 0,
-    keyLength: supabaseAnonKey?.length || 0,
-    NEXT_PUBLIC_SUPABASE_URL: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
-    STORAGE_NEXT_PUBLIC_SUPABASE_URL: !!process.env.STORAGE_NEXT_PUBLIC_SUPABASE_URL,
-    NEXT_PUBLIC_SUPABASE_ANON_KEY: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-    STORAGE_NEXT_PUBLIC_SUPABASE_ANON_KEY: !!process.env.STORAGE_NEXT_PUBLIC_SUPABASE_ANON_KEY,
-    // Log available environment variable keys
-    availableKeys: Object.keys(process.env).filter(key => 
-      key.includes('SUPABASE') || key.startsWith('NEXT_PUBLIC') || key.startsWith('STORAGE')
-    ).slice(0, 10) // Limit to first 10 to avoid too much output
-  })
-
-  if (!supabaseUrl || !supabaseAnonKey) {
-    console.error('Missing Supabase environment variables')
-    return null
-  }
-
-  try {
-    console.log('Attempting to create Supabase client...')
-    const client = createClient(supabaseUrl, supabaseAnonKey, {
-      auth: {
-        autoRefreshToken: true,
-        persistSession: true,
-        detectSessionInUrl: true
-      }
-    })
-    console.log('Supabase client created successfully')
-    return client
-  } catch (error) {
-    console.error('Error creating Supabase client:', error)
-    return null
-  }
+// Simple validation and client creation like the original working version
+if (!supabaseUrl || !supabaseAnonKey) {
+  console.warn('Missing Supabase environment variables. Some functionality may be disabled.')
 }
 
-// Initialize Supabase instance
-let supabaseInstance: any = null
-
-try {
-  supabaseInstance = createSupabaseClient()
-  if (!supabaseInstance) {
-    console.warn('NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY is not defined - Supabase functionality will be disabled')
+// Create client if we have the required variables
+const supabaseClient = supabaseUrl && supabaseAnonKey ? createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    autoRefreshToken: true,
+    persistSession: true,
+    detectSessionInUrl: true
   }
-} catch (error) {
-  console.error('Failed to initialize Supabase:', error)
-}
+}) : null
 
-export const supabase = supabaseInstance
-
-// Helper function to get Supabase instance with error handling
-export function getSupabase() {
-  console.log('getSupabase called, current instance:', !!supabaseInstance)
-  
-  // Try to create client if not already initialized and env vars are available
-  if (!supabaseInstance) {
-    console.log('Creating new Supabase client...')
-    supabaseInstance = createSupabaseClient()
-    console.log('New client created:', !!supabaseInstance)
-  }
-  
-  if (!supabaseInstance) {
-    const errorMsg = 'Supabase is not configured. Please check environment variables.'
-    console.error(errorMsg)
-    throw new Error(errorMsg)
-  }
-  return supabaseInstance
-}
+export const supabase = supabaseClient
 
 // Database types (you can generate these from your Supabase schema)
 export interface Database {
