@@ -1,4 +1,4 @@
-import { stripe } from './stripe-client';
+import { stripe, getStripe } from './stripe-client';
 import { supabase } from '@/lib/supabase';
 import Stripe from 'stripe';
 
@@ -71,7 +71,7 @@ export class SubscriptionService {
       if (!this.checkStripeAvailable()) {
         throw new Error('Stripe is not configured');
       }
-      const customer = await stripe.customers.create({
+      const customer = await getStripe().customers.create({
         email: user.email,
         name: user.full_name || undefined,
         metadata: {
@@ -105,7 +105,7 @@ export class SubscriptionService {
     
     if (user.stripe_customer_id) {
       try {
-        const customer = await stripe.customers.retrieve(user.stripe_customer_id);
+        const customer = await getStripe().customers.retrieve(user.stripe_customer_id);
         if (customer && !customer.deleted) {
           return customer as Stripe.Customer;
         }
@@ -143,7 +143,7 @@ export class SubscriptionService {
 
       const customer = await this.getOrCreateCustomer(user);
 
-      const session = await stripe.checkout.sessions.create({
+      const session = await getStripe().checkout.sessions.create({
         customer: customer.id,
         payment_method_types: ['card'],
         line_items: [
@@ -185,7 +185,7 @@ export class SubscriptionService {
     returnUrl: string
   ): Promise<Stripe.BillingPortal.Session> {
     try {
-      const session = await stripe.billingPortal.sessions.create({
+      const session = await getStripe().billingPortal.sessions.create({
         customer: customerId,
         return_url: returnUrl,
       });
@@ -219,7 +219,7 @@ export class SubscriptionService {
       }
 
       // Get active subscriptions for customer
-      const subscriptions = await stripe.subscriptions.list({
+      const subscriptions = await getStripe().subscriptions.list({
         customer: user.stripe_customer_id,
         status: 'active',
         limit: 1,
@@ -256,7 +256,7 @@ export class SubscriptionService {
 
   async cancelSubscription(subscriptionId: string): Promise<Stripe.Subscription> {
     try {
-      const subscription = await stripe.subscriptions.update(subscriptionId, {
+      const subscription = await getStripe().subscriptions.update(subscriptionId, {
         cancel_at_period_end: true,
       });
 
@@ -269,7 +269,7 @@ export class SubscriptionService {
 
   async reactivateSubscription(subscriptionId: string): Promise<Stripe.Subscription> {
     try {
-      const subscription = await stripe.subscriptions.update(subscriptionId, {
+      const subscription = await getStripe().subscriptions.update(subscriptionId, {
         cancel_at_period_end: false,
       });
 
@@ -322,7 +322,7 @@ export class SubscriptionService {
     }
   ): Promise<Stripe.PromotionCode> {
     try {
-      const promoCode = await stripe.promotionCodes.create({
+      const promoCode = await getStripe().promotionCodes.create({
         coupon: couponId,
         code,
         active: options?.active ?? true,
@@ -344,7 +344,7 @@ export class SubscriptionService {
     durationInMonths?: number
   ): Promise<Stripe.Coupon> {
     try {
-      const coupon = await stripe.coupons.create({
+      const coupon = await getStripe().coupons.create({
         percent_off: percentOff,
         duration,
         duration_in_months: duration === 'repeating' ? durationInMonths : undefined,

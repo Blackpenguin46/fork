@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { headers } from 'next/headers';
-import { stripe } from '@/lib/stripe/stripe-client';
+import { stripe, getStripe } from '@/lib/stripe/stripe-client';
 import { SubscriptionService } from '@/lib/stripe/subscription-service';
 import { createServerComponentClient } from '@supabase/auth-helpers-nextjs';
 import { cookies } from 'next/headers';
@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
   let event: Stripe.Event;
 
   try {
-    event = stripe.webhooks.constructEvent(body, sig, webhookSecret);
+    event = getStripe().webhooks.constructEvent(body, sig, webhookSecret);
   } catch (err) {
     console.error('Webhook signature verification failed:', err);
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 });
@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
         console.log('✅ Checkout session completed:', session.id);
 
         if (session.mode === 'subscription' && session.subscription) {
-          const subscription = await stripe.subscriptions.retrieve(session.subscription as string);
+          const subscription = await getStripe().subscriptions.retrieve(session.subscription as string);
           const userId = session.metadata?.user_id;
 
           if (userId) {
@@ -105,7 +105,7 @@ export async function POST(req: NextRequest) {
         console.log('✅ Payment succeeded for invoice:', invoice.id);
 
         if ((invoice as any).subscription) {
-          const subscription = await stripe.subscriptions.retrieve((invoice as any).subscription as string);
+          const subscription = await getStripe().subscriptions.retrieve((invoice as any).subscription as string);
           const userId = (subscription as any).metadata?.user_id;
 
           if (userId) {
@@ -130,7 +130,7 @@ export async function POST(req: NextRequest) {
         console.log('❌ Payment failed for invoice:', invoice.id);
 
         if ((invoice as any).subscription) {
-          const subscription = await stripe.subscriptions.retrieve((invoice as any).subscription as string);
+          const subscription = await getStripe().subscriptions.retrieve((invoice as any).subscription as string);
           const userId = (subscription as any).metadata?.user_id;
 
           if (userId) {
