@@ -2,10 +2,19 @@ import { createClient } from '@supabase/supabase-js'
 
 // Create a function to get or create Supabase client
 function createSupabaseClient() {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  // Check for both naming conventions
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.STORAGE_NEXT_PUBLIC_SUPABASE_URL
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.STORAGE_NEXT_PUBLIC_SUPABASE_ANON_KEY
 
   if (!supabaseUrl || !supabaseAnonKey) {
+    console.log('Supabase env check:', {
+      url: !!supabaseUrl,
+      key: !!supabaseAnonKey,
+      NEXT_PUBLIC_SUPABASE_URL: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
+      STORAGE_NEXT_PUBLIC_SUPABASE_URL: !!process.env.STORAGE_NEXT_PUBLIC_SUPABASE_URL,
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+      STORAGE_NEXT_PUBLIC_SUPABASE_ANON_KEY: !!process.env.STORAGE_NEXT_PUBLIC_SUPABASE_ANON_KEY
+    })
     return null
   }
 

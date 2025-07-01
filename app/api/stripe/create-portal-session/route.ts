@@ -13,8 +13,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if Supabase is configured
-    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+    // Check if Supabase is configured (check both naming conventions)
+    const hasSupabaseConfig = (
+      (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) ||
+      (process.env.STORAGE_NEXT_PUBLIC_SUPABASE_URL && process.env.STORAGE_NEXT_PUBLIC_SUPABASE_ANON_KEY)
+    )
+    
+    if (!hasSupabaseConfig) {
       return NextResponse.json(
         { error: 'Database is not configured' },
         { status: 503 }

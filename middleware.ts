@@ -5,8 +5,13 @@ import type { NextRequest } from 'next/server'
 export async function middleware(req: NextRequest) {
   const res = NextResponse.next()
   
-  // Check if Supabase is configured
-  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+  // Check if Supabase is configured (check both naming conventions)
+  const hasSupabaseConfig = (
+    (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) ||
+    (process.env.STORAGE_NEXT_PUBLIC_SUPABASE_URL && process.env.STORAGE_NEXT_PUBLIC_SUPABASE_ANON_KEY)
+  )
+  
+  if (!hasSupabaseConfig) {
     console.warn('Supabase not configured in middleware - skipping auth checks')
     return res
   }

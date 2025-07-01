@@ -15,8 +15,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Webhook not configured' }, { status: 503 });
   }
 
-  // Check if Supabase is configured
-  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+  // Check if Supabase is configured (check both naming conventions)
+  const hasSupabaseConfig = (
+    (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) ||
+    (process.env.STORAGE_NEXT_PUBLIC_SUPABASE_URL && process.env.STORAGE_NEXT_PUBLIC_SUPABASE_ANON_KEY)
+  )
+  
+  if (!hasSupabaseConfig) {
     console.warn('Supabase not configured for webhook');
     return NextResponse.json({ error: 'Database not configured' }, { status: 503 });
   }
