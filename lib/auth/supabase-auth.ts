@@ -242,6 +242,9 @@ export async function checkUserEmailStatus(email: string): Promise<any> {
     // Get the current user from auth
     const { data: { user }, error: userError } = await supabase.auth.getUser()
     
+    // Get current session
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+    
     // Also try to get user info from the profiles table
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
@@ -254,15 +257,64 @@ export async function checkUserEmailStatus(email: string): Promise<any> {
         id: user?.id,
         email: user?.email,
         emailConfirmed: user?.email_confirmed_at,
+        userMetadata: user?.user_metadata,
+        appMetadata: user?.app_metadata,
+        createdAt: user?.created_at,
         userError
+      },
+      session: {
+        exists: !!session,
+        sessionError
       },
       profileData: {
         profile,
         profileError
+      },
+      supabaseConfig: {
+        url: process.env.NEXT_PUBLIC_SUPABASE_URL?.substring(0, 20) + '...',
+        hasAnonKey: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
       }
     }
   } catch (error) {
     console.error('Error checking user status:', error)
+    return { error: error instanceof Error ? error.message : String(error) }
+  }
+}
+
+// Debug function to test login without the UI
+export async function debugLogin(email: string, password: string): Promise<any> {
+  try {
+    if (!supabase) {
+      return { error: 'Supabase not available' }
+    }
+
+    console.log('Debug login attempt for:', email)
+    
+    const result = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    })
+
+    console.log('Raw Supabase login result:', result)
+
+    return {
+      success: !result.error,
+      user: result.data?.user ? {
+        id: result.data.user.id,
+        email: result.data.user.email,
+        emailConfirmed: result.data.user.email_confirmed_at,
+        lastSignIn: result.data.user.last_sign_in_at,
+        metadata: result.data.user.user_metadata
+      } : null,
+      session: !!result.data?.session,
+      error: result.error ? {
+        message: result.error.message,
+        status: result.error.status,
+        name: result.error.name
+      } : null
+    }
+  } catch (error) {
+    console.error('Debug login error:', error)
     return { error: error instanceof Error ? error.message : String(error) }
   }
 }
@@ -304,15 +356,31 @@ export async function resendConfirmation(email: string): Promise<AuthResult> {
 }
 
 function getAuthErrorMessage(error: AuthError): string {
-  console.log('Processing auth error:', error.message)
+  console.log('Processing auth error:', {
+    message: error.message,
+    status: error.status,
+    name: error.name
+  })
+  
+  // Check for common authentication errors
+  if (error.message.includes('Invalid login credentials') || 
+      error.message.includes('Email not confirmed') ||
+      error.message.includes('Authentication failed')) {
+    
+    // Log the exact error for debugging
+    console.log('Auth error details:', error)
+    
+    // Try to provide a more helpful message
+    if (error.message.includes('Email not confirmed')) {
+      return `Debug: Email confirmation issue. Error: "${error.message}". Status: ${error.status}. Your email might actually be confirmed but there's a configuration mismatch.`
+    }
+    
+    return `Debug: Login failed. Error: "${error.message}". Status: ${error.status}. This might be a password issue or email confirmation problem.`
+  }
   
   switch (error.message) {
     case 'Invalid email or password':
       return 'Invalid email or password. Please check your credentials and try again.'
-    case 'Email not confirmed':
-      return 'Debug: Email not confirmed error - this might be a Supabase configuration issue. Original message: ' + error.message
-    case 'Invalid login credentials':
-      return 'Debug: Invalid login credentials - this could be email confirmation related. Original message: ' + error.message
     case 'User already registered':
       return 'An account with this email already exists. Please sign in instead.'
     case 'Password should be at least 6 characters':
@@ -327,7 +395,7 @@ function getAuthErrorMessage(error: AuthError): string {
       return 'Please wait 60 seconds before requesting another email.'
     default:
       // Log unknown errors for debugging
-      console.error('Unknown auth error:', error.message)
+      console.error('Unknown auth error:', error)
       return `Debug: ${error.message}` || 'An unexpected error occurred. Please try again.'
   }
 }
