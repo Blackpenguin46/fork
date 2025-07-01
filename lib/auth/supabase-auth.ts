@@ -105,12 +105,20 @@ export async function loginUser(data: LoginData): Promise<AuthResult> {
       }
     }
 
+    console.log('Attempting login for:', data.email)
     const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
       email: data.email,
       password: data.password,
     })
 
+    console.log('Login result:', { 
+      user: authData?.user?.id, 
+      emailConfirmed: authData?.user?.email_confirmed_at,
+      error: authError?.message 
+    })
+
     if (authError) {
+      console.error('Login auth error:', authError)
       return {
         success: false,
         error: getAuthErrorMessage(authError)
@@ -224,6 +232,41 @@ export async function updatePassword(newPassword: string): Promise<AuthResult> {
   }
 }
 
+// Debug function to check user email confirmation status
+export async function checkUserEmailStatus(email: string): Promise<any> {
+  try {
+    if (!supabase) {
+      return { error: 'Supabase not available' }
+    }
+
+    // Get the current user from auth
+    const { data: { user }, error: userError } = await supabase.auth.getUser()
+    
+    // Also try to get user info from the profiles table
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('email', email)
+      .single()
+
+    return {
+      currentAuthUser: {
+        id: user?.id,
+        email: user?.email,
+        emailConfirmed: user?.email_confirmed_at,
+        userError
+      },
+      profileData: {
+        profile,
+        profileError
+      }
+    }
+  } catch (error) {
+    console.error('Error checking user status:', error)
+    return { error: error instanceof Error ? error.message : String(error) }
+  }
+}
+
 export async function resendConfirmation(email: string): Promise<AuthResult> {
   try {
     if (!supabase) {
@@ -261,13 +304,15 @@ export async function resendConfirmation(email: string): Promise<AuthResult> {
 }
 
 function getAuthErrorMessage(error: AuthError): string {
+  console.log('Processing auth error:', error.message)
+  
   switch (error.message) {
     case 'Invalid email or password':
       return 'Invalid email or password. Please check your credentials and try again.'
     case 'Email not confirmed':
-      return 'Please check your email and click the confirmation link before signing in.'
+      return 'Debug: Email not confirmed error - this might be a Supabase configuration issue. Original message: ' + error.message
     case 'Invalid login credentials':
-      return 'Invalid email or password. If you just registered, please verify your email first.'
+      return 'Debug: Invalid login credentials - this could be email confirmation related. Original message: ' + error.message
     case 'User already registered':
       return 'An account with this email already exists. Please sign in instead.'
     case 'Password should be at least 6 characters':
@@ -283,6 +328,6 @@ function getAuthErrorMessage(error: AuthError): string {
     default:
       // Log unknown errors for debugging
       console.error('Unknown auth error:', error.message)
-      return error.message || 'An unexpected error occurred. Please try again.'
+      return `Debug: ${error.message}` || 'An unexpected error occurred. Please try again.'
   }
 }
