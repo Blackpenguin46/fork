@@ -82,6 +82,9 @@ function LoginContent() {
     const result = await loginUser(formData)
     
     if (result.success) {
+      // Small delay to ensure session is established
+      await new Promise(resolve => setTimeout(resolve, 500))
+      
       // Redirect to dashboard or intended page
       const redirectTo = new URLSearchParams(window.location.search).get('redirect') || '/dashboard'
       router.push(redirectTo)

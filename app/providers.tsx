@@ -73,12 +73,25 @@ export function Providers({ children }: ProvidersProps) {
       return
     }
 
-    // Get initial user
-    refreshUser()
+    // Get initial session first
+    const getInitialSession = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession()
+        setUser(session?.user || null)
+      } catch (error) {
+        console.error('Error getting initial session:', error)
+        setUser(null)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    getInitialSession()
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event: any, session: any) => {
+        console.log('Auth state change:', event, session?.user?.id)
         if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
           setUser(session?.user || null)
         } else if (event === 'SIGNED_OUT') {
