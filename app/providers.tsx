@@ -76,6 +76,11 @@ export function Providers({ children }: ProvidersProps) {
     // Get initial session first
     const getInitialSession = async () => {
       try {
+        if (!supabase) {
+          setUser(null)
+          setLoading(false)
+          return
+        }
         const { data: { session } } = await supabase.auth.getSession()
         setUser(session?.user || null)
       } catch (error) {

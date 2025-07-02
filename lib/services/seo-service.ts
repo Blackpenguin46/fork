@@ -371,13 +371,17 @@ export class SEOService {
   // Sitemap Generation
   async generateSitemap(): Promise<SitemapEntry[]> {
     try {
+      // Try to get sitemap entries from database
       const { data, error } = await this.supabase
         .from('sitemap_entries')
         .select('*')
         .eq('is_active', true)
         .order('priority', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        // If table doesn't exist, return default sitemap entries
+        return this.getDefaultSitemapEntries();
+      }
 
       return data.map(entry => ({
         url: `https://cybernexacademy.com${entry.url}`,
@@ -388,8 +392,32 @@ export class SEOService {
       }));
     } catch (error) {
       console.error('Error generating sitemap:', error);
-      throw new Error('Failed to generate sitemap');
+      // Return default entries instead of throwing
+      return this.getDefaultSitemapEntries();
     }
+  }
+
+  private getDefaultSitemapEntries(): SitemapEntry[] {
+    return [
+      {
+        url: 'https://cybernexacademy.com/',
+        lastModified: new Date().toISOString(),
+        changeFrequency: 'weekly',
+        priority: 1.0
+      },
+      {
+        url: 'https://cybernexacademy.com/dashboard',
+        lastModified: new Date().toISOString(),
+        changeFrequency: 'daily',
+        priority: 0.8
+      },
+      {
+        url: 'https://cybernexacademy.com/pricing',
+        lastModified: new Date().toISOString(),
+        changeFrequency: 'monthly',
+        priority: 0.7
+      }
+    ];
   }
 
   // URL Redirects
