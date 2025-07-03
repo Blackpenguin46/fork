@@ -71,11 +71,24 @@ function DashboardContent() {
   const message = searchParams.get('message')
   const verified = searchParams.get('verified')
   const [activeTab, setActiveTab] = useState('overview');
+  const [authCheckDelay, setAuthCheckDelay] = useState(0)
 
   // Debug logging
-  console.log('Dashboard auth state:', { user: user?.id, loading })
+  console.log('Dashboard auth state:', { user: user?.id, loading, verified, authCheckDelay })
 
-  if (loading) {
+  // If coming from email verification, give extra time for session to be detected
+  useEffect(() => {
+    if (verified === 'true' && !user && !loading) {
+      console.log('Coming from email verification, waiting for session...')
+      if (authCheckDelay < 3) {
+        setTimeout(() => setAuthCheckDelay(prev => prev + 1), 1000)
+        return
+      }
+    }
+  }, [verified, user, loading, authCheckDelay])
+
+  // Show loading while auth is being determined or during verification delay
+  if (loading || (verified === 'true' && !user && authCheckDelay < 3)) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-pulse flex space-x-4">
@@ -85,13 +98,18 @@ function DashboardContent() {
             <div className="h-4 bg-slate-700 rounded w-32"></div>
           </div>
         </div>
+        {verified === 'true' && (
+          <div className="ml-4 text-gray-400">
+            Completing email verification...
+          </div>
+        )}
       </div>
     )
   }
 
   // If not authenticated, redirect to login
   if (!user) {
-    console.log('No user found, redirecting to login')
+    console.log('No user found after auth check, redirecting to login')
     router.push('/auth/login?redirect=/dashboard')
     return null
   }

@@ -41,8 +41,24 @@ export function Providers({ children }: ProvidersProps) {
         setUser(null)
         return
       }
-      const { data: { user } } = await supabase.auth.getUser()
-      setUser(user)
+      
+      // First try to get session, then user
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+      if (sessionError) {
+        console.error('Session error in refresh:', sessionError)
+      }
+      
+      if (session?.user) {
+        console.log('Refreshed user from session:', session.user.id)
+        setUser(session.user)
+      } else {
+        const { data: { user }, error: userError } = await supabase.auth.getUser()
+        if (userError) {
+          console.error('User error in refresh:', userError)
+        }
+        console.log('Refreshed user directly:', user?.id || 'none')
+        setUser(user)
+      }
     } catch (error) {
       console.error('Error refreshing user:', error)
       setUser(null)
@@ -132,6 +148,17 @@ export function Providers({ children }: ProvidersProps) {
 
     return () => subscription.unsubscribe()
   }, [])
+
+  // Auto-refresh when URL contains verification parameter
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search)
+      if (urlParams.get('verified') === 'true' && !user && !loading) {
+        console.log('Auto-refreshing user after email verification')
+        setTimeout(() => refreshUser(), 500)
+      }
+    }
+  }, [user, loading, refreshUser])
 
   const value = {
     user,
