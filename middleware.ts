@@ -34,8 +34,26 @@ export async function middleware(req: NextRequest) {
     const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route))
     const isAuthRoute = authRoutes.some(route => pathname.startsWith(route))
 
+    // Debug logging for dashboard access
+    if (pathname.startsWith('/dashboard')) {
+      console.log('Dashboard access attempt:', {
+        hasSession: !!session,
+        userId: session?.user?.id,
+        verified: req.nextUrl.searchParams.get('verified'),
+        pathname
+      })
+    }
+
     // If accessing protected route without session, redirect to login
+    // BUT: allow dashboard with verified=true to pass through (email verification flow)
     if (isProtectedRoute && !session) {
+      // Special case: allow dashboard access with verified=true for email verification
+      if (pathname === '/dashboard' && req.nextUrl.searchParams.get('verified') === 'true') {
+        console.log('Allowing dashboard access for email verification flow')
+        return res
+      }
+      
+      console.log('Redirecting to login - no session for protected route:', pathname)
       const redirectUrl = new URL('/auth/login', req.url)
       redirectUrl.searchParams.set('redirect', pathname)
       return NextResponse.redirect(redirectUrl)

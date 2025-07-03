@@ -76,21 +76,24 @@ function DashboardContent() {
   // Debug logging
   console.log('Dashboard auth state:', { user: user?.id, loading, verified, authCheckDelay })
 
-  // If coming from email verification, give extra time for session to be detected
+  // Force auth refresh when coming from email verification
   useEffect(() => {
     if (verified === 'true' && !user && !loading) {
-      console.log('Coming from email verification, waiting for session...')
-      if (authCheckDelay < 3) {
-        setTimeout(() => setAuthCheckDelay(prev => prev + 1), 1000)
-        return
+      console.log('Coming from email verification, forcing auth refresh...')
+      // Use a more aggressive approach - refresh the page after session check
+      if (authCheckDelay === 0) {
+        setTimeout(() => {
+          window.location.reload()
+        }, 2000)
       }
+      setAuthCheckDelay(prev => prev + 1)
     }
   }, [verified, user, loading, authCheckDelay])
 
-  // Show loading while auth is being determined or during verification delay
-  if (loading || (verified === 'true' && !user && authCheckDelay < 3)) {
+  // Show loading while auth is being determined or during verification delay  
+  if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-deep-space-blue">
         <div className="animate-pulse flex space-x-4">
           <div className="rounded-full bg-slate-700 h-10 w-10"></div>
           <div className="space-y-2">
@@ -98,20 +101,41 @@ function DashboardContent() {
             <div className="h-4 bg-slate-700 rounded w-32"></div>
           </div>
         </div>
-        {verified === 'true' && (
-          <div className="ml-4 text-gray-400">
-            Completing email verification...
-          </div>
-        )}
       </div>
     )
   }
 
-  // If not authenticated, redirect to login
+  // Special handling for email verification - show different loading state
+  if (verified === 'true' && !user && authCheckDelay === 0) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-deep-space-blue">
+        <div className="text-center">
+          <div className="animate-pulse flex space-x-4 justify-center mb-4">
+            <div className="rounded-full bg-slate-700 h-10 w-10"></div>
+            <div className="space-y-2">
+              <div className="h-4 bg-slate-700 rounded w-40"></div>
+              <div className="h-4 bg-slate-700 rounded w-32"></div>
+            </div>
+          </div>
+          <div className="text-gray-400">
+            Completing email verification...
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // If not authenticated, redirect to login page (not embedded login)
   if (!user) {
-    console.log('No user found after auth check, redirecting to login')
-    router.push('/auth/login?redirect=/dashboard')
-    return null
+    console.log('No user found after auth check, redirecting to login page')
+    if (typeof window !== 'undefined') {
+      window.location.href = '/auth/login?redirect=/dashboard'
+    }
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-white">Redirecting to login...</div>
+      </div>
+    )
   }
 
   const tabs: TabProps[] = [
