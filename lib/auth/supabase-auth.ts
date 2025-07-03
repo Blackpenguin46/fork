@@ -77,23 +77,53 @@ export async function registerUser(data: RegisterData): Promise<AuthResult> {
       }
     }
 
-    // Create profile (handled by database trigger, but we can verify)
+    // Create/update profile (use upsert to handle both trigger and manual creation)
     if (authData.user) {
+      console.log('Creating profile for user:', { 
+        userId: authData.user.id, 
+        email: data.email, 
+        username: data.username,
+        fullName: data.fullName 
+      })
+      
       // Wait a moment for the trigger to complete
       await new Promise(resolve => setTimeout(resolve, 1000))
       
-      // Update profile with additional data if needed
-      const { error: profileError } = await supabase
+      // Use upsert to ensure profile is created with all data
+      const { data: profileData, error: profileError } = await supabase
         .from('profiles')
-        .update({
+        .upsert({
+          id: authData.user.id,
+          email: data.email,
           username: data.username,
           full_name: data.fullName,
+          subscription_tier: 'free',
+          subscription_status: 'active'
+        }, {
+          onConflict: 'id'
         })
-        .eq('id', authData.user.id)
+        .select()
 
       if (profileError) {
-        console.error('Profile update error:', profileError)
-        // Don't fail registration for profile update errors
+        console.error('Profile upsert error:', profileError)
+        
+        // Try a simple update as fallback
+        console.log('Attempting profile update fallback...')
+        const { error: updateError } = await supabase
+          .from('profiles')
+          .update({
+            username: data.username,
+            full_name: data.fullName,
+          })
+          .eq('id', authData.user.id)
+          
+        if (updateError) {
+          console.error('Profile update fallback error:', updateError)
+        } else {
+          console.log('Profile updated successfully via fallback')
+        }
+      } else {
+        console.log('Profile created/updated successfully:', profileData)
       }
     }
 
