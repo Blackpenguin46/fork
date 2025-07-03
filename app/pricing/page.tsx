@@ -120,7 +120,7 @@ const PricingContent: React.FC = () => {
             </h1>
             <p className="text-xl text-gray-300 mb-8 max-w-3xl mx-auto">
               Accelerate your cybersecurity career with our comprehensive platform. 
-              Start free and upgrade when you're ready for premium features.
+              Start free and upgrade when you&apos;re ready for premium features.
             </p>
           </motion.div>
         </div>
@@ -263,7 +263,7 @@ const PricingContent: React.FC = () => {
               </button>
             ) : (
               <p className="text-cyan-400 font-semibold">
-                You're already on the Pro plan! 🎉
+                You&apos;re already on the Pro plan! 🎉
               </p>
             )}
           </div>

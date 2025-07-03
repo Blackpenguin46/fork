@@ -358,7 +358,7 @@ const BookmarkManager: React.FC<BookmarkManagerProps> = ({ onClose }) => {
 
                       {bookmark.notes && (
                         <p className="text-gray-300 text-sm mb-3 italic">
-                          "{bookmark.notes}"
+                          &ldquo;{bookmark.notes}&rdquo;
                         </p>
                       )}
 
