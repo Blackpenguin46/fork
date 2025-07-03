@@ -72,6 +72,9 @@ function DashboardContent() {
   const verified = searchParams.get('verified')
   const [activeTab, setActiveTab] = useState('overview');
 
+  // Debug logging
+  console.log('Dashboard auth state:', { user: user?.id, loading })
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -84,6 +87,13 @@ function DashboardContent() {
         </div>
       </div>
     )
+  }
+
+  // If not authenticated, redirect to login
+  if (!user) {
+    console.log('No user found, redirecting to login')
+    router.push('/auth/login?redirect=/dashboard')
+    return null
   }
 
   const tabs: TabProps[] = [

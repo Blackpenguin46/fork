@@ -29,17 +29,31 @@ export async function registerUser(data: RegisterData): Promise<AuthResult> {
       }
     }
 
-    // Check if username is already taken (use .single() like the original working version)
-    const { data: existingUser } = await supabase
+    // Check if username is already taken
+    const { data: existingUsername } = await supabase
       .from('profiles')
       .select('username')
       .eq('username', data.username)
       .single()
 
-    if (existingUser) {
+    if (existingUsername) {
       return {
         success: false,
         error: 'Username is already taken. Please choose a different username.'
+      }
+    }
+
+    // Check if email is already registered
+    const { data: existingEmail } = await supabase
+      .from('profiles')
+      .select('email')
+      .eq('email', data.email)
+      .single()
+
+    if (existingEmail) {
+      return {
+        success: false,
+        error: 'An account with this email already exists. Please sign in instead.'
       }
     }
 

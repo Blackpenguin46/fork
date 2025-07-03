@@ -77,12 +77,27 @@ export function Providers({ children }: ProvidersProps) {
     const getInitialSession = async () => {
       try {
         if (!supabase) {
+          console.log('Supabase not available in auth provider')
           setUser(null)
           setLoading(false)
           return
         }
-        const { data: { session } } = await supabase.auth.getSession()
-        setUser(session?.user || null)
+        
+        console.log('Getting initial session...')
+        const { data: { session }, error } = await supabase.auth.getSession()
+        
+        if (error) {
+          console.error('Session error:', error)
+          setUser(null)
+        } else {
+          console.log('Initial session:', { 
+            hasUser: !!session?.user, 
+            userId: session?.user?.id,
+            email: session?.user?.email,
+            emailConfirmed: session?.user?.email_confirmed_at 
+          })
+          setUser(session?.user || null)
+        }
       } catch (error) {
         console.error('Error getting initial session:', error)
         setUser(null)
@@ -96,11 +111,20 @@ export function Providers({ children }: ProvidersProps) {
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event: any, session: any) => {
-        console.log('Auth state change:', event, session?.user?.id)
+        console.log('Auth state change:', { 
+          event, 
+          hasUser: !!session?.user, 
+          userId: session?.user?.id,
+          email: session?.user?.email 
+        })
+        
+        // Handle all auth state changes
         if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
           setUser(session?.user || null)
         } else if (event === 'SIGNED_OUT') {
           setUser(null)
+        } else if (event === 'INITIAL_SESSION') {
+          setUser(session?.user || null)
         }
         setLoading(false)
       }
