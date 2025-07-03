@@ -110,9 +110,17 @@ export function Providers({ children }: ProvidersProps) {
             hasUser: !!session?.user, 
             userId: session?.user?.id,
             email: session?.user?.email,
-            emailConfirmed: session?.user?.email_confirmed_at 
+            emailConfirmed: session?.user?.email_confirmed_at,
+            sessionValid: !!(session?.access_token && session?.user)
           })
-          setUser(session?.user || null)
+          
+          // Only set user if we have a valid session with access token
+          if (session?.access_token && session?.user) {
+            setUser(session.user)
+          } else {
+            console.log('No valid session found, clearing user state')
+            setUser(null)
+          }
         }
       } catch (error) {
         console.error('Error getting initial session:', error)
@@ -134,13 +142,21 @@ export function Providers({ children }: ProvidersProps) {
           email: session?.user?.email 
         })
         
-        // Handle all auth state changes
+        // Handle all auth state changes with strict validation
         if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-          setUser(session?.user || null)
+          if (session?.access_token && session?.user) {
+            setUser(session.user)
+          } else {
+            setUser(null)
+          }
         } else if (event === 'SIGNED_OUT') {
           setUser(null)
         } else if (event === 'INITIAL_SESSION') {
-          setUser(session?.user || null)
+          if (session?.access_token && session?.user) {
+            setUser(session.user)
+          } else {
+            setUser(null)
+          }
         }
         setLoading(false)
       }

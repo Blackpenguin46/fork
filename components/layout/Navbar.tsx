@@ -226,17 +226,17 @@ export default function Navbar() {
 
         {/* Mobile Menu */}
         {isMobileMenuOpen && (
-          <div className="lg:hidden border-t border-slate-800">
-            <div className="px-2 pt-2 pb-3 space-y-1">
+          <div className="lg:hidden fixed top-16 left-0 right-0 bg-slate-950/95 backdrop-blur-md border-t border-slate-800/50 shadow-xl z-40">
+            <div className="px-4 pt-4 pb-6 space-y-2 max-h-[calc(100vh-4rem)] overflow-y-auto">
               {navigation.map((item) => (
                 <div key={item.name} className="space-y-1">
                   <Link
                     href={item.href}
                     onClick={() => setIsMobileMenuOpen(false)}
-                    className={`flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors ${
+                    className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
                       isActivePath(item.href)
-                        ? 'text-cyber-cyan bg-slate-800/50'
-                        : 'text-slate-300'
+                        ? 'text-cyber-cyan bg-slate-800/70 border border-cyber-cyan/30'
+                        : 'text-slate-200 hover:text-cyber-cyan hover:bg-slate-800/50'
                     }`}
                   >
                     <item.icon className="h-5 w-5" />
@@ -244,13 +244,13 @@ export default function Navbar() {
                   </Link>
                   
                   {/* Mobile Subcategories */}
-                  <div className="ml-8 space-y-1">
+                  <div className="ml-6 pl-4 border-l border-slate-700 space-y-1">
                     {item.subcategories.map((sub) => (
                       <Link
                         key={sub.name}
                         href={sub.href}
                         onClick={() => setIsMobileMenuOpen(false)}
-                        className="block px-3 py-1 text-sm text-slate-400 hover:text-cyber-cyan transition-colors"
+                        className="block px-3 py-2 text-sm text-slate-300 hover:text-cyber-cyan hover:bg-slate-800/30 rounded-md transition-colors"
                       >
                         {sub.name}
                       </Link>
@@ -260,38 +260,46 @@ export default function Navbar() {
               ))}
               
               {/* Mobile Auth */}
-              <div className="pt-4 border-t border-slate-800">
+              <div className="pt-4 mt-4 border-t border-slate-700">
                 {user ? (
-                  <div className="space-y-1">
+                  <div className="space-y-2">
                     <Link
                       href="/dashboard"
                       onClick={() => setIsMobileMenuOpen(false)}
-                      className="flex items-center space-x-3 px-3 py-2 text-slate-300 hover:text-cyber-cyan"
+                      className="flex items-center space-x-3 px-4 py-3 text-slate-200 hover:text-cyber-cyan hover:bg-slate-800/50 rounded-lg transition-colors"
                     >
                       <User className="h-5 w-5" />
                       <span>Dashboard</span>
                     </Link>
+                    <Link
+                      href="/dashboard/settings"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="flex items-center space-x-3 px-4 py-3 text-slate-200 hover:text-cyber-cyan hover:bg-slate-800/50 rounded-lg transition-colors"
+                    >
+                      <Settings className="h-5 w-5" />
+                      <span>Settings</span>
+                    </Link>
                     <button
                       onClick={handleSignOut}
-                      className="flex items-center space-x-3 w-full px-3 py-2 text-slate-300 hover:text-red-400"
+                      className="flex items-center space-x-3 w-full px-4 py-3 text-slate-200 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
                     >
                       <LogOut className="h-5 w-5" />
                       <span>Sign Out</span>
                     </button>
                   </div>
                 ) : (
-                  <div className="space-y-2">
+                  <div className="space-y-3">
                     <Link
                       href="/auth/login"
                       onClick={() => setIsMobileMenuOpen(false)}
-                      className="block px-3 py-2 text-slate-300 hover:text-cyber-cyan"
+                      className="block px-4 py-3 text-slate-200 hover:text-cyber-cyan hover:bg-slate-800/50 rounded-lg transition-colors text-center border border-slate-700"
                     >
                       Sign In
                     </Link>
                     <Link
                       href="/auth/register"
                       onClick={() => setIsMobileMenuOpen(false)}
-                      className="block px-3 py-2 text-cyber-cyan font-medium"
+                      className="block px-4 py-3 bg-gradient-to-r from-cyber-cyan to-cyber-magenta text-white font-medium rounded-lg hover:from-cyber-cyan/90 hover:to-cyber-magenta/90 transition-all text-center"
                     >
                       Get Started
                     </Link>
