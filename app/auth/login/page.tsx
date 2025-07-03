@@ -280,7 +280,7 @@ function LoginContent() {
                 <div className="w-full border-t border-slate-700" />
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-slate-900 text-slate-400">Don't have an account?</span>
+                <span className="px-2 bg-slate-900 text-slate-400">Don&apos;t have an account?</span>
               </div>
             </div>
           </div>

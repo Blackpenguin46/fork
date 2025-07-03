@@ -81,7 +81,7 @@ export default function RegisterPage() {
               Registration Successful!
             </h2>
             <p className="mt-2 text-sm text-slate-400">
-              We've sent a verification email to <strong>{formData.email}</strong>
+              We&apos;ve sent a verification email to <strong>{formData.email}</strong>
             </p>
             <p className="mt-1 text-sm text-slate-400">
               Please check your email and click the verification link to activate your account.
