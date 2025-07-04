@@ -26,12 +26,31 @@ export async function middleware(req: NextRequest) {
 
     const { pathname } = req.nextUrl
 
-    // Define protected and auth-only routes
+    // Define public routes (no authentication required)
+    const publicRoutes = [
+      '/', // Landing page
+      '/auth/login', 
+      '/auth/register', 
+      '/auth/forgot-password',
+      '/auth/reset-password',
+      '/auth/verify-email',
+      '/auth/callback',
+      '/about',
+      '/contact',
+      '/privacy',
+      '/terms',
+      '/pricing' // Allow viewing pricing without auth
+    ]
+    
+    // Define routes that require authentication
     const protectedRoutes = ['/dashboard', '/profile', '/settings']
+    const contentRoutes = ['/community', '/insights', '/academy'] // Content requires auth
     const authRoutes = ['/auth/login', '/auth/register', '/auth/forgot-password']
     
-    // Check if the current path is protected
+    // Check route types
+    const isPublicRoute = publicRoutes.some(route => pathname === route || pathname.startsWith(route + '/'))
     const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route))
+    const isContentRoute = contentRoutes.some(route => pathname.startsWith(route))
     const isAuthRoute = authRoutes.some(route => pathname.startsWith(route))
 
     // Debug logging for dashboard access
@@ -44,9 +63,8 @@ export async function middleware(req: NextRequest) {
       })
     }
 
-    // If accessing protected route without session, redirect to login
-    // BUT: allow dashboard with verified=true&auto_login=true to pass through (email verification flow)
-    if (isProtectedRoute && !session) {
+    // If accessing content or protected routes without session, redirect to login
+    if ((isContentRoute || isProtectedRoute) && !session) {
       // Special case: allow dashboard access for auto-login flow after email verification
       if (pathname === '/dashboard' && 
           req.nextUrl.searchParams.get('verified') === 'true' && 
@@ -55,7 +73,7 @@ export async function middleware(req: NextRequest) {
         return res
       }
       
-      console.log('Redirecting to login - no session for protected route:', pathname)
+      console.log('Redirecting to login - no session for content/protected route:', pathname)
       const redirectUrl = new URL('/auth/login', req.url)
       redirectUrl.searchParams.set('redirect', pathname)
       return NextResponse.redirect(redirectUrl)

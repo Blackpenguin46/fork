@@ -116,7 +116,7 @@ export default function Navbar() {
             {navigation.map((item) => (
               <div key={item.name} className="relative group">
                 <Link
-                  href={item.href}
+                  href={user ? item.href : '/auth/register'}
                   className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-all duration-300 ${
                     isActivePath(item.href)
                       ? 'text-cyber-cyan bg-slate-800/50'
@@ -125,25 +125,28 @@ export default function Navbar() {
                 >
                   <item.icon className="h-4 w-4" />
                   <span className="font-medium">{item.name}</span>
+                  {!user && <span className="text-xs text-slate-500 ml-1">(Sign up required)</span>}
                 </Link>
                 
-                {/* Dropdown Menu */}
-                <div className="absolute top-full left-0 mt-2 w-64 bg-slate-900/95 backdrop-blur-md border border-slate-700 rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300">
-                  <div className="p-4">
-                    <p className="text-sm text-slate-400 mb-3">{item.description}</p>
-                    <div className="space-y-2">
-                      {item.subcategories.map((sub) => (
-                        <Link
-                          key={sub.name}
-                          href={sub.href}
-                          className="block px-3 py-2 text-sm text-slate-300 hover:text-cyber-cyan hover:bg-slate-800/50 rounded-md transition-colors"
-                        >
-                          {sub.name}
-                        </Link>
-                      ))}
+                {/* Dropdown Menu - Only for authenticated users */}
+                {user && (
+                  <div className="absolute top-full left-0 mt-2 w-64 bg-slate-900/95 backdrop-blur-md border border-slate-700 rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300">
+                    <div className="p-4">
+                      <p className="text-sm text-slate-400 mb-3">{item.description}</p>
+                      <div className="space-y-2">
+                        {item.subcategories.map((sub) => (
+                          <Link
+                            key={sub.name}
+                            href={sub.href}
+                            className="block px-3 py-2 text-sm text-slate-300 hover:text-cyber-cyan hover:bg-slate-800/50 rounded-md transition-colors"
+                          >
+                            {sub.name}
+                          </Link>
+                        ))}
+                      </div>
                     </div>
                   </div>
-                </div>
+                )}
               </div>
             ))}
           </div>
@@ -231,7 +234,7 @@ export default function Navbar() {
               {navigation.map((item) => (
                 <div key={item.name} className="space-y-1">
                   <Link
-                    href={item.href}
+                    href={user ? item.href : '/auth/register'}
                     onClick={() => setIsMobileMenuOpen(false)}
                     className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
                       isActivePath(item.href)
@@ -241,21 +244,24 @@ export default function Navbar() {
                   >
                     <item.icon className="h-5 w-5" />
                     <span>{item.name}</span>
+                    {!user && <span className="text-xs text-slate-500 ml-auto">(Sign up required)</span>}
                   </Link>
                   
-                  {/* Mobile Subcategories */}
-                  <div className="ml-6 pl-4 border-l border-slate-700 space-y-1">
-                    {item.subcategories.map((sub) => (
-                      <Link
-                        key={sub.name}
-                        href={sub.href}
-                        onClick={() => setIsMobileMenuOpen(false)}
-                        className="block px-3 py-2 text-sm text-slate-300 hover:text-cyber-cyan hover:bg-slate-800/30 rounded-md transition-colors"
-                      >
-                        {sub.name}
-                      </Link>
-                    ))}
-                  </div>
+                  {/* Mobile Subcategories - Only for authenticated users */}
+                  {user && (
+                    <div className="ml-6 pl-4 border-l border-slate-700 space-y-1">
+                      {item.subcategories.map((sub) => (
+                        <Link
+                          key={sub.name}
+                          href={sub.href}
+                          onClick={() => setIsMobileMenuOpen(false)}
+                          className="block px-3 py-2 text-sm text-slate-300 hover:text-cyber-cyan hover:bg-slate-800/30 rounded-md transition-colors"
+                        >
+                          {sub.name}
+                        </Link>
+                      ))}
+                    </div>
+                  )}
                 </div>
               ))}
               

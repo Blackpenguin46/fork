@@ -114,18 +114,32 @@ export function Providers({ children }: ProvidersProps) {
             sessionValid: !!(session?.access_token && session?.user)
           })
           
-          // Set user if we have a valid session - check for auto-login flow
+          // Strict validation: only allow confirmed users or auto-login flow
           const isAutoLoginFlow = typeof window !== 'undefined' && 
                                  new URLSearchParams(window.location.search).get('auto_login') === 'true'
           
-          if (session?.user && (session?.user?.email_confirmed_at || isAutoLoginFlow)) {
-            console.log('Setting user from session:', session.user.id)
+          if (session?.user && session?.user?.email_confirmed_at) {
+            console.log('Setting confirmed user from session:', session.user.id)
             setUser(session.user)
-          } else if (session?.user && !session?.user?.email_confirmed_at && !isAutoLoginFlow) {
-            console.log('User exists but email not confirmed, clearing user state')
+          } else if (session?.user && isAutoLoginFlow) {
+            console.log('Setting user from auto-login flow:', session.user.id)
+            setUser(session.user)
+          } else if (session?.user && !session?.user?.email_confirmed_at) {
+            console.log('User exists but email not confirmed, signing out and clearing storage')
+            await supabase.auth.signOut()
+            // Clear any lingering browser storage
+            if (typeof window !== 'undefined') {
+              // Clear all supabase-related items from localStorage
+              Object.keys(localStorage).forEach(key => {
+                if (key.startsWith('sb-') && key.includes('-auth-token')) {
+                  localStorage.removeItem(key)
+                }
+              })
+              sessionStorage.clear()
+            }
             setUser(null)
           } else {
-            console.log('No user in session, clearing user state')
+            console.log('No valid session, clearing user state')
             setUser(null)
           }
         }
