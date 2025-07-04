@@ -45,11 +45,13 @@ export async function middleware(req: NextRequest) {
     }
 
     // If accessing protected route without session, redirect to login
-    // BUT: allow dashboard with verified=true to pass through (email verification flow)
+    // BUT: allow dashboard with verified=true&auto_login=true to pass through (email verification flow)
     if (isProtectedRoute && !session) {
-      // Special case: allow dashboard access with verified=true for email verification
-      if (pathname === '/dashboard' && req.nextUrl.searchParams.get('verified') === 'true') {
-        console.log('Allowing dashboard access for email verification flow')
+      // Special case: allow dashboard access for auto-login flow after email verification
+      if (pathname === '/dashboard' && 
+          req.nextUrl.searchParams.get('verified') === 'true' && 
+          req.nextUrl.searchParams.get('auto_login') === 'true') {
+        console.log('Allowing dashboard access for auto-login flow after email verification')
         return res
       }
       

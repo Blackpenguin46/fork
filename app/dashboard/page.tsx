@@ -70,43 +70,39 @@ function DashboardContent() {
   const searchParams = useSearchParams()
   const message = searchParams.get('message')
   const verified = searchParams.get('verified')
+  const autoLogin = searchParams.get('auto_login')
   const [activeTab, setActiveTab] = useState('overview');
   const [authCheckDelay, setAuthCheckDelay] = useState(0)
 
   // Debug logging
-  console.log('Dashboard auth state:', { user: user?.id, loading, verified, authCheckDelay })
+  console.log('Dashboard auth state:', { 
+    user: user?.id, 
+    loading, 
+    verified, 
+    autoLogin,
+    authCheckDelay 
+  })
 
-  // Force auth refresh when coming from email verification
+  // Handle auto-login after email verification
   useEffect(() => {
-    if (verified === 'true' && !user && !loading) {
-      console.log('Coming from email verification, forcing auth refresh...')
-      // Use a more aggressive approach - refresh the page after session check
-      if (authCheckDelay === 0) {
-        setTimeout(() => {
-          window.location.reload()
-        }, 2000)
+    if (verified === 'true' && autoLogin === 'true' && !user && !loading) {
+      console.log('Auto-login flow: waiting for session detection...')
+      if (authCheckDelay < 5) {
+        // Wait longer for auto-login to establish session
+        setTimeout(() => setAuthCheckDelay(prev => prev + 1), 1000)
+        return
+      } else {
+        // If auto-login failed after 5 seconds, redirect to login
+        console.log('Auto-login failed, redirecting to login page')
+        window.location.href = '/auth/login?message=' + encodeURIComponent('Please sign in to access your account')
       }
-      setAuthCheckDelay(prev => prev + 1)
     }
-  }, [verified, user, loading, authCheckDelay])
+  }, [verified, autoLogin, user, loading, authCheckDelay])
 
-  // Show loading while auth is being determined or during verification delay  
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-deep-space-blue">
-        <div className="animate-pulse flex space-x-4">
-          <div className="rounded-full bg-slate-700 h-10 w-10"></div>
-          <div className="space-y-2">
-            <div className="h-4 bg-slate-700 rounded w-40"></div>
-            <div className="h-4 bg-slate-700 rounded w-32"></div>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
-  // Special handling for email verification - show different loading state
-  if (verified === 'true' && !user && authCheckDelay === 0) {
+  // Show loading while auth is being determined or during auto-login flow
+  if (loading || (verified === 'true' && autoLogin === 'true' && !user && authCheckDelay < 5)) {
+    const isAutoLogin = autoLogin === 'true'
+    
     return (
       <div className="min-h-screen flex items-center justify-center bg-deep-space-blue">
         <div className="text-center">
@@ -118,7 +114,15 @@ function DashboardContent() {
             </div>
           </div>
           <div className="text-gray-400">
-            Completing email verification...
+            {isAutoLogin ? (
+              <>
+                <div>Email verified successfully! 🎉</div>
+                <div className="mt-2 text-sm">Logging you in automatically...</div>
+                <div className="mt-1 text-xs">({authCheckDelay}/5)</div>
+              </>
+            ) : (
+              'Loading your dashboard...'
+            )}
           </div>
         </div>
       </div>

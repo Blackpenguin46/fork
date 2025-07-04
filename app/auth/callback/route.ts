@@ -42,17 +42,20 @@ export async function GET(request: NextRequest) {
           userId: data.user.id,
           email: data.user.email,
           emailConfirmed: !!data.user.email_confirmed_at,
-          sessionExists: !!data.session
+          sessionExists: !!data.session,
+          accessToken: !!data.session.access_token
         })
         
-        // Create the redirect with proper session handling
-        const response = NextResponse.redirect(`${requestUrl.origin}/dashboard?verified=true`)
+        // Email verification successful - user should be auto-logged in
+        // Redirect to dashboard with verified flag for smooth UX
+        const response = NextResponse.redirect(`${requestUrl.origin}/dashboard?verified=true&auto_login=true`)
         
-        // Ensure cookies are set properly
+        // Ensure session cookies are properly set for auto-login
         return response
       } else {
         console.log('No user or session in callback data:', { user: !!data.user, session: !!data.session })
-        return NextResponse.redirect(`${requestUrl.origin}/auth/login?error=no_session`)
+        // Fallback: redirect to login page if session creation failed
+        return NextResponse.redirect(`${requestUrl.origin}/auth/login?message=${encodeURIComponent('Please sign in to complete verification')}`)
       }
       
     } catch (error) {
