@@ -125,7 +125,7 @@ export function Providers({ children }: ProvidersProps) {
             if (typeof window !== 'undefined') {
               // Clear all supabase-related items from localStorage
               Object.keys(localStorage).forEach(key => {
-                if (key.startsWith('sb-') && key.includes('-auth-token')) {
+                if (key.startsWith('sb-')) {
                   localStorage.removeItem(key)
                 }
               })
@@ -133,7 +133,15 @@ export function Providers({ children }: ProvidersProps) {
             }
             setUser(null)
           } else {
-            console.log('No valid session, clearing user state')
+            console.log('No valid session, clearing user state and any stale storage')
+            // Aggressively clear any stale auth data
+            if (typeof window !== 'undefined') {
+              Object.keys(localStorage).forEach(key => {
+                if (key.startsWith('sb-')) {
+                  localStorage.removeItem(key)
+                }
+              })
+            }
             setUser(null)
           }
         }
@@ -185,16 +193,36 @@ export function Providers({ children }: ProvidersProps) {
     return () => subscription.unsubscribe()
   }, [])
 
-  // Auto-refresh when URL contains verification parameter
+  // Force clear any invalid sessions on app start
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const urlParams = new URLSearchParams(window.location.search)
-      if (urlParams.get('verified') === 'true' && !user && !loading) {
-        console.log('Auto-refreshing user after email verification')
-        setTimeout(() => refreshUser(), 500)
+    const forceCleanup = async () => {
+      if (!supabase || loading) return
+      
+      try {
+        const { data: { session } } = await supabase.auth.getSession()
+        
+        // If we have a session but no confirmed email, force sign out
+        if (session?.user && !session.user.email_confirmed_at) {
+          console.log('Force clearing unconfirmed session on app start')
+          await supabase.auth.signOut()
+          
+          if (typeof window !== 'undefined') {
+            Object.keys(localStorage).forEach(key => {
+              if (key.startsWith('sb-')) {
+                localStorage.removeItem(key)
+              }
+            })
+            sessionStorage.clear()
+          }
+        }
+      } catch (error) {
+        console.error('Error in force cleanup:', error)
       }
     }
-  }, [user, loading, refreshUser])
+
+    // Run cleanup after initial load
+    setTimeout(forceCleanup, 100)
+  }, [])
 
   const value = {
     user,
