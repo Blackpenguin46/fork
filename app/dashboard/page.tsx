@@ -3,6 +3,7 @@
 import React, { useState, useEffect, Suspense } from 'react';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/app/providers'
+import { useSubscription } from '@/hooks/useSubscription'
 import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { 
@@ -23,7 +24,12 @@ import {
   GraduationCap,
   Filter,
   Search,
-  CheckCircle
+  CheckCircle,
+  Bot,
+  MessageSquare,
+  Bookmark,
+  Video,
+  Zap
 } from 'lucide-react'
 import Link from 'next/link'
 import { useSearchParams, useRouter } from 'next/navigation'
@@ -66,6 +72,7 @@ const DashboardTab: React.FC<TabProps & { isActive: boolean; onClick: () => void
 
 function DashboardContent() {
   const { user, loading } = useAuth()
+  const { isPro, isFree, dashboardType, canAccessProgressTracker, canScheduleMeetings, loading: subscriptionLoading } = useSubscription()
   const router = useRouter();
   const searchParams = useSearchParams()
   const message = searchParams.get('message')
@@ -142,21 +149,30 @@ function DashboardContent() {
     )
   }
 
-  const tabs: TabProps[] = [
+  // Dashboard tabs based on subscription tier
+  const freeTabs: TabProps[] = [
+    {
+      id: 'overview',
+      label: 'Overview',
+      icon: <Clock className="w-4 h-4" />
+    }
+  ];
+
+  const proTabs: TabProps[] = [
     {
       id: 'overview',
       label: 'Overview',
       icon: <TrendingUp className="w-4 h-4" />
     },
     {
-      id: 'learning',
-      label: 'Learning Paths',
-      icon: <BookOpen className="w-4 h-4" />
+      id: 'progress',
+      label: 'Progress Tracker',
+      icon: <Target className="w-4 h-4" />
     },
     {
-      id: 'goals',
-      label: 'Goals',
-      icon: <Target className="w-4 h-4" />
+      id: 'roadmaps',
+      label: 'Custom Roadmaps',
+      icon: <BookOpen className="w-4 h-4" />
     },
     {
       id: 'achievements',
@@ -164,22 +180,25 @@ function DashboardContent() {
       icon: <Award className="w-4 h-4" />
     },
     {
-      id: 'activity',
-      label: 'Activity',
-      icon: <Calendar className="w-4 h-4" />
+      id: 'bookmarks',
+      label: 'Bookmarks',
+      icon: <Bookmark className="w-4 h-4" />
     }
   ];
 
-  const quickActions = [
+  const tabs = isPro ? proTabs : freeTabs;
+
+  // Quick actions based on subscription tier
+  const freeQuickActions = [
     {
-      title: 'Continue Learning',
-      description: 'Resume your last learning session',
+      title: 'Browse Free Resources',
+      description: 'Explore cybersecurity learning materials',
       icon: <BookOpen className="w-6 h-6" />,
       href: '/academy',
       color: 'green'
     },
     {
-      title: 'Browse Community',
+      title: 'Community Forums',
       description: 'Connect with cybersecurity professionals',
       icon: <Users className="w-6 h-6" />,
       href: '/community',
@@ -193,13 +212,46 @@ function DashboardContent() {
       color: 'purple'
     },
     {
-      title: 'Skill Assessment',
-      description: 'Evaluate your cybersecurity knowledge',
-      icon: <GraduationCap className="w-6 h-6" />,
-      href: '/academy/assessment',
+      title: 'Upgrade to Pro',
+      description: 'Unlock premium features and content',
+      icon: <Crown className="w-6 h-6" />,
+      href: '/pricing',
       color: 'orange'
     }
   ];
+
+  const proQuickActions = [
+    {
+      title: 'AI Assistant',
+      description: 'Get personalized cybersecurity guidance',
+      icon: <Bot className="w-6 h-6" />,
+      href: '/dashboard/ai',
+      color: 'cyan'
+    },
+    {
+      title: 'Schedule 1-on-1',
+      description: 'Book a meeting with cybersecurity expert',
+      icon: <Video className="w-6 h-6" />,
+      href: '/dashboard/meetings',
+      color: 'green'
+    },
+    {
+      title: 'Premium Discord',
+      description: 'Access exclusive community discussions',
+      icon: <MessageSquare className="w-6 h-6" />,
+      href: '/community/discord-premium',
+      color: 'blue'
+    },
+    {
+      title: 'Custom Roadmaps',
+      description: 'Create personalized learning paths',
+      icon: <Target className="w-6 h-6" />,
+      href: '/dashboard/roadmaps',
+      color: 'purple'
+    }
+  ];
+
+  const quickActions = isPro ? proQuickActions : freeQuickActions;
 
   const QuickAction: React.FC<any> = ({
     title,
@@ -227,39 +279,68 @@ function DashboardContent() {
   const renderTabContent = () => {
     switch (activeTab) {
       case 'overview':
+        if (isFree) {
+          // Basic dashboard for free users - just membership duration
+          const memberSince = user?.created_at ? new Date(user.created_at).toLocaleDateString() : 'Unknown'
+          return (
+            <div className="space-y-6">
+              <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-6">
+                <h3 className="text-xl font-semibold text-white mb-4">Your Membership</h3>
+                <div className="flex items-center space-x-4">
+                  <div className="p-3 bg-blue-500/10 rounded-lg">
+                    <Clock className="w-6 h-6 text-blue-400" />
+                  </div>
+                  <div>
+                    <p className="text-white font-medium">Member since {memberSince}</p>
+                    <p className="text-gray-400 text-sm">Free Tier • Basic Access</p>
+                  </div>
+                </div>
+                <div className="mt-6 p-4 bg-gradient-to-r from-cyan-500/10 to-blue-500/10 border border-cyan-500/20 rounded-lg">
+                  <h4 className="text-white font-semibold mb-2">Upgrade to Pro</h4>
+                  <p className="text-gray-300 text-sm mb-3">
+                    Unlock premium resources, AI assistant, 1-on-1 meetings, and more advanced features.
+                  </p>
+                  <Button 
+                    onClick={() => router.push('/pricing')}
+                    className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600"
+                  >
+                    <Crown className="w-4 h-4 mr-2" />
+                    View Pro Features
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )
+        }
         return <ProgressOverview />;
       
-      case 'learning':
+      case 'progress':
         return (
           <div className="space-y-6">
             <div className="flex justify-between items-center">
-              <h2 className="text-xl font-semibold text-white">Your Learning Paths</h2>
-              <button className="px-4 py-2 bg-cyan-500 text-white rounded-lg hover:bg-cyan-600 transition-colors">
-                Browse All Paths
-              </button>
+              <h2 className="text-xl font-semibold text-white">Progress Tracker</h2>
+              <div className="flex items-center space-x-2">
+                <Zap className="w-5 h-5 text-yellow-400" />
+                <span className="text-yellow-400 font-medium">Pro Feature</span>
+              </div>
             </div>
-            
-            <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-6">
-              <p className="text-gray-400 text-center">
-                Learning paths component will be implemented here
-              </p>
-            </div>
+            <ProgressOverview />
           </div>
         );
       
-      case 'goals':
+      case 'roadmaps':
         return (
           <div className="space-y-6">
             <div className="flex justify-between items-center">
-              <h2 className="text-xl font-semibold text-white">Learning Goals</h2>
+              <h2 className="text-xl font-semibold text-white">Custom Roadmaps</h2>
               <button className="px-4 py-2 bg-cyan-500 text-white rounded-lg hover:bg-cyan-600 transition-colors">
-                Add New Goal
+                Create New Roadmap
               </button>
             </div>
             
             <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-6">
               <p className="text-gray-400 text-center">
-                Learning goals management will be implemented here
+                Custom learning roadmaps will be implemented here
               </p>
             </div>
           </div>
@@ -288,14 +369,20 @@ function DashboardContent() {
           </div>
         );
       
-      case 'activity':
+      case 'bookmarks':
         return (
           <div className="space-y-6">
-            <h2 className="text-xl font-semibold text-white">Recent Activity</h2>
+            <div className="flex justify-between items-center">
+              <h2 className="text-xl font-semibold text-white">Saved Resources</h2>
+              <div className="flex items-center space-x-2">
+                <Bookmark className="w-4 h-4 text-cyan-400" />
+                <span className="text-gray-400 text-sm">Unlimited</span>
+              </div>
+            </div>
             
             <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-6">
               <p className="text-gray-400 text-center">
-                Activity timeline will be implemented here
+                Bookmarked resources will be displayed here
               </p>
             </div>
           </div>
