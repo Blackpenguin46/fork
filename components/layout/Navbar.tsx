@@ -111,25 +111,24 @@ export default function Navbar() {
             </div>
           </Link>
 
-          {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center space-x-8">
-            {navigation.map((item) => (
-              <div key={item.name} className="relative group">
-                <Link
-                  href={user ? item.href : '/auth/register'}
-                  className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-all duration-300 ${
-                    isActivePath(item.href)
-                      ? 'text-cyber-cyan bg-slate-800/50'
-                      : 'text-slate-300 hover:text-cyber-cyan hover:bg-slate-800/30'
-                  }`}
-                >
-                  <item.icon className="h-4 w-4" />
-                  <span className="font-medium">{item.name}</span>
-                  {!user && <span className="text-xs text-slate-500 ml-1">(Sign up required)</span>}
-                </Link>
-                
-                {/* Dropdown Menu - Only for authenticated users */}
-                {user && (
+          {/* Desktop Navigation - Only show for authenticated users */}
+          {user && (
+            <div className="hidden lg:flex items-center space-x-8">
+              {navigation.map((item) => (
+                <div key={item.name} className="relative group">
+                  <Link
+                    href={item.href}
+                    className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-all duration-300 ${
+                      isActivePath(item.href)
+                        ? 'text-cyber-cyan bg-slate-800/50'
+                        : 'text-slate-300 hover:text-cyber-cyan hover:bg-slate-800/30'
+                    }`}
+                  >
+                    <item.icon className="h-4 w-4" />
+                    <span className="font-medium">{item.name}</span>
+                  </Link>
+                  
+                  {/* Dropdown Menu */}
                   <div className="absolute top-full left-0 mt-2 w-64 bg-slate-900/95 backdrop-blur-md border border-slate-700 rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300">
                     <div className="p-4">
                       <p className="text-sm text-slate-400 mb-3">{item.description}</p>
@@ -146,10 +145,10 @@ export default function Navbar() {
                       </div>
                     </div>
                   </div>
-                )}
-              </div>
-            ))}
-          </div>
+                </div>
+              ))}
+            </div>
+          )}
 
           {/* Right Side Actions */}
           <div className="hidden lg:flex items-center space-x-4">
@@ -231,10 +230,11 @@ export default function Navbar() {
         {isMobileMenuOpen && (
           <div className="lg:hidden fixed top-16 left-0 right-0 bg-slate-950/95 backdrop-blur-md border-t border-slate-800/50 shadow-xl z-40">
             <div className="px-4 pt-4 pb-6 space-y-2 max-h-[calc(100vh-4rem)] overflow-y-auto">
-              {navigation.map((item) => (
+              {/* Only show navigation items for authenticated users */}
+              {user && navigation.map((item) => (
                 <div key={item.name} className="space-y-1">
                   <Link
-                    href={user ? item.href : '/auth/register'}
+                    href={item.href}
                     onClick={() => setIsMobileMenuOpen(false)}
                     className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
                       isActivePath(item.href)
@@ -244,24 +244,21 @@ export default function Navbar() {
                   >
                     <item.icon className="h-5 w-5" />
                     <span>{item.name}</span>
-                    {!user && <span className="text-xs text-slate-500 ml-auto">(Sign up required)</span>}
                   </Link>
                   
-                  {/* Mobile Subcategories - Only for authenticated users */}
-                  {user && (
-                    <div className="ml-6 pl-4 border-l border-slate-700 space-y-1">
-                      {item.subcategories.map((sub) => (
-                        <Link
-                          key={sub.name}
-                          href={sub.href}
-                          onClick={() => setIsMobileMenuOpen(false)}
-                          className="block px-3 py-2 text-sm text-slate-300 hover:text-cyber-cyan hover:bg-slate-800/30 rounded-md transition-colors"
-                        >
-                          {sub.name}
-                        </Link>
-                      ))}
-                    </div>
-                  )}
+                  {/* Mobile Subcategories */}
+                  <div className="ml-6 pl-4 border-l border-slate-700 space-y-1">
+                    {item.subcategories.map((sub) => (
+                      <Link
+                        key={sub.name}
+                        href={sub.href}
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className="block px-3 py-2 text-sm text-slate-300 hover:text-cyber-cyan hover:bg-slate-800/30 rounded-md transition-colors"
+                      >
+                        {sub.name}
+                      </Link>
+                    ))}
+                  </div>
                 </div>
               ))}
               
