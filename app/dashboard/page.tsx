@@ -87,12 +87,12 @@ function DashboardContent() {
   useEffect(() => {
     if (verified === 'true' && autoLogin === 'true' && !user && !loading) {
       console.log('Auto-login flow: waiting for session detection...')
-      if (authCheckDelay < 5) {
-        // Wait longer for auto-login to establish session
+      if (authCheckDelay < 3) {
+        // Wait shorter time for auto-login to establish session
         setTimeout(() => setAuthCheckDelay(prev => prev + 1), 1000)
         return
       } else {
-        // If auto-login failed after 5 seconds, redirect to login
+        // If auto-login failed after 3 seconds, redirect to login
         console.log('Auto-login failed, redirecting to login page')
         window.location.href = '/auth/login?message=' + encodeURIComponent('Please sign in to access your account')
       }
@@ -100,7 +100,7 @@ function DashboardContent() {
   }, [verified, autoLogin, user, loading, authCheckDelay])
 
   // Show loading while auth is being determined or during auto-login flow
-  if (loading || (verified === 'true' && autoLogin === 'true' && !user && authCheckDelay < 5)) {
+  if (loading || (verified === 'true' && autoLogin === 'true' && !user && authCheckDelay < 3)) {
     const isAutoLogin = autoLogin === 'true'
     
     return (
@@ -118,7 +118,7 @@ function DashboardContent() {
               <>
                 <div>Email verified successfully! 🎉</div>
                 <div className="mt-2 text-sm">Logging you in automatically...</div>
-                <div className="mt-1 text-xs">({authCheckDelay}/5)</div>
+                <div className="mt-1 text-xs">({authCheckDelay}/3)</div>
               </>
             ) : (
               'Loading your dashboard...'
@@ -355,7 +355,7 @@ function DashboardContent() {
           <div className="flex items-start justify-between">
             <div>
               <h1 className="text-2xl font-bold text-white mb-2">
-                {getGreeting()}, {user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Cybersecurity Professional'}! 👋
+                {getGreeting()}, {user?.user_metadata?.username || user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Cybersecurity Professional'}! 👋
               </h1>
               <p className="text-gray-300">
                 Ready to continue your cybersecurity learning journey?

@@ -114,11 +114,12 @@ export function Providers({ children }: ProvidersProps) {
             sessionValid: !!(session?.access_token && session?.user)
           })
           
-          // Only set user if we have a valid session with access token
-          if (session?.access_token && session?.user) {
+          // Set user if we have a session with user data
+          if (session?.user) {
+            console.log('Setting user from session:', session.user.id)
             setUser(session.user)
           } else {
-            console.log('No valid session found, clearing user state')
+            console.log('No user in session, clearing user state')
             setUser(null)
           }
         }
@@ -142,17 +143,20 @@ export function Providers({ children }: ProvidersProps) {
           email: session?.user?.email 
         })
         
-        // Handle all auth state changes with strict validation
+        // Handle all auth state changes
         if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-          if (session?.access_token && session?.user) {
+          if (session?.user) {
+            console.log('Auth state change - setting user:', session.user.id)
             setUser(session.user)
           } else {
             setUser(null)
           }
         } else if (event === 'SIGNED_OUT') {
+          console.log('Auth state change - user signed out')
           setUser(null)
         } else if (event === 'INITIAL_SESSION') {
-          if (session?.access_token && session?.user) {
+          if (session?.user) {
+            console.log('Auth state change - initial session user:', session.user.id)
             setUser(session.user)
           } else {
             setUser(null)
