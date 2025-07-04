@@ -8,14 +8,12 @@ interface AuthContextType {
   user: User | null
   loading: boolean
   signOut: () => Promise<void>
-  refreshUser: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
   loading: true,
   signOut: async () => {},
-  refreshUser: async () => {},
 })
 
 export const useAuth = () => {
@@ -34,158 +32,75 @@ export function Providers({ children }: ProvidersProps) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
 
-  const refreshUser = async () => {
-    try {
-      if (!supabase) {
-        console.warn('Supabase not configured')
-        setUser(null)
-        return
-      }
-      
-      // First try to get session, then user
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession()
-      if (sessionError) {
-        console.error('Session error in refresh:', sessionError)
-      }
-      
-      if (session?.user) {
-        console.log('Refreshed user from session:', session.user.id)
-        setUser(session.user)
-      } else {
-        const { data: { user }, error: userError } = await supabase.auth.getUser()
-        if (userError) {
-          console.error('User error in refresh:', userError)
-        }
-        console.log('Refreshed user directly:', user?.id || 'none')
-        setUser(user)
-      }
-    } catch (error) {
-      console.error('Error refreshing user:', error)
-      setUser(null)
-    } finally {
-      setLoading(false)
-    }
-  }
-
   const signOut = async () => {
     try {
-      if (!supabase) {
-        console.warn('Supabase not configured')
-        setUser(null)
-        return
+      if (supabase) {
+        await supabase.auth.signOut()
       }
-      await supabase.auth.signOut()
       setUser(null)
+      
+      // Clear any browser storage
+      if (typeof window !== 'undefined') {
+        localStorage.clear()
+        sessionStorage.clear()
+      }
     } catch (error) {
       console.error('Error signing out:', error)
     }
   }
 
   useEffect(() => {
-    // Check if supabase is configured
+    // If Supabase is not configured, just set loading to false
     if (!supabase) {
-      console.warn('Supabase not configured - auth functionality disabled')
+      console.warn('Supabase not configured')
       setLoading(false)
       return
     }
 
-    // Get initial session first
-    const getInitialSession = async () => {
+    // Simple session check
+    const checkSession = async () => {
       try {
-        if (!supabase) {
-          console.log('Supabase not available in auth provider')
-          setUser(null)
-          setLoading(false)
-          return
-        }
+        const { data: { session } } = await supabase!.auth.getSession()
         
-        console.log('Getting initial session...')
-        const { data: { session }, error } = await supabase.auth.getSession()
+        console.log('Session check:', {
+          hasSession: !!session,
+          hasUser: !!session?.user,
+          emailConfirmed: !!session?.user?.email_confirmed_at
+        })
         
-        if (error) {
-          console.error('Session error:', error)
-          setUser(null)
+        // Only set user if they have a confirmed email
+        if (session?.user?.email_confirmed_at) {
+          setUser(session.user)
         } else {
-          console.log('Initial session:', { 
-            hasUser: !!session?.user, 
-            userId: session?.user?.id,
-            email: session?.user?.email,
-            emailConfirmed: session?.user?.email_confirmed_at,
-            sessionValid: !!(session?.access_token && session?.user)
-          })
-          
-          // Only allow confirmed users
-          if (session?.user && session?.user?.email_confirmed_at) {
-            console.log('Setting confirmed user from session:', session.user.id)
-            setUser(session.user)
-          } else if (session?.user && !session?.user?.email_confirmed_at) {
-            console.log('User exists but email not confirmed, signing out and clearing storage')
-            await supabase.auth.signOut()
-            // Clear any lingering browser storage
-            if (typeof window !== 'undefined') {
-              // Clear all supabase-related items from localStorage
-              Object.keys(localStorage).forEach(key => {
-                if (key.startsWith('sb-')) {
-                  localStorage.removeItem(key)
-                }
-              })
-              sessionStorage.clear()
-            }
-            setUser(null)
-          } else {
-            console.log('No valid session, clearing user state and any stale storage')
-            // Aggressively clear any stale auth data
-            if (typeof window !== 'undefined') {
-              Object.keys(localStorage).forEach(key => {
-                if (key.startsWith('sb-')) {
-                  localStorage.removeItem(key)
-                }
-              })
-            }
-            setUser(null)
+          setUser(null)
+          // Clear any partial sessions
+          if (session) {
+            await supabase!.auth.signOut()
           }
         }
       } catch (error) {
-        console.error('Error getting initial session:', error)
+        console.error('Session check error:', error)
         setUser(null)
       } finally {
         setLoading(false)
       }
     }
 
-    getInitialSession()
+    checkSession()
 
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event: any, session: any) => {
-        console.log('Auth state change:', { 
-          event, 
-          hasUser: !!session?.user, 
-          userId: session?.user?.id,
-          email: session?.user?.email 
-        })
+    const { data: { subscription } } = supabase!.auth.onAuthStateChange(
+      async (event, session) => {
+        console.log('Auth state change:', event, !!session?.user)
         
-        // Handle all auth state changes - only allow confirmed users
-        if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-          if (session?.user && session?.user?.email_confirmed_at) {
-            console.log('Auth state change - setting confirmed user:', session.user.id)
-            setUser(session.user)
-          } else {
-            console.log('Auth state change - no confirmed user')
-            setUser(null)
-          }
-        } else if (event === 'SIGNED_OUT') {
-          console.log('Auth state change - user signed out')
+        if (event === 'SIGNED_OUT') {
           setUser(null)
-        } else if (event === 'INITIAL_SESSION') {
-          if (session?.user && session?.user?.email_confirmed_at) {
-            console.log('Auth state change - initial session confirmed user:', session.user.id)
-            setUser(session.user)
-          } else {
-            console.log('Auth state change - no confirmed initial session user')
-            setUser(null)
-          }
+        } else if (session?.user?.email_confirmed_at) {
+          setUser(session.user)
+        } else {
+          setUser(null)
         }
+        
         setLoading(false)
       }
     )
@@ -193,42 +108,10 @@ export function Providers({ children }: ProvidersProps) {
     return () => subscription.unsubscribe()
   }, [])
 
-  // Force clear any invalid sessions on app start
-  useEffect(() => {
-    const forceCleanup = async () => {
-      if (!supabase || loading) return
-      
-      try {
-        const { data: { session } } = await supabase.auth.getSession()
-        
-        // If we have a session but no confirmed email, force sign out
-        if (session?.user && !session.user.email_confirmed_at) {
-          console.log('Force clearing unconfirmed session on app start')
-          await supabase.auth.signOut()
-          
-          if (typeof window !== 'undefined') {
-            Object.keys(localStorage).forEach(key => {
-              if (key.startsWith('sb-')) {
-                localStorage.removeItem(key)
-              }
-            })
-            sessionStorage.clear()
-          }
-        }
-      } catch (error) {
-        console.error('Error in force cleanup:', error)
-      }
-    }
-
-    // Run cleanup after initial load
-    setTimeout(forceCleanup, 100)
-  }, [])
-
   const value = {
     user,
     loading,
     signOut,
-    refreshUser,
   }
 
   return (

@@ -7,8 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { loginUser, resendConfirmation } from '@/lib/auth/supabase-auth'
-import { validateLoginForm, ValidationError } from '@/lib/auth/validation'
+import { loginUser } from '@/lib/auth/simple-auth'
 import { Shield, Mail, Lock, Eye, EyeOff, Loader2 } from 'lucide-react'
 
 function LoginContent() {
@@ -20,108 +19,37 @@ function LoginContent() {
   })
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
-  const [errors, setErrors] = useState<ValidationError[]>([])
-  const [submitError, setSubmitError] = useState('')
-  const [rememberMe, setRememberMe] = useState(false)
-  const [showResendVerification, setShowResendVerification] = useState(false)
-  const [resendLoading, setResendLoading] = useState(false)
-  const [resendSuccess, setResendSuccess] = useState(false)
+  const [error, setError] = useState('')
+  const [message, setMessage] = useState('')
 
-  // Check for error messages from URL params (from auth callback)
+  // Check for messages from URL params
   useEffect(() => {
-    const error = searchParams.get('error')
-    const message = searchParams.get('message')
+    const urlError = searchParams.get('error')
+    const urlMessage = searchParams.get('message')
     
-    if (error) {
-      let errorMessage = 'An error occurred during authentication.'
-      
-      switch (error) {
-        case 'auth_error':
-          errorMessage = message ? decodeURIComponent(message) : 'Authentication failed. Please try again.'
-          break
-        case 'callback_error':
-          errorMessage = 'Authentication callback failed. Please try again.'
-          break
-        case 'no_code':
-          errorMessage = 'Invalid authentication link. Please try again.'
-          break
-        default:
-          errorMessage = message ? decodeURIComponent(message) : 'An unexpected error occurred.'
-      }
-      
-      setSubmitError(errorMessage)
+    if (urlError) {
+      setError(decodeURIComponent(urlError))
+    }
+    if (urlMessage) {
+      setMessage(decodeURIComponent(urlMessage))
     }
   }, [searchParams])
-
-  const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }))
-    // Clear field-specific errors when user starts typing
-    setErrors(prev => prev.filter(error => error.field !== field))
-    setSubmitError('')
-  }
-
-  const getFieldError = (field: string) => {
-    return errors.find(error => error.field === field)?.message
-  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
-    setErrors([])
-    setSubmitError('')
+    setError('')
 
-    // Validate form
-    const validation = validateLoginForm(formData)
-    if (!validation.isValid) {
-      setErrors(validation.errors)
-      setLoading(false)
-      return
-    }
-
-    // Submit login
-    const result = await loginUser(formData)
+    const result = await loginUser(formData.email, formData.password)
     
     if (result.success) {
-      // Small delay to ensure session is established
-      await new Promise(resolve => setTimeout(resolve, 500))
-      
-      // Redirect to dashboard or intended page
-      const redirectTo = new URLSearchParams(window.location.search).get('redirect') || '/dashboard'
-      router.push(redirectTo)
-      router.refresh() // Ensure the page refreshes to update auth state
+      const redirect = searchParams.get('redirect') || '/dashboard'
+      router.push(redirect)
     } else {
-      const errorMessage = result.error || 'Login failed. Please try again.'
-      setSubmitError(errorMessage)
-      
-      // Show resend verification option if it's an email confirmation issue
-      if (errorMessage.includes('email') || errorMessage.includes('confirm') || errorMessage.includes('verify')) {
-        setShowResendVerification(true)
-      }
+      setError(result.error || 'Login failed')
     }
     
     setLoading(false)
-  }
-
-  const handleResendVerification = async () => {
-    if (!formData.email) {
-      setSubmitError('Please enter your email address first.')
-      return
-    }
-
-    setResendLoading(true)
-    setResendSuccess(false)
-
-    const result = await resendConfirmation(formData.email)
-    
-    if (result.success) {
-      setResendSuccess(true)
-      setShowResendVerification(false)
-      setSubmitError('')
-    } else {
-      setSubmitError(result.error || 'Failed to resend verification email. Please try again.')
-    }
-    
-    setResendLoading(false)
   }
 
   return (
@@ -143,128 +71,77 @@ function LoginContent() {
 
         {/* Form */}
         <div className="cyber-card">
-          {submitError && (
+          {error && (
             <Alert variant="destructive" className="mb-6">
-              <AlertDescription>{submitError}</AlertDescription>
+              <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
 
-          {resendSuccess && (
+          {message && (
             <Alert variant="default" className="mb-6 border-green-500/30 bg-green-500/10">
               <AlertDescription className="text-green-400">
-                Verification email sent! Please check your inbox and click the link to verify your account.
-              </AlertDescription>
-            </Alert>
-          )}
-
-          {showResendVerification && (
-            <Alert variant="default" className="mb-6 border-blue-500/30 bg-blue-500/10">
-              <AlertDescription className="text-blue-400">
-                Need to verify your email? 
-                <Button
-                  type="button"
-                  variant="link"
-                  onClick={handleResendVerification}
-                  disabled={resendLoading}
-                  className="p-0 ml-2 h-auto text-blue-400 hover:text-blue-300"
-                >
-                  {resendLoading ? 'Sending...' : 'Resend verification email'}
-                </Button>
+                {message}
               </AlertDescription>
             </Alert>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Email */}
+            {/* Email Field */}
             <div>
-              <Label htmlFor="email" className="flex items-center text-slate-200">
-                <Mail className="h-4 w-4 mr-2" />
+              <Label htmlFor="email" className="text-white">
                 Email Address
               </Label>
-              <Input
-                id="email"
-                type="email"
-                autoComplete="email"
-                value={formData.email}
-                onChange={(e) => handleInputChange('email', e.target.value)}
-                placeholder="your.email@example.com"
-                className={getFieldError('email') ? 'border-red-500' : ''}
-                disabled={loading}
-              />
-              {getFieldError('email') && (
-                <p className="mt-1 text-sm text-red-400">{getFieldError('email')}</p>
-              )}
+              <div className="mt-1 relative">
+                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 h-5 w-5" />
+                <Input
+                  id="email"
+                  name="email"
+                  type="email"
+                  required
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  className="pl-10 cyber-input"
+                  placeholder="Enter your email"
+                />
+              </div>
             </div>
 
-            {/* Password */}
+            {/* Password Field */}
             <div>
-              <Label htmlFor="password" className="flex items-center text-slate-200">
-                <Lock className="h-4 w-4 mr-2" />
+              <Label htmlFor="password" className="text-white">
                 Password
               </Label>
-              <div className="relative">
+              <div className="mt-1 relative">
+                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 h-5 w-5" />
                 <Input
                   id="password"
+                  name="password"
                   type={showPassword ? 'text' : 'password'}
-                  autoComplete="current-password"
+                  required
                   value={formData.password}
-                  onChange={(e) => handleInputChange('password', e.target.value)}
+                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                  className="pl-10 pr-10 cyber-input"
                   placeholder="Enter your password"
-                  className={`pr-10 ${getFieldError('password') ? 'border-red-500' : ''}`}
-                  disabled={loading}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-300"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-white"
                 >
-                  {showPassword ? (
-                    <EyeOff className="h-4 w-4" />
-                  ) : (
-                    <Eye className="h-4 w-4" />
-                  )}
+                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                 </button>
-              </div>
-              {getFieldError('password') && (
-                <p className="mt-1 text-sm text-red-400">{getFieldError('password')}</p>
-              )}
-            </div>
-
-            {/* Remember Me & Forgot Password */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <input
-                  id="remember-me"
-                  name="remember-me"
-                  type="checkbox"
-                  checked={rememberMe}
-                  onChange={(e) => setRememberMe(e.target.checked)}
-                  className="h-4 w-4 text-cyber-cyan focus:ring-cyber-cyan border-slate-600 rounded bg-slate-800"
-                />
-                <Label htmlFor="remember-me" className="ml-2 text-sm text-slate-400">
-                  Remember me
-                </Label>
-              </div>
-
-              <div className="text-sm">
-                <Link
-                  href="/auth/forgot-password"
-                  className="text-cyber-cyan hover:text-cyber-magenta transition-colors"
-                >
-                  Forgot your password?
-                </Link>
               </div>
             </div>
 
             {/* Submit Button */}
             <Button
               type="submit"
-              className="w-full cyber-button"
               disabled={loading}
+              className="w-full cyber-button text-lg py-3"
             >
               {loading ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <Loader2 className="w-5 h-5 mr-2 animate-spin" />
                   Signing In...
                 </>
               ) : (
@@ -273,42 +150,27 @@ function LoginContent() {
             </Button>
           </form>
 
-          {/* Divider */}
-          <div className="mt-6">
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-slate-700" />
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-slate-900 text-slate-400">Don&apos;t have an account?</span>
-              </div>
+          {/* Footer Links */}
+          <div className="mt-6 space-y-4">
+            <div className="text-center">
+              <Link
+                href="/auth/forgot-password"
+                className="text-sm text-cyber-cyan hover:text-cyber-magenta transition-colors"
+              >
+                Forgot your password?
+              </Link>
+            </div>
+            
+            <div className="text-center text-sm text-slate-400">
+              Don&apos;t have an account?{' '}
+              <Link
+                href="/auth/register"
+                className="text-cyber-cyan hover:text-cyber-magenta transition-colors font-medium"
+              >
+                Sign up here
+              </Link>
             </div>
           </div>
-
-          {/* Footer */}
-          <div className="mt-6 text-center">
-            <Link href="/auth/register">
-              <Button variant="outline" className="w-full border-slate-600 text-slate-300 hover:border-cyber-cyan hover:text-cyber-cyan">
-                Create Account
-              </Button>
-            </Link>
-          </div>
-        </div>
-
-        {/* Additional Links */}
-        <div className="text-center space-y-2">
-          <p className="text-xs text-slate-500">
-            Having trouble signing in?{' '}
-            <Link href="/contact" className="text-cyber-cyan hover:underline">
-              Contact Support
-            </Link>
-          </p>
-          <p className="text-xs text-slate-500">
-            New to cybersecurity?{' '}
-            <Link href="/academy" className="text-cyber-cyan hover:underline">
-              Start Learning
-            </Link>
-          </p>
         </div>
       </div>
     </div>
@@ -319,7 +181,7 @@ export default function LoginPage() {
   return (
     <Suspense fallback={
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-pulse">Loading...</div>
+        <Loader2 className="w-8 h-8 animate-spin text-cyber-cyan" />
       </div>
     }>
       <LoginContent />
