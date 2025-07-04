@@ -76,40 +76,10 @@ function DashboardContent() {
   const router = useRouter();
   const searchParams = useSearchParams()
   const message = searchParams.get('message')
-  const verified = searchParams.get('verified')
-  const autoLogin = searchParams.get('auto_login')
   const [activeTab, setActiveTab] = useState('overview');
-  const [authCheckDelay, setAuthCheckDelay] = useState(0)
 
-  // Debug logging
-  console.log('Dashboard auth state:', { 
-    user: user?.id, 
-    loading, 
-    verified, 
-    autoLogin,
-    authCheckDelay 
-  })
-
-  // Handle auto-login after email verification
-  useEffect(() => {
-    if (verified === 'true' && autoLogin === 'true' && !user && !loading) {
-      console.log('Auto-login flow: waiting for session detection...')
-      if (authCheckDelay < 3) {
-        // Wait shorter time for auto-login to establish session
-        setTimeout(() => setAuthCheckDelay(prev => prev + 1), 1000)
-        return
-      } else {
-        // If auto-login failed after 3 seconds, redirect to login
-        console.log('Auto-login failed, redirecting to login page')
-        window.location.href = '/auth/login?message=' + encodeURIComponent('Please sign in to access your account')
-      }
-    }
-  }, [verified, autoLogin, user, loading, authCheckDelay])
-
-  // Show loading while auth is being determined or during auto-login flow
-  if (loading || (verified === 'true' && autoLogin === 'true' && !user && authCheckDelay < 3)) {
-    const isAutoLogin = autoLogin === 'true'
-    
+  // Show loading while auth is being determined
+  if (loading || subscriptionLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-deep-space-blue">
         <div className="text-center">
@@ -120,17 +90,7 @@ function DashboardContent() {
               <div className="h-4 bg-slate-700 rounded w-32"></div>
             </div>
           </div>
-          <div className="text-gray-400">
-            {isAutoLogin ? (
-              <>
-                <div>Email verified successfully! 🎉</div>
-                <div className="mt-2 text-sm">Logging you in automatically...</div>
-                <div className="mt-1 text-xs">({authCheckDelay}/3)</div>
-              </>
-            ) : (
-              'Loading your dashboard...'
-            )}
-          </div>
+          <div className="text-gray-400">Loading your dashboard...</div>
         </div>
       </div>
     )
@@ -410,28 +370,6 @@ function DashboardContent() {
           </Alert>
         )}
 
-        {/* Email Verification Success */}
-        {verified === 'true' && (
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mb-6 p-4 bg-gradient-to-r from-green-500/10 to-emerald-500/10 border border-green-500/30 rounded-xl"
-          >
-            <div className="flex items-center space-x-3">
-              <div className="flex-shrink-0">
-                <CheckCircle className="h-6 w-6 text-green-400" />
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold text-white">
-                  Welcome to Cybernex Academy! 🎉
-                </h3>
-                <p className="text-green-300 text-sm">
-                  Your email has been verified successfully. You now have full access to all our cybersecurity learning resources.
-                </p>
-              </div>
-            </div>
-          </motion.div>
-        )}
 
         {/* Welcome Message */}
         <motion.div

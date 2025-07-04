@@ -46,11 +46,11 @@ export async function GET(request: NextRequest) {
           accessToken: !!data.session.access_token
         })
         
-        // Email verification successful - user should be auto-logged in
-        // Redirect to dashboard with verified flag for smooth UX
-        const response = NextResponse.redirect(`${requestUrl.origin}/dashboard?verified=true&auto_login=true`)
+        // Email verification successful - redirect to login page for clean authentication
+        // Sign out the user to prevent any session confusion
+        await supabase.auth.signOut()
         
-        // Ensure session cookies are properly set for auto-login
+        const response = NextResponse.redirect(`${requestUrl.origin}/auth/login?message=${encodeURIComponent('Email verified successfully! Please sign in to access your account.')}`)
         return response
       } else {
         console.log('No user or session in callback data:', { user: !!data.user, session: !!data.session })

@@ -65,14 +65,6 @@ export async function middleware(req: NextRequest) {
 
     // If accessing content or protected routes without session, redirect to login
     if ((isContentRoute || isProtectedRoute) && !session) {
-      // Special case: allow dashboard access for auto-login flow after email verification
-      if (pathname === '/dashboard' && 
-          req.nextUrl.searchParams.get('verified') === 'true' && 
-          req.nextUrl.searchParams.get('auto_login') === 'true') {
-        console.log('Allowing dashboard access for auto-login flow after email verification')
-        return res
-      }
-      
       console.log('Redirecting to login - no session for content/protected route:', pathname)
       const redirectUrl = new URL('/auth/login', req.url)
       redirectUrl.searchParams.set('redirect', pathname)

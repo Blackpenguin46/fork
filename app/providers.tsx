@@ -114,15 +114,9 @@ export function Providers({ children }: ProvidersProps) {
             sessionValid: !!(session?.access_token && session?.user)
           })
           
-          // Strict validation: only allow confirmed users or auto-login flow
-          const isAutoLoginFlow = typeof window !== 'undefined' && 
-                                 new URLSearchParams(window.location.search).get('auto_login') === 'true'
-          
+          // Only allow confirmed users
           if (session?.user && session?.user?.email_confirmed_at) {
             console.log('Setting confirmed user from session:', session.user.id)
-            setUser(session.user)
-          } else if (session?.user && isAutoLoginFlow) {
-            console.log('Setting user from auto-login flow:', session.user.id)
             setUser(session.user)
           } else if (session?.user && !session?.user?.email_confirmed_at) {
             console.log('User exists but email not confirmed, signing out and clearing storage')
@@ -163,13 +157,10 @@ export function Providers({ children }: ProvidersProps) {
           email: session?.user?.email 
         })
         
-        // Handle all auth state changes - allow auto-login flow
-        const isAutoLoginFlow = typeof window !== 'undefined' && 
-                               new URLSearchParams(window.location.search).get('auto_login') === 'true'
-        
+        // Handle all auth state changes - only allow confirmed users
         if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-          if (session?.user && (session?.user?.email_confirmed_at || isAutoLoginFlow)) {
-            console.log('Auth state change - setting user:', session.user.id)
+          if (session?.user && session?.user?.email_confirmed_at) {
+            console.log('Auth state change - setting confirmed user:', session.user.id)
             setUser(session.user)
           } else {
             console.log('Auth state change - no confirmed user')
@@ -179,8 +170,8 @@ export function Providers({ children }: ProvidersProps) {
           console.log('Auth state change - user signed out')
           setUser(null)
         } else if (event === 'INITIAL_SESSION') {
-          if (session?.user && (session?.user?.email_confirmed_at || isAutoLoginFlow)) {
-            console.log('Auth state change - initial session user:', session.user.id)
+          if (session?.user && session?.user?.email_confirmed_at) {
+            console.log('Auth state change - initial session confirmed user:', session.user.id)
             setUser(session.user)
           } else {
             console.log('Auth state change - no confirmed initial session user')
