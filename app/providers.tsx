@@ -57,12 +57,25 @@ export function Providers({ children }: ProvidersProps) {
       return
     }
 
-    // Simple session check
-    const checkSession = async () => {
+    // Force clear any invalid sessions on startup
+    const forceCleanStart = async () => {
       try {
+        // Always start fresh - sign out any existing sessions
+        await supabase!.auth.signOut()
+        
+        // Clear all browser storage
+        if (typeof window !== 'undefined') {
+          localStorage.clear()
+          sessionStorage.clear()
+        }
+        
+        // Small delay to ensure cleanup
+        await new Promise(resolve => setTimeout(resolve, 100))
+        
+        // Now check for valid session
         const { data: { session } } = await supabase!.auth.getSession()
         
-        console.log('Session check:', {
+        console.log('Fresh session check:', {
           hasSession: !!session,
           hasUser: !!session?.user,
           emailConfirmed: !!session?.user?.email_confirmed_at
@@ -73,20 +86,16 @@ export function Providers({ children }: ProvidersProps) {
           setUser(session.user)
         } else {
           setUser(null)
-          // Clear any partial sessions
-          if (session) {
-            await supabase!.auth.signOut()
-          }
         }
       } catch (error) {
-        console.error('Session check error:', error)
+        console.error('Session cleanup error:', error)
         setUser(null)
       } finally {
         setLoading(false)
       }
     }
 
-    checkSession()
+    forceCleanStart()
 
     // Listen for auth changes
     const { data: { subscription } } = supabase!.auth.onAuthStateChange(
