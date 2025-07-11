@@ -1,6 +1,8 @@
-import { Metadata } from 'next'
+'use client'
+
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
+import { useAuth } from '@/app/providers'
 import { 
   Shield, 
   Users, 
@@ -12,21 +14,13 @@ import {
   Play,
   BookOpen,
   Award,
-  Globe
+  Globe,
+  User
 } from 'lucide-react'
 
-export const metadata: Metadata = {
-  title: 'Cybernex Academy - Master Cybersecurity Skills | Premier Learning Platform',
-  description: 'Join 50,000+ cybersecurity professionals at Cybernex Academy. Access premium courses, expert communities, and latest threat intelligence. Start your cybersecurity journey today.',
-  keywords: ['cybersecurity training', 'ethical hacking courses', 'penetration testing', 'cybersecurity certification', 'infosec learning'],
-  openGraph: {
-    title: 'Cybernex Academy - Master Cybersecurity Skills',
-    description: 'Join 50,000+ cybersecurity professionals. Premium courses, expert communities, latest threat intelligence.',
-    images: ['/og-home.png'],
-  },
-}
 
 export default function HomePage() {
+  const { user, loading } = useAuth()
   const features = [
     {
       icon: Users,
@@ -103,18 +97,42 @@ export default function HomePage() {
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-              <Link href="/auth/register">
-                <Button size="lg" className="cyber-button text-lg px-8 py-4">
-                  Start Learning Free
-                  <ArrowRight className="ml-2 h-5 w-5" />
-                </Button>
-              </Link>
-              <Link href="/academy">
-                <Button variant="outline" size="lg" className="text-lg px-8 py-4 border-slate-600 text-slate-300 hover:border-cyber-cyan hover:text-cyber-cyan">
-                  <Play className="mr-2 h-5 w-5" />
-                  Explore Academy
-                </Button>
-              </Link>
+              {loading ? (
+                <div className="animate-pulse flex gap-4">
+                  <div className="h-12 w-48 bg-slate-700 rounded-lg"></div>
+                  <div className="h-12 w-48 bg-slate-700 rounded-lg"></div>
+                </div>
+              ) : user ? (
+                <>
+                  <Link href="/dashboard">
+                    <Button size="lg" className="cyber-button text-lg px-8 py-4">
+                      <User className="mr-2 h-5 w-5" />
+                      Go to Dashboard
+                    </Button>
+                  </Link>
+                  <Link href="/academy">
+                    <Button variant="outline" size="lg" className="text-lg px-8 py-4 border-slate-600 text-slate-300 hover:border-cyber-cyan hover:text-cyber-cyan">
+                      <Play className="mr-2 h-5 w-5" />
+                      Explore Academy
+                    </Button>
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <Link href="/auth/register">
+                    <Button size="lg" className="cyber-button text-lg px-8 py-4">
+                      Start Learning Free
+                      <ArrowRight className="ml-2 h-5 w-5" />
+                    </Button>
+                  </Link>
+                  <Link href="/academy">
+                    <Button variant="outline" size="lg" className="text-lg px-8 py-4 border-slate-600 text-slate-300 hover:border-cyber-cyan hover:text-cyber-cyan">
+                      <Play className="mr-2 h-5 w-5" />
+                      Explore Academy
+                    </Button>
+                  </Link>
+                </>
+              )}
             </div>
 
             {/* Trust Indicators */}
@@ -210,11 +228,20 @@ export default function HomePage() {
                 ))}
               </ul>
               
-              <Link href="/auth/register">
-                <Button className="w-full" variant="outline">
-                  Get Started Free
-                </Button>
-              </Link>
+              {user ? (
+                <Link href="/dashboard">
+                  <Button className="w-full" variant="outline">
+                    <User className="mr-2 h-4 w-4" />
+                    Go to Dashboard
+                  </Button>
+                </Link>
+              ) : (
+                <Link href="/auth/register">
+                  <Button className="w-full" variant="outline">
+                    Get Started Free
+                  </Button>
+                </Link>
+              )}
             </div>
 
             {/* Pro Plan */}
@@ -249,12 +276,21 @@ export default function HomePage() {
                 ))}
               </ul>
               
-              <Link href="/auth/register">
-                <Button className="w-full cyber-button">
-                  Start Pro Trial
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </Link>
+              {user ? (
+                <Link href="/pricing">
+                  <Button className="w-full cyber-button">
+                    Upgrade to Pro
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </Link>
+              ) : (
+                <Link href="/auth/register">
+                  <Button className="w-full cyber-button">
+                    Start Pro Trial
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </Link>
+              )}
             </div>
           </div>
         </div>
@@ -306,17 +342,35 @@ export default function HomePage() {
               Join thousands of professionals who have advanced their careers with Cybernex Academy
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/auth/register">
-                <Button size="lg" className="cyber-button text-lg px-8 py-4">
-                  Start Your Journey
-                  <ArrowRight className="ml-2 h-5 w-5" />
-                </Button>
-              </Link>
-              <Link href="/contact">
-                <Button variant="outline" size="lg" className="text-lg px-8 py-4 border-slate-600 text-slate-300 hover:border-cyber-cyan hover:text-cyber-cyan">
-                  Contact Sales
-                </Button>
-              </Link>
+              {user ? (
+                <>
+                  <Link href="/dashboard">
+                    <Button size="lg" className="cyber-button text-lg px-8 py-4">
+                      <User className="mr-2 h-5 w-5" />
+                      Go to Dashboard
+                    </Button>
+                  </Link>
+                  <Link href="/pricing">
+                    <Button variant="outline" size="lg" className="text-lg px-8 py-4 border-slate-600 text-slate-300 hover:border-cyber-cyan hover:text-cyber-cyan">
+                      Upgrade to Pro
+                    </Button>
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <Link href="/auth/register">
+                    <Button size="lg" className="cyber-button text-lg px-8 py-4">
+                      Start Your Journey
+                      <ArrowRight className="ml-2 h-5 w-5" />
+                    </Button>
+                  </Link>
+                  <Link href="/contact">
+                    <Button variant="outline" size="lg" className="text-lg px-8 py-4 border-slate-600 text-slate-300 hover:border-cyber-cyan hover:text-cyber-cyan">
+                      Contact Sales
+                    </Button>
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         </div>
