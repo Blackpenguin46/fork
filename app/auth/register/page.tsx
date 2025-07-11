@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { registerUser } from '@/lib/auth/simple-auth'
+import { AuthService } from '@/lib/services/auth'
 import { validateRegistrationForm, ValidationError } from '@/lib/auth/validation'
 import { Shield, User, Mail, Lock, AtSign, Eye, EyeOff, Loader2, CheckCircle } from 'lucide-react'
 import PasswordStrengthIndicator from '@/components/auth/PasswordStrengthIndicator'
@@ -54,13 +54,22 @@ export default function RegisterPage() {
     }
 
     // Submit registration
-    const result = await registerUser(formData)
+    const result = await AuthService.register({
+      email: formData.email,
+      password: formData.password,
+      username: formData.username,
+      full_name: formData.fullName
+    })
     
     if (result.success) {
       setSuccess(true)
-      // Redirect to verification page after 3 seconds
+      // Redirect based on whether verification is needed
       setTimeout(() => {
-        router.push('/auth/verify-email')
+        if (result.data?.needsVerification) {
+          router.push(`/auth/verify-email?email=${encodeURIComponent(formData.email)}`)
+        } else {
+          router.push('/auth/login?message=Registration successful! You can now sign in.')
+        }
       }, 3000)
     } else {
       setSubmitError(result.error || 'Registration failed. Please try again.')

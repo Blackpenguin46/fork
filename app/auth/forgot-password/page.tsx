@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { resetPassword } from '@/lib/auth/supabase-auth'
+import { AuthService } from '@/lib/services/auth'
 import { validateEmail } from '@/lib/auth/validation'
 import { Shield, Mail, ArrowLeft, Loader2, CheckCircle } from 'lucide-react'
 
@@ -30,7 +30,7 @@ export default function ForgotPasswordPage() {
     }
 
     // Submit password reset request
-    const result = await resetPassword(email)
+    const result = await AuthService.resetPassword(email)
     
     if (result.success) {
       setSuccess(true)

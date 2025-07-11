@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { resendConfirmation } from '@/lib/auth/supabase-auth'
+import { AuthService } from '@/lib/services/auth'
 import { validateEmail } from '@/lib/auth/validation'
 import { Shield, Mail, CheckCircle, Loader2, RefreshCw } from 'lucide-react'
 
@@ -59,7 +59,7 @@ function VerifyEmailContent() {
     }
 
     // Resend confirmation email
-    const result = await resendConfirmation(email)
+    const result = await AuthService.resendVerification(email)
     
     if (result.success) {
       setSuccess(true)

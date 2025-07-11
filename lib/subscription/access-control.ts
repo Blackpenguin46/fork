@@ -1,16 +1,13 @@
 import { User } from '@supabase/supabase-js'
-import { supabase } from '@/lib/supabase'
+import { ProfilesService } from '@/lib/services/profiles'
+import type { Profile } from '@/lib/types/database'
 
 export type SubscriptionTier = 'free' | 'pro'
 export type SubscriptionStatus = 'active' | 'canceled' | 'past_due' | 'trialing'
 
-export interface UserProfile {
-  id: string
-  email: string
-  username?: string
-  full_name?: string
-  subscription_tier: SubscriptionTier
-  subscription_status: SubscriptionStatus
+// Using the Profile type from database types, extending with subscription status
+export interface UserProfile extends Profile {
+  subscription_status?: SubscriptionStatus
   stripe_customer_id?: string
   stripe_subscription_id?: string
 }
@@ -34,24 +31,20 @@ export interface AccessLevel {
  * Get user's subscription tier and status from database
  */
 export async function getUserProfile(userId: string): Promise<UserProfile | null> {
-  if (!supabase) {
-    console.warn('Supabase not configured')
-    return null
-  }
-
   try {
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('id, email, username, full_name, subscription_tier, subscription_status, stripe_customer_id, stripe_subscription_id')
-      .eq('id', userId)
-      .single()
-
-    if (error) {
-      console.error('Error fetching user profile:', error)
+    const result = await ProfilesService.getProfile(userId)
+    
+    if (!result.success || !result.data) {
+      console.warn('User profile not found:', result.error)
       return null
     }
 
-    return data as UserProfile
+    // For now, assume active subscription status if user has profile
+    // This will be enhanced when subscription table is used
+    return {
+      ...result.data,
+      subscription_status: 'active'
+    } as UserProfile
   } catch (error) {
     console.error('Error in getUserProfile:', error)
     return null
@@ -118,7 +111,7 @@ export async function checkUserAccess(user: User, feature: keyof AccessLevel): P
   const profile = await getUserProfile(user.id)
   if (!profile) return false
 
-  const accessLevel = getAccessLevel(profile.subscription_tier, profile.subscription_status)
+  const accessLevel = getAccessLevel(profile.subscription_tier, profile.subscription_status || 'active')
   return accessLevel[feature] as boolean
 }
 
@@ -131,7 +124,7 @@ export async function getUserAccessLevel(user: User): Promise<AccessLevel | null
   const profile = await getUserProfile(user.id)
   if (!profile) return null
 
-  return getAccessLevel(profile.subscription_tier, profile.subscription_status)
+  return getAccessLevel(profile.subscription_tier, profile.subscription_status || 'active')
 }
 
 /**

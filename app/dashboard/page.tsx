@@ -33,7 +33,7 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import { useSearchParams, useRouter } from 'next/navigation'
-import ProgressOverview from '@/components/dashboard/ProgressOverview';
+import ProgressOverview from '@/components/dashboard/SimpleProgressOverview';
 
 interface TabProps {
   id: string;
@@ -221,18 +221,20 @@ function DashboardContent() {
     color
   }) => {
     return (
-      <motion.button
-        whileHover={{ scale: 1.02 }}
-        whileTap={{ scale: 0.98 }}
+      <button
         onClick={() => router.push(href)}
-        className={`p-6 bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-xl hover:border-${color}-500/50 transition-colors text-left w-full`}
+        className={`p-4 bg-gray-800/50 border border-gray-700 rounded-lg hover:border-${color}-500/50 transition-all duration-200 text-left w-full group`}
       >
-        <div className={`p-3 bg-${color}-500/10 rounded-lg w-fit mb-4 text-${color}-400`}>
-          {icon}
+        <div className="flex items-center space-x-3">
+          <div className={`p-2 bg-${color}-500/10 rounded-lg text-${color}-400`}>
+            {icon}
+          </div>
+          <div>
+            <h3 className="text-white font-medium group-hover:text-${color}-400 transition-colors">{title}</h3>
+            <p className="text-gray-400 text-sm">{description}</p>
+          </div>
         </div>
-        <h3 className="text-white font-semibold mb-2">{title}</h3>
-        <p className="text-gray-400 text-sm">{description}</p>
-      </motion.button>
+      </button>
     );
   };
 
@@ -246,26 +248,23 @@ function DashboardContent() {
             <div className="space-y-6">
               <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-6">
                 <h3 className="text-xl font-semibold text-white mb-4">Your Membership</h3>
-                <div className="flex items-center space-x-4">
-                  <div className="p-3 bg-blue-500/10 rounded-lg">
-                    <Clock className="w-6 h-6 text-blue-400" />
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <div className="p-2 bg-blue-500/10 rounded-lg">
+                      <Clock className="w-5 h-5 text-blue-400" />
+                    </div>
+                    <div>
+                      <p className="text-white font-medium">Member since {memberSince}</p>
+                      <p className="text-gray-400 text-sm">Free Tier</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-white font-medium">Member since {memberSince}</p>
-                    <p className="text-gray-400 text-sm">Free Tier • Basic Access</p>
-                  </div>
-                </div>
-                <div className="mt-6 p-4 bg-gradient-to-r from-cyan-500/10 to-blue-500/10 border border-cyan-500/20 rounded-lg">
-                  <h4 className="text-white font-semibold mb-2">Upgrade to Pro</h4>
-                  <p className="text-gray-300 text-sm mb-3">
-                    Unlock premium resources, AI assistant, 1-on-1 meetings, and more advanced features.
-                  </p>
                   <Button 
                     onClick={() => router.push('/pricing')}
+                    size="sm"
                     className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600"
                   >
                     <Crown className="w-4 h-4 mr-2" />
-                    View Pro Features
+                    Upgrade
                   </Button>
                 </div>
               </div>
@@ -375,43 +374,42 @@ function DashboardContent() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-gradient-to-r from-cyan-500/10 to-blue-500/10 border border-cyan-500/20 rounded-xl p-6 mb-8"
+          className="mb-8"
         >
-          <div className="flex items-start justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-white mb-2">
-                {getGreeting()}, {user?.user_metadata?.username || user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Cybersecurity Professional'}! 👋
-              </h1>
-              <p className="text-gray-300">
-                Ready to continue your cybersecurity learning journey?
-              </p>
-            </div>
-          </div>
+          <h1 className="text-2xl font-bold text-white mb-2">
+            {getGreeting()}, {user?.user_metadata?.username || user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Professional'}!
+          </h1>
+          <p className="text-gray-400">
+            Ready to continue your cybersecurity learning journey?
+          </p>
         </motion.div>
 
         {/* Quick Actions */}
         <div className="mb-8">
           <h2 className="text-lg font-semibold text-white mb-4">Quick Actions</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {quickActions.map((action, index) => (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {quickActions.slice(0, 4).map((action, index) => (
               <QuickAction key={index} {...action} />
             ))}
           </div>
         </div>
 
         {/* Dashboard Tabs */}
-        <div className="mb-6">
-          <div className="flex flex-wrap gap-2">
-            {tabs.map((tab) => (
-              <DashboardTab
-                key={tab.id}
-                {...tab}
-                isActive={activeTab === tab.id}
-                onClick={() => setActiveTab(tab.id)}
-              />
-            ))}
+        {/* Dashboard Tabs - Only show if user has Pro */}
+        {isPro && (
+          <div className="mb-6">
+            <div className="flex flex-wrap gap-2">
+              {tabs.map((tab) => (
+                <DashboardTab
+                  key={tab.id}
+                  {...tab}
+                  isActive={activeTab === tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                />
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Tab Content */}
         <motion.div
@@ -423,35 +421,6 @@ function DashboardContent() {
           {renderTabContent()}
         </motion.div>
 
-        {/* Settings and Profile Quick Access */}
-        <div className="fixed bottom-6 right-6 flex flex-col space-y-3">
-          <motion.button
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-            onClick={() => router.push('/dashboard/profile')}
-            className="p-3 bg-gray-800 border border-gray-700 rounded-full text-gray-400 hover:text-white hover:border-cyan-500/50 transition-colors shadow-lg backdrop-blur-sm"
-          >
-            <User className="w-5 h-5" />
-          </motion.button>
-          
-          <motion.button
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-            onClick={() => router.push('/dashboard/settings')}
-            className="p-3 bg-gray-800 border border-gray-700 rounded-full text-gray-400 hover:text-white hover:border-cyan-500/50 transition-colors shadow-lg backdrop-blur-sm"
-          >
-            <Settings className="w-5 h-5" />
-          </motion.button>
-          
-          <motion.button
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-            className="p-3 bg-gray-800 border border-gray-700 rounded-full text-gray-400 hover:text-white hover:border-cyan-500/50 transition-colors shadow-lg backdrop-blur-sm"
-          >
-            <Bell className="w-5 h-5" />
-            <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></span>
-          </motion.button>
-        </div>
       </div>
     </div>
   )

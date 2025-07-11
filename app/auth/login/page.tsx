@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { loginUser } from '@/lib/auth/simple-auth'
+import { AuthService } from '@/lib/services/auth'
 import { Shield, Mail, Lock, Eye, EyeOff, Loader2 } from 'lucide-react'
 
 function LoginContent() {
@@ -40,7 +40,10 @@ function LoginContent() {
     setLoading(true)
     setError('')
 
-    const result = await loginUser(formData.email, formData.password)
+    const result = await AuthService.login({
+      email: formData.email,
+      password: formData.password
+    })
     
     if (result.success) {
       const redirect = searchParams.get('redirect') || '/dashboard'
