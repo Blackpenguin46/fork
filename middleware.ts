@@ -22,17 +22,15 @@ export async function middleware(req: NextRequest) {
     const { data: { session } } = await supabase.auth.getSession()
 
     // Define routes
-    const publicRoutes = ['/', '/auth/login', '/auth/register', '/auth/callback', '/auth/callback-new', '/pricing', '/about', '/contact', '/terms', '/privacy']
+    const publicRoutes = ['/', '/auth/login', '/auth/register', '/auth/callback', '/auth/callback-new', '/pricing', '/about', '/contact', '/terms', '/privacy', '/community', '/insights', '/academy']
     const protectedRoutes = ['/dashboard', '/profile', '/settings']
-    const contentRoutes = ['/community', '/insights', '/academy']
 
-    const isPublicRoute = publicRoutes.some(route => pathname === route)
+    const isPublicRoute = publicRoutes.some(route => pathname === route || pathname.startsWith(route))
     const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route))
-    const isContentRoute = contentRoutes.some(route => pathname.startsWith(route))
     const isAuthRoute = pathname.startsWith('/auth/')
 
     // If accessing protected content without valid session, redirect to login
-    if ((isProtectedRoute || isContentRoute) && !session?.user?.email_confirmed_at) {
+    if (isProtectedRoute && !session?.user?.email_confirmed_at) {
       const redirectUrl = new URL('/auth/login', req.url)
       redirectUrl.searchParams.set('redirect', pathname)
       return NextResponse.redirect(redirectUrl)
