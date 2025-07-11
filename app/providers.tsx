@@ -60,35 +60,39 @@ export function Providers({ children }: ProvidersProps) {
     // Initialize auth state
     const initializeAuth = async () => {
       try {
+        console.log('🔐 Initializing authentication...')
+        
         // Get current session
         const { data: { session }, error } = await supabase!.auth.getSession()
         
         if (error) {
-          console.error('Session error:', error)
+          console.error('❌ Session error:', error)
           setUser(null)
           setLoading(false)
           return
         }
 
-        console.log('Initial session check:', {
+        console.log('📋 Session check result:', {
           hasSession: !!session,
           hasUser: !!session?.user,
           userEmail: session?.user?.email,
-          emailConfirmed: !!session?.user?.email_confirmed_at
+          emailConfirmed: !!session?.user?.email_confirmed_at,
+          sessionExpiry: session?.expires_at ? new Date(session.expires_at * 1000).toLocaleString() : 'N/A'
         })
         
         // Set user if valid session exists
         if (session?.user) {
-          console.log('Setting authenticated user:', session.user.email)
+          console.log('✅ Setting authenticated user:', session.user.email)
           setUser(session.user)
         } else {
-          console.log('No valid session found')
+          console.log('❌ No valid session found')
           setUser(null)
         }
       } catch (error) {
-        console.error('Auth initialization error:', error)
+        console.error('❌ Auth initialization error:', error)
         setUser(null)
       } finally {
+        console.log('🏁 Auth initialization complete')
         setLoading(false)
       }
     }

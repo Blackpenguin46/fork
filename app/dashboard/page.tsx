@@ -78,6 +78,17 @@ function DashboardContent() {
   const message = searchParams.get('message')
   const [activeTab, setActiveTab] = useState('overview');
 
+  // Debug authentication state
+  useEffect(() => {
+    console.log('🏠 Dashboard auth state:', {
+      hasUser: !!user,
+      userEmail: user?.email,
+      loading,
+      subscriptionLoading,
+      url: window.location.href
+    })
+  }, [user, loading, subscriptionLoading])
+
   // Show loading while auth is being determined
   if (loading || subscriptionLoading) {
     return (
