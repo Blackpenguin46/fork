@@ -126,36 +126,36 @@ export default function Navbar() {
             </div>
           </Link>
 
-          {/* Desktop Navigation - Only show for authenticated users */}
-          {user && (
-            <div className="hidden lg:flex items-center space-x-6">
-              {/* Home Link */}
-              <Link
-                href="/"
-                className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-colors duration-200 ${
-                  pathname === '/'
-                    ? 'text-cyber-cyan bg-slate-800/50'
-                    : 'text-slate-300 hover:text-white hover:bg-slate-800/30'
-                }`}
-              >
-                <span className="font-medium">Home</span>
-              </Link>
+          {/* Desktop Navigation */}
+          <div className="hidden lg:flex items-center space-x-6">
+            {/* Home Link */}
+            <Link
+              href="/"
+              className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-colors duration-200 ${
+                pathname === '/'
+                  ? 'text-cyber-cyan bg-slate-800/50'
+                  : 'text-slate-300 hover:text-white hover:bg-slate-800/30'
+              }`}
+            >
+              <span className="font-medium">Home</span>
+            </Link>
 
-              {navigation.map((item) => (
-                <div key={item.name} className="relative group">
-                  <Link
-                    href={item.href}
-                    className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-all duration-300 ease-in-out hover:scale-[1.02] ${
-                      isActivePath(item.href)
-                        ? 'text-cyber-cyan bg-slate-800/50 shadow-lg shadow-cyber-cyan/10'
-                        : 'text-slate-300 hover:text-white hover:bg-slate-800/50 hover:shadow-md hover:shadow-slate-700/20'
-                    }`}
-                  >
-                    <item.icon className="h-4 w-4" />
-                    <span className="font-medium">{item.name}</span>
-                  </Link>
-                  
-                  {/* Dropdown Menu */}
+            {navigation.map((item) => (
+              <div key={item.name} className="relative group">
+                <Link
+                  href={item.href}
+                  className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-all duration-300 ease-in-out hover:scale-[1.02] ${
+                    isActivePath(item.href)
+                      ? 'text-cyber-cyan bg-slate-800/50 shadow-lg shadow-cyber-cyan/10'
+                      : 'text-slate-300 hover:text-white hover:bg-slate-800/50 hover:shadow-md hover:shadow-slate-700/20'
+                  }`}
+                >
+                  <item.icon className="h-4 w-4" />
+                  <span className="font-medium">{item.name}</span>
+                </Link>
+                
+                {/* Dropdown Menu - Only show for authenticated users */}
+                {user && (
                   <div className="absolute top-full left-0 mt-2 w-64 bg-slate-900/98 backdrop-blur-md border border-slate-700/50 rounded-xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 ease-out transform translate-y-2 group-hover:translate-y-0">
                     <div className="p-4">
                       <p className="text-sm text-slate-400 mb-3">{item.description}</p>
@@ -172,10 +172,10 @@ export default function Navbar() {
                       </div>
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          )}
+                )}
+              </div>
+            ))}
+          </div>
 
           {/* Right Side Actions */}
           <div className="hidden lg:flex items-center space-x-4">
@@ -291,24 +291,22 @@ export default function Navbar() {
                 </button>
               )}
 
-              {/* Home link for authenticated users */}
-              {user && (
-                <Link
-                  href="/"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-300 ease-in-out ${
-                    pathname === '/'
-                      ? 'text-cyber-cyan bg-slate-800/70 border border-cyber-cyan/30 shadow-lg shadow-cyber-cyan/10'
-                      : 'text-slate-200 hover:text-cyber-cyan hover:bg-slate-800/50 hover:translate-x-1 hover:shadow-md'
-                  }`}
-                >
-                  <Shield className="h-5 w-5" />
-                  <span>Home</span>
-                </Link>
-              )}
+              {/* Home link */}
+              <Link
+                href="/"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-300 ease-in-out ${
+                  pathname === '/'
+                    ? 'text-cyber-cyan bg-slate-800/70 border border-cyber-cyan/30 shadow-lg shadow-cyber-cyan/10'
+                    : 'text-slate-200 hover:text-cyber-cyan hover:bg-slate-800/50 hover:translate-x-1 hover:shadow-md'
+                }`}
+              >
+                <Shield className="h-5 w-5" />
+                <span>Home</span>
+              </Link>
               
-              {/* Only show navigation items for authenticated users */}
-              {user && navigation.map((item) => (
+              {/* Navigation items */}
+              {navigation.map((item) => (
                 <div key={item.name} className="space-y-1">
                   <Link
                     href={item.href}
@@ -323,19 +321,21 @@ export default function Navbar() {
                     <span>{item.name}</span>
                   </Link>
                   
-                  {/* Mobile Subcategories */}
-                  <div className="ml-6 pl-4 border-l border-slate-700 space-y-1">
-                    {item.subcategories.map((sub) => (
-                      <Link
-                        key={sub.name}
-                        href={sub.href}
-                        onClick={() => setIsMobileMenuOpen(false)}
-                        className="block px-3 py-2 text-sm text-slate-300 hover:text-cyber-cyan hover:bg-slate-800/30 rounded-md transition-all duration-200 ease-in-out hover:translate-x-1 hover:shadow-sm"
-                      >
-                        {sub.name}
-                      </Link>
-                    ))}
-                  </div>
+                  {/* Mobile Subcategories - Only show for authenticated users */}
+                  {user && (
+                    <div className="ml-6 pl-4 border-l border-slate-700 space-y-1">
+                      {item.subcategories.map((sub) => (
+                        <Link
+                          key={sub.name}
+                          href={sub.href}
+                          onClick={() => setIsMobileMenuOpen(false)}
+                          className="block px-3 py-2 text-sm text-slate-300 hover:text-cyber-cyan hover:bg-slate-800/30 rounded-md transition-all duration-200 ease-in-out hover:translate-x-1 hover:shadow-sm"
+                        >
+                          {sub.name}
+                        </Link>
+                      ))}
+                    </div>
+                  )}
                 </div>
               ))}
               
