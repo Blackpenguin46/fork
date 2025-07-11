@@ -73,13 +73,16 @@ export function Providers({ children }: ProvidersProps) {
         console.log('Initial session check:', {
           hasSession: !!session,
           hasUser: !!session?.user,
+          userEmail: session?.user?.email,
           emailConfirmed: !!session?.user?.email_confirmed_at
         })
         
-        // Only set user if they have a confirmed email
-        if (session?.user?.email_confirmed_at) {
+        // Set user if valid session exists
+        if (session?.user) {
+          console.log('Setting authenticated user:', session.user.email)
           setUser(session.user)
         } else {
+          console.log('No valid session found')
           setUser(null)
         }
       } catch (error) {
@@ -95,13 +98,26 @@ export function Providers({ children }: ProvidersProps) {
     // Listen for auth changes
     const { data: { subscription } } = supabase!.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('Auth state change:', event, !!session?.user)
+        console.log('Auth state change:', {
+          event,
+          hasSession: !!session,
+          hasUser: !!session?.user,
+          userEmail: session?.user?.email
+        })
         
         if (event === 'SIGNED_OUT') {
+          console.log('User signed out')
           setUser(null)
-        } else if (session?.user?.email_confirmed_at) {
+        } else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+          if (session?.user) {
+            console.log('User signed in:', session.user.email)
+            setUser(session.user)
+          }
+        } else if (session?.user) {
+          console.log('Session exists, setting user:', session.user.email)
           setUser(session.user)
         } else {
+          console.log('No valid session, clearing user')
           setUser(null)
         }
         

@@ -23,12 +23,16 @@ export async function GET(request: NextRequest) {
         return NextResponse.redirect(`${requestUrl.origin}/auth/login?error=${encodeURIComponent('Email verification failed. Please try again.')}`)
       }
 
-      if (data.user) {
+      if (data.user && data.session) {
         console.log('Email verification successful for:', data.user.email)
         
-        // Always redirect to login page after email verification
-        // This ensures clean authentication flow
-        return NextResponse.redirect(`${requestUrl.origin}/auth/login?message=${encodeURIComponent('Email verified successfully! Please sign in to access your account.')}`)
+        // User is now authenticated with valid session, redirect to dashboard
+        const response = NextResponse.redirect(`${requestUrl.origin}/dashboard?verified=true`)
+        
+        // Ensure session cookies are properly set
+        response.headers.set('Cache-Control', 'no-cache, no-store, max-age=0, must-revalidate')
+        
+        return response
       }
       
     } catch (error) {
