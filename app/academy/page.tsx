@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { ResourcesService, LearningPathsService, CategoriesService } from '@/lib/api'
 import type { Resource, LearningPath, Category } from '@/lib/api'
+import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/app/providers'
 import { useSubscription } from '@/hooks/useSubscription'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -41,49 +42,88 @@ export default function AcademyPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [difficultyFilter, setDifficultyFilter] = useState<string>('')
   const [activeTab, setActiveTab] = useState('overview')
+  const [debugInfo, setDebugInfo] = useState<any>({})
 
   useEffect(() => {
     const fetchData = async () => {
       try {
+        console.log('🎓 Academy: Starting data fetch...')
         setLoading(true)
         
-        // Fetch real data from backend services
+        // Fetch real data from backend services with detailed logging
+        console.log('🔄 Academy: Calling API services...')
         const [pathsResult, coursesResult, articlesResult] = await Promise.allSettled([
           LearningPathsService.getFeaturedLearningPaths(10),
           ResourcesService.getResourcesByType('course', 20),
           ResourcesService.getResourcesByType('article', 20)
         ])
 
+        console.log('📊 Academy: API results:', {
+          paths: pathsResult.status,
+          courses: coursesResult.status, 
+          articles: articlesResult.status
+        })
+
         // Handle learning paths
         if (pathsResult.status === 'fulfilled' && pathsResult.value.success) {
-          setLearningPaths(pathsResult.value.data || [])
+          const data = pathsResult.value.data || []
+          console.log('✅ Academy: Learning paths success:', data.length)
+          setLearningPaths(data)
         } else {
-          console.warn('Failed to fetch learning paths, using fallback')
+          console.warn('❌ Academy: Learning paths failed:', 
+            pathsResult.status === 'rejected' ? pathsResult.reason : 
+            pathsResult.status === 'fulfilled' ? (pathsResult.value as any).error : 'Unknown error'
+          )
           setLearningPaths([])
         }
 
         // Handle courses
         if (coursesResult.status === 'fulfilled' && coursesResult.value.success) {
-          setCourses(coursesResult.value.data || [])
+          const data = coursesResult.value.data || []
+          console.log('✅ Academy: Courses success:', data.length)
+          setCourses(data)
         } else {
-          console.warn('Failed to fetch courses, using fallback')
+          console.warn('❌ Academy: Courses failed:', 
+            coursesResult.status === 'rejected' ? coursesResult.reason : 
+            coursesResult.status === 'fulfilled' ? (coursesResult.value as any).error : 'Unknown error'
+          )
           setCourses([])
         }
 
         // Handle articles
         if (articlesResult.status === 'fulfilled' && articlesResult.value.success) {
-          setArticles(articlesResult.value.data || [])
+          const data = articlesResult.value.data || []
+          console.log('✅ Academy: Articles success:', data.length)
+          setArticles(data)
         } else {
-          console.warn('Failed to fetch articles, using fallback')
+          console.warn('❌ Academy: Articles failed:', 
+            articlesResult.status === 'rejected' ? articlesResult.reason : 
+            articlesResult.status === 'fulfilled' ? (articlesResult.value as any).error : 'Unknown error'
+          )
           setArticles([])
         }
+
+        console.log('✅ Academy: Data fetch complete')
+        
+        // Set debug info
+        setDebugInfo({
+          pathsCount: learningPaths.length,
+          coursesCount: courses.length,
+          articlesCount: articles.length,
+          hasSupabase: !!supabase,
+          timestamp: new Date().toISOString()
+        })
         
       } catch (error) {
-        console.error('Error fetching academy data:', error)
+        console.error('❌ Academy: Fatal error during data fetch:', error)
         // Set empty arrays as fallback
         setLearningPaths([])
         setCourses([])
         setArticles([])
+        setDebugInfo({
+          error: error instanceof Error ? error.message : 'Unknown error',
+          timestamp: new Date().toISOString()
+        })
       } finally {
         setLoading(false)
       }
@@ -161,6 +201,23 @@ export default function AcademyPage() {
   return (
     <div className="min-h-screen bg-deep-space-blue pt-16">
       <div className="container mx-auto px-4 py-8">
+        {/* Debug Panel (remove in production) */}
+        {process.env.NODE_ENV === 'development' && (
+          <div className="mb-4 p-4 bg-gray-800/50 border border-yellow-500/30 rounded">
+            <h3 className="text-yellow-400 text-sm font-bold mb-2">Debug Info:</h3>
+            <pre className="text-xs text-gray-300">
+              {JSON.stringify({
+                loading,
+                pathsCount: learningPaths.length,
+                coursesCount: courses.length,
+                articlesCount: articles.length,
+                hasSupabase: !!supabase,
+                debugInfo
+              }, null, 2)}
+            </pre>
+          </div>
+        )}
+        
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center space-x-3 mb-4">
