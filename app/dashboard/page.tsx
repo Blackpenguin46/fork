@@ -162,10 +162,10 @@ function DashboardContent() {
   // Quick actions based on subscription tier
   const freeQuickActions = [
     {
-      title: 'Browse Free Resources',
-      description: 'Explore cybersecurity learning materials',
+      title: 'Browse All Resources',
+      description: 'Explore our complete cybersecurity library',
       icon: <BookOpen className="w-6 h-6" />,
-      href: '/academy',
+      href: '/resources',
       color: 'green'
     },
     {
@@ -193,6 +193,13 @@ function DashboardContent() {
 
   const proQuickActions = [
     {
+      title: 'Resource Library',
+      description: 'Access all premium and free resources',
+      icon: <BookOpen className="w-6 h-6" />,
+      href: '/resources',
+      color: 'green'
+    },
+    {
       title: 'AI Assistant',
       description: 'Get personalized cybersecurity guidance',
       icon: <Bot className="w-6 h-6" />,
@@ -204,20 +211,13 @@ function DashboardContent() {
       description: 'Book a meeting with cybersecurity expert',
       icon: <Video className="w-6 h-6" />,
       href: '/dashboard/meetings',
-      color: 'green'
+      color: 'blue'
     },
     {
       title: 'Premium Discord',
       description: 'Access exclusive community discussions',
       icon: <MessageSquare className="w-6 h-6" />,
       href: '/community/discord-premium',
-      color: 'blue'
-    },
-    {
-      title: 'Custom Roadmaps',
-      description: 'Create personalized learning paths',
-      icon: <Target className="w-6 h-6" />,
-      href: '/dashboard/roadmaps',
       color: 'purple'
     }
   ];

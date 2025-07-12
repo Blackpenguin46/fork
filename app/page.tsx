@@ -230,7 +230,21 @@ export default function HomePage() {
           </div>
 
           {/* Quick Actions */}
-          <div className="grid md:grid-cols-3 gap-6 mb-8">
+          <div className="grid md:grid-cols-4 gap-6 mb-8">
+            <Link href="/resources" className="group">
+              <div className="bg-gradient-to-br from-gray-800/80 to-gray-900/80 border border-gray-700 hover:border-cyber-cyan/50 rounded-lg p-6 transition-all duration-300">
+                <div className="flex items-center space-x-3 mb-4">
+                  <BookOpen className="h-8 w-8 text-cyber-cyan" />
+                  <h3 className="text-xl font-semibold text-white">Browse Resources</h3>
+                </div>
+                <p className="text-gray-400 mb-4">Explore our complete cybersecurity resource library</p>
+                <div className="flex items-center text-cyber-cyan group-hover:text-cyber-magenta transition-colors">
+                  <span className="text-sm font-medium">View Resources</span>
+                  <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                </div>
+              </div>
+            </Link>
+
             <Link href="/academy" className="group">
               <div className="bg-gradient-to-br from-gray-800/80 to-gray-900/80 border border-gray-700 hover:border-cyber-cyan/50 rounded-lg p-6 transition-all duration-300">
                 <div className="flex items-center space-x-3 mb-4">

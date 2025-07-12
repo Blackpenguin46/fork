@@ -17,7 +17,13 @@ import {
   User,
   LogOut,
   Settings,
-  Crown
+  Crown,
+  BookOpen,
+  FileText,
+  Video,
+  Wrench,
+  Podcast,
+  Layers
 } from 'lucide-react'
 
 export default function Navbar() {
@@ -51,6 +57,23 @@ export default function Navbar() {
 
   const navigation = [
     {
+      name: 'Resources',
+      href: '/resources',
+      icon: BookOpen,
+      description: 'Browse our comprehensive cybersecurity resource library',
+      subcategories: [
+        { name: 'All Resources', href: '/resources' },
+        { name: 'Browse Categories', href: '/categories' },
+        { name: 'Courses', href: '/courses' },
+        { name: 'Articles', href: '/articles' },
+        { name: 'Videos', href: '/videos' },
+        { name: 'Tools', href: '/tools' },
+        { name: 'Podcasts', href: '/podcasts' },
+        { name: 'Documentation', href: '/documentation' },
+        { name: 'Cheat Sheets', href: '/cheatsheets' },
+      ]
+    },
+    {
       name: 'Community',
       href: '/community',
       icon: Users,
@@ -82,8 +105,8 @@ export default function Navbar() {
       subcategories: [
         { name: 'Learning Paths', href: '/academy/learning-paths' },
         { name: 'YouTube Channels', href: '/academy/youtube' },
-        { name: 'Cheat Sheets', href: '/academy/cheatsheets' },
-        { name: 'Documentation', href: '/academy/documentation' },
+        { name: 'Cheat Sheets', href: '/cheatsheets' },
+        { name: 'Documentation', href: '/documentation' },
       ]
     }
   ]

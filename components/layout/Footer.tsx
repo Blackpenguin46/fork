@@ -35,6 +35,17 @@ export default function Footer() {
     {
       title: 'Resources',
       links: [
+        { name: 'Browse All Resources', href: '/resources' },
+        { name: 'Categories', href: '/categories' },
+        { name: 'Courses', href: '/courses' },
+        { name: 'Articles', href: '/articles' },
+        { name: 'Videos', href: '/videos' },
+        { name: 'Tools', href: '/tools' },
+      ]
+    },
+    {
+      title: 'Insights',
+      links: [
         { name: 'Latest News', href: '/insights/news' },
         { name: 'Data Breaches', href: '/insights/breaches' },
         { name: 'Threat Intelligence', href: '/insights/threats' },

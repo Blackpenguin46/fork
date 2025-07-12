@@ -299,7 +299,7 @@ export default function BookmarksPage() {
             </p>
             <div className="flex space-x-3 justify-center">
               <Button asChild>
-                <Link href="/academy">Browse Resources</Link>
+                <Link href="/resources">Browse Resources</Link>
               </Button>
               {bookmarksData?.bookmarks && bookmarksData.bookmarks.length > 0 && (
                 <Button
