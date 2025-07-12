@@ -32,81 +32,33 @@ export default function CommunityPage() {
       try {
         setLoading(true)
         
-        // Use mock data for now to prevent crashes
-        const mockResources = [
-          {
-            id: '1',
-            title: 'CyberSecHub Discord',
-            description: 'Active community of 15,000+ cybersecurity professionals sharing knowledge and job opportunities',
-            slug: 'cybersechub-discord',
-            url: 'https://discord.gg/cybersec',
-            is_featured: true,
-            is_premium: false,
-            view_count: 3250,
-            like_count: 867,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          },
-          {
-            id: '2',
-            title: 'r/cybersecurity',
-            description: 'Reddit community with 800k+ members discussing latest threats, career advice, and technical topics',
-            slug: 'reddit-cybersecurity',
-            url: 'https://reddit.com/r/cybersecurity',
-            is_featured: true,
-            is_premium: false,
-            view_count: 5120,
-            like_count: 1234,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          },
-          {
-            id: '3',
-            title: 'SANS Community Forum',
-            description: 'Professional forum for SANS training participants and certified professionals',
-            slug: 'sans-forum',
-            url: 'https://community.sans.org',
-            is_featured: true,
-            is_premium: true,
-            view_count: 2890,
-            like_count: 456,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          },
-          {
-            id: '4',
-            title: 'InfoSec Twitter Community',
-            description: 'Follow and engage with leading cybersecurity experts and researchers on Twitter',
-            slug: 'infosec-twitter',
-            url: 'https://twitter.com/i/communities/1234567890',
-            is_featured: false,
-            is_premium: false,
-            view_count: 1890,
-            like_count: 345,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          },
-          {
-            id: '5',
-            title: 'CyberSeek Slack',
-            description: 'Private Slack community for job seekers and career advancement in cybersecurity',
-            slug: 'cyberseek-slack',
-            url: 'https://cyberseek.slack.com',
-            is_featured: false,
-            is_premium: true,
-            view_count: 1456,
-            like_count: 289,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          }
-        ]
+        // Fetch real community resources from backend
+        const [communityResult, categoriesResult] = await Promise.allSettled([
+          ResourcesService.getResourcesByType('community', 50),
+          CategoriesService.getCategories()
+        ])
 
-        setResources(mockResources)
+        // Handle community resources
+        if (communityResult.status === 'fulfilled' && communityResult.value.success) {
+          setResources(communityResult.value.data || [])
+        } else {
+          console.warn('Failed to fetch community resources, using fallback')
+          setResources([])
+        }
+
+        // Handle categories - getCategories returns a PaginatedResponse
+        if (categoriesResult.status === 'fulfilled' && categoriesResult.value.success && categoriesResult.value.data) {
+          setCategories(categoriesResult.value.data.data || [])
+        } else {
+          console.warn('Failed to fetch categories, using fallback')
+          setCategories([])
+        }
         
       } catch (error) {
         console.error('Error fetching community data:', error)
         // Set empty arrays as fallback
         setResources([])
+        setCategories([])
       } finally {
         setLoading(false)
       }
