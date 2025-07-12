@@ -57,23 +57,6 @@ export default function Navbar() {
 
   const navigation = [
     {
-      name: 'Resources',
-      href: '/resources',
-      icon: BookOpen,
-      description: 'Browse our comprehensive cybersecurity resource library',
-      subcategories: [
-        { name: 'All Resources', href: '/resources' },
-        { name: 'Browse Categories', href: '/categories' },
-        { name: 'Courses', href: '/courses' },
-        { name: 'Articles', href: '/articles' },
-        { name: 'Videos', href: '/videos' },
-        { name: 'Tools', href: '/tools' },
-        { name: 'Podcasts', href: '/podcasts' },
-        { name: 'Documentation', href: '/documentation' },
-        { name: 'Cheat Sheets', href: '/cheatsheets' },
-      ]
-    },
-    {
       name: 'Community',
       href: '/community',
       icon: Users,
@@ -94,7 +77,8 @@ export default function Navbar() {
         { name: 'Latest News', href: '/insights/news' },
         { name: 'Data Breaches', href: '/insights/breaches' },
         { name: 'Threat Intelligence', href: '/insights/threats' },
-        { name: 'Emerging Trends', href: '/insights/trends' },
+        { name: 'Security Tools', href: '/insights/tools' },
+        { name: 'Podcasts', href: '/insights/podcasts' },
       ]
     },
     {
@@ -104,9 +88,10 @@ export default function Navbar() {
       description: 'Comprehensive cybersecurity education',
       subcategories: [
         { name: 'Learning Paths', href: '/academy/learning-paths' },
-        { name: 'YouTube Channels', href: '/academy/youtube' },
-        { name: 'Cheat Sheets', href: '/cheatsheets' },
-        { name: 'Documentation', href: '/documentation' },
+        { name: 'Courses', href: '/academy/courses' },
+        { name: 'Videos', href: '/academy/videos' },
+        { name: 'Documentation', href: '/academy/documentation' },
+        { name: 'Cheat Sheets', href: '/academy/cheatsheets' },
       ]
     }
   ]

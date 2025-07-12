@@ -1,8 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { ResourcesService, CategoriesService } from '@/lib/api'
-import type { Resource, Category, PaginatedResponse } from '@/lib/api'
+import { ResourcesService } from '@/lib/api'
+import type { Resource, PaginatedResponse } from '@/lib/api'
 import { useAuth } from '@/app/providers'
 import { useSubscription } from '@/hooks/useSubscription'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -10,17 +10,9 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { 
-  BookOpen, 
-  Play, 
-  FileText, 
   Wrench, 
-  Users, 
-  Podcast, 
-  Video,
   Search, 
-  Filter,
   Clock, 
   Eye, 
   Heart, 
@@ -28,22 +20,12 @@ import {
   ExternalLink,
   Grid3X3,
   List,
-  TrendingUp,
-  Calendar
+  ChevronRight,
+  Home,
+  TrendingUp
 } from 'lucide-react'
 import Link from 'next/link'
 import BookmarkButton from '@/components/bookmarks/BookmarkButton'
-
-const resourceTypeIcons = {
-  course: BookOpen,
-  article: FileText,
-  video: Video,
-  tool: Wrench,
-  community: Users,
-  podcast: Podcast,
-  documentation: FileText,
-  cheatsheet: FileText
-}
 
 const difficultyColors = {
   beginner: 'bg-green-500/10 text-green-400 border-green-500/20',
@@ -51,78 +33,50 @@ const difficultyColors = {
   advanced: 'bg-red-500/10 text-red-400 border-red-500/20'
 }
 
-export default function ResourcesPage() {
+export default function InsightsToolsPage() {
   const { user } = useAuth()
   const { canAccessPremiumResources } = useSubscription() || { canAccessPremiumResources: false }
   
   const [resources, setResources] = useState<PaginatedResponse<Resource> | null>(null)
-  const [categories, setCategories] = useState<Category[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
-  const [selectedType, setSelectedType] = useState<string>('all')
-  const [selectedCategory, setSelectedCategory] = useState<string>('all')
   const [selectedDifficulty, setSelectedDifficulty] = useState<string>('all')
   const [premiumFilter, setPremiumFilter] = useState<string>('all')
   const [sortBy, setSortBy] = useState<'created_at' | 'view_count' | 'like_count' | 'title'>('created_at')
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [currentPage, setCurrentPage] = useState(1)
-  const [activeTab, setActiveTab] = useState('all')
   
   const pageSize = 24
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchResources = async () => {
       try {
         setLoading(true)
         
-        const [resourcesResult, categoriesResult] = await Promise.allSettled([
-          ResourcesService.getResources({
-            resourceType: selectedType === 'all' ? undefined : selectedType,
-            difficultyLevel: selectedDifficulty === 'all' ? undefined : selectedDifficulty,
-            isPremium: premiumFilter === 'all' ? undefined : premiumFilter === 'premium',
-            isPublished: true,
-            searchQuery: searchQuery || undefined,
-            sortBy,
-            sortOrder: 'desc',
-            page: currentPage,
-            limit: pageSize
-          }),
-          CategoriesService.getCategories()
-        ])
+        const result = await ResourcesService.getResources({
+          resourceType: 'tool',
+          difficultyLevel: selectedDifficulty === 'all' ? undefined : selectedDifficulty,
+          isPremium: premiumFilter === 'all' ? undefined : premiumFilter === 'premium',
+          isPublished: true,
+          searchQuery: searchQuery || undefined,
+          sortBy,
+          sortOrder: 'desc',
+          page: currentPage,
+          limit: pageSize
+        })
 
-        if (resourcesResult.status === 'fulfilled' && resourcesResult.value.success && resourcesResult.value.data) {
-          setResources(resourcesResult.value.data)
-        }
-
-        if (categoriesResult.status === 'fulfilled' && categoriesResult.value.success && categoriesResult.value.data) {
-          setCategories(categoriesResult.value.data.data || [])
+        if (result.success && result.data) {
+          setResources(result.data)
         }
       } catch (error) {
-        console.error('Error fetching data:', error)
+        console.error('Error fetching tools:', error)
       } finally {
         setLoading(false)
       }
     }
 
-    fetchData()
-  }, [selectedType, selectedCategory, selectedDifficulty, premiumFilter, sortBy, searchQuery, currentPage])
-
-  const resourceTypes = [
-    { value: 'all', label: 'All Types', icon: Grid3X3 },
-    { value: 'course', label: 'Courses', icon: BookOpen },
-    { value: 'article', label: 'Articles', icon: FileText },
-    { value: 'video', label: 'Videos', icon: Video },
-    { value: 'tool', label: 'Tools', icon: Wrench },
-    { value: 'community', label: 'Communities', icon: Users },
-    { value: 'podcast', label: 'Podcasts', icon: Podcast },
-    { value: 'documentation', label: 'Documentation', icon: FileText },
-    { value: 'cheatsheet', label: 'Cheat Sheets', icon: FileText }
-  ]
-
-  const getResourceIcon = (type: string) => {
-    const IconComponent = resourceTypeIcons[type as keyof typeof resourceTypeIcons] || FileText
-    return <IconComponent className="h-4 w-4" />
-  }
+    fetchResources()
+  }, [selectedDifficulty, premiumFilter, sortBy, searchQuery, currentPage])
 
   const getDifficultyColor = (level: string) => {
     return difficultyColors[level as keyof typeof difficultyColors] || 'bg-gray-500/10 text-gray-400 border-gray-500/20'
@@ -130,8 +84,6 @@ export default function ResourcesPage() {
 
   const resetFilters = () => {
     setSearchQuery('')
-    setSelectedType('all')
-    setSelectedCategory('all')
     setSelectedDifficulty('all')
     setPremiumFilter('all')
     setSortBy('created_at')
@@ -141,99 +93,52 @@ export default function ResourcesPage() {
   return (
     <div className="min-h-screen bg-deep-space-blue pt-16">
       <div className="container mx-auto px-4 py-8">
+        {/* Breadcrumb Navigation */}
+        <div className="flex items-center space-x-2 text-sm text-gray-400 mb-6">
+          <Link href="/" className="hover:text-cyber-cyan transition-colors">
+            <Home className="h-4 w-4" />
+          </Link>
+          <ChevronRight className="h-4 w-4" />
+          <Link href="/insights" className="hover:text-cyber-cyan transition-colors">
+            Insights
+          </Link>
+          <ChevronRight className="h-4 w-4" />
+          <span className="text-white">Security Tools</span>
+        </div>
+
         {/* Header */}
         <div className="mb-8">
-          <div className="flex items-center space-x-3 mb-4">
-            <BookOpen className="h-8 w-8 text-cyber-cyan" />
-            <h1 className="text-4xl font-bold text-white">Resource Library</h1>
+          <div className="flex items-center space-x-4 mb-4">
+            <div className="p-3 bg-purple-500/10 border-purple-500/20 border rounded-lg">
+              <Wrench className="h-8 w-8 text-purple-400" />
+            </div>
+            <div>
+              <h1 className="text-4xl font-bold text-white">Security Tools</h1>
+              <p className="text-xl text-gray-300 mt-2">Essential cybersecurity tools and software recommendations</p>
+            </div>
           </div>
-          <p className="text-xl text-gray-300 mb-6">
-            Explore our collection of {resources?.count || '268+'} cybersecurity resources including courses, articles, tools, and more
-          </p>
-
-          {/* Quick Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-            <Card className="bg-gray-800/50 border-gray-700">
-              <CardContent className="p-4">
-                <div className="flex items-center space-x-2">
-                  <BookOpen className="h-5 w-5 text-cyber-cyan" />
-                  <div>
-                    <p className="text-2xl font-bold text-white">{resources?.count || '268+'}</p>
-                    <p className="text-sm text-gray-400">Total Resources</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card className="bg-gray-800/50 border-gray-700">
-              <CardContent className="p-4">
-                <div className="flex items-center space-x-2">
-                  <Users className="h-5 w-5 text-green-400" />
-                  <div>
-                    <p className="text-2xl font-bold text-white">{categories.length}</p>
-                    <p className="text-sm text-gray-400">Categories</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card className="bg-gray-800/50 border-gray-700">
-              <CardContent className="p-4">
-                <div className="flex items-center space-x-2">
-                  <TrendingUp className="h-5 w-5 text-blue-400" />
-                  <div>
-                    <p className="text-2xl font-bold text-white">Free</p>
-                    <p className="text-sm text-gray-400">Most Resources</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card className="bg-gray-800/50 border-gray-700">
-              <CardContent className="p-4">
-                <div className="flex items-center space-x-2">
-                  <Crown className="h-5 w-5 text-yellow-400" />
-                  <div>
-                    <p className="text-2xl font-bold text-white">Premium</p>
-                    <p className="text-sm text-gray-400">Available</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+          
+          <div className="flex items-center space-x-4 text-sm text-gray-400">
+            <span>{resources?.count || 0} tools</span>
+            <Badge variant="outline" className="text-purple-400 border-purple-500/20">
+              Insights
+            </Badge>
           </div>
         </div>
 
         {/* Search and Filters */}
         <div className="mb-8 space-y-4">
-          {/* Search Bar */}
           <div className="relative">
             <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
             <Input
-              placeholder="Search resources..."
+              placeholder="Search security tools..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10 bg-gray-800 border-gray-700 text-white"
             />
           </div>
 
-          {/* Filter Row */}
           <div className="flex flex-wrap gap-4 items-center">
-            <Select value={selectedType} onValueChange={setSelectedType}>
-              <SelectTrigger className="w-48 bg-gray-800 border-gray-700">
-                <SelectValue placeholder="Resource Type" />
-              </SelectTrigger>
-              <SelectContent>
-                {resourceTypes.map((type) => (
-                  <SelectItem key={type.value} value={type.value}>
-                    <div className="flex items-center space-x-2">
-                      <type.icon className="h-4 w-4" />
-                      <span>{type.label}</span>
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
             <Select value={selectedDifficulty} onValueChange={setSelectedDifficulty}>
               <SelectTrigger className="w-48 bg-gray-800 border-gray-700">
                 <SelectValue placeholder="Difficulty Level" />
@@ -251,7 +156,7 @@ export default function ResourcesPage() {
                 <SelectValue placeholder="Access Level" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Resources</SelectItem>
+                <SelectItem value="all">All Tools</SelectItem>
                 <SelectItem value="free">Free Only</SelectItem>
                 <SelectItem value="premium">Premium Only</SelectItem>
               </SelectContent>
@@ -292,20 +197,6 @@ export default function ResourcesPage() {
           </div>
         </div>
 
-        {/* Quick Filter Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-8">
-          <TabsList className="grid w-full grid-cols-4 lg:grid-cols-8 bg-gray-800/50">
-            <TabsTrigger value="all">All</TabsTrigger>
-            <TabsTrigger value="course">Courses</TabsTrigger>
-            <TabsTrigger value="article">Articles</TabsTrigger>
-            <TabsTrigger value="video">Videos</TabsTrigger>
-            <TabsTrigger value="tool">Tools</TabsTrigger>
-            <TabsTrigger value="community">Community</TabsTrigger>
-            <TabsTrigger value="podcast">Podcasts</TabsTrigger>
-            <TabsTrigger value="free">Free</TabsTrigger>
-          </TabsList>
-        </Tabs>
-
         {/* Results */}
         {loading ? (
           <div className={`grid ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1'} gap-6`}>
@@ -317,29 +208,33 @@ export default function ResourcesPage() {
           </div>
         ) : !resources?.data?.length ? (
           <div className="text-center py-12">
-            <p className="text-gray-400 mb-4">No resources found matching your criteria</p>
+            <div className="p-4 bg-purple-500/10 rounded-lg inline-block mb-4">
+              <Wrench className="h-12 w-12 text-purple-400" />
+            </div>
+            <h3 className="text-xl font-semibold text-white mb-2">No tools found</h3>
+            <p className="text-gray-400 mb-4">
+              {searchQuery ? 'Try adjusting your search or filters' : 'No security tools are available yet'}
+            </p>
             <Button onClick={resetFilters} variant="outline">
               Clear Filters
             </Button>
           </div>
         ) : (
           <>
-            {/* Results Count */}
             <div className="mb-6">
               <p className="text-gray-400">
-                Showing {resources.data.length} of {resources.count} resources
+                Showing {resources.data.length} of {resources.count} tools
                 {searchQuery && ` for "${searchQuery}"`}
               </p>
             </div>
 
-            {/* Resource Grid/List */}
             <div className={`grid ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1'} gap-6 mb-8`}>
               {resources.data.map((resource) => (
                 <Card key={resource.id} className="bg-gray-800/50 border-gray-700 hover:border-cyber-cyan/50 transition-colors group">
                   <CardHeader>
                     <div className="flex items-start justify-between">
                       <div className="flex items-center space-x-2">
-                        {getResourceIcon(resource.resource_type)}
+                        <Wrench className="h-4 w-4 text-purple-400" />
                         <Badge variant="outline" className={getDifficultyColor(resource.difficulty_level)}>
                           {resource.difficulty_level}
                         </Badge>
@@ -385,7 +280,7 @@ export default function ResourcesPage() {
                         disabled={resource.is_premium && !canAccessPremiumResources}
                       >
                         <Link href={`/resource/${resource.slug}`}>
-                          View Resource
+                          View Tool
                         </Link>
                       </Button>
                       
@@ -406,7 +301,7 @@ export default function ResourcesPage() {
 
                     {resource.is_premium && !canAccessPremiumResources && (
                       <p className="text-xs text-yellow-400 mt-2">
-                        Premium resource - upgrade to access
+                        Premium tool - upgrade to access
                       </p>
                     )}
                   </CardContent>
@@ -414,7 +309,6 @@ export default function ResourcesPage() {
               ))}
             </div>
 
-            {/* Pagination */}
             {resources.totalPages > 1 && (
               <div className="flex justify-center items-center space-x-4">
                 <Button
@@ -454,6 +348,40 @@ export default function ResourcesPage() {
             )}
           </>
         )}
+
+        {/* Quick Links */}
+        <div className="mt-12 pt-8 border-t border-gray-700">
+          <h2 className="text-xl font-semibold text-white mb-4">Explore More Insights Content</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <Link href="/insights/news" className="group">
+              <div className="flex items-center space-x-2 p-3 bg-gray-800/30 rounded-lg hover:bg-gray-800/50 transition-colors">
+                <TrendingUp className="h-4 w-4 text-blue-400" />
+                <span className="text-sm text-white group-hover:text-blue-400 transition-colors">Latest News</span>
+              </div>
+            </Link>
+            
+            <Link href="/insights/podcasts" className="group">
+              <div className="flex items-center space-x-2 p-3 bg-gray-800/30 rounded-lg hover:bg-gray-800/50 transition-colors">
+                <TrendingUp className="h-4 w-4 text-green-400" />
+                <span className="text-sm text-white group-hover:text-green-400 transition-colors">Podcasts</span>
+              </div>
+            </Link>
+            
+            <Link href="/insights/threats" className="group">
+              <div className="flex items-center space-x-2 p-3 bg-gray-800/30 rounded-lg hover:bg-gray-800/50 transition-colors">
+                <TrendingUp className="h-4 w-4 text-red-400" />
+                <span className="text-sm text-white group-hover:text-red-400 transition-colors">Threat Intel</span>
+              </div>
+            </Link>
+            
+            <Link href="/insights/breaches" className="group">
+              <div className="flex items-center space-x-2 p-3 bg-gray-800/30 rounded-lg hover:bg-gray-800/50 transition-colors">
+                <TrendingUp className="h-4 w-4 text-orange-400" />
+                <span className="text-sm text-white group-hover:text-orange-400 transition-colors">Data Breaches</span>
+              </div>
+            </Link>
+          </div>
+        </div>
       </div>
     </div>
   )

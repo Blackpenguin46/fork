@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { 
-  MessageSquare, 
+  FileText, 
   Search, 
   Clock, 
   Eye, 
@@ -22,7 +22,7 @@ import {
   List,
   ChevronRight,
   Home,
-  Users
+  GraduationCap
 } from 'lucide-react'
 import Link from 'next/link'
 import BookmarkButton from '@/components/bookmarks/BookmarkButton'
@@ -33,7 +33,7 @@ const difficultyColors = {
   advanced: 'bg-red-500/10 text-red-400 border-red-500/20'
 }
 
-export default function CommunityDiscordPage() {
+export default function AcademyDocumentationPage() {
   const { user } = useAuth()
   const { canAccessPremiumResources } = useSubscription() || { canAccessPremiumResources: false }
   
@@ -54,7 +54,7 @@ export default function CommunityDiscordPage() {
         setLoading(true)
         
         const result = await ResourcesService.getResources({
-          resourceType: 'community',
+          resourceType: 'documentation',
           difficultyLevel: selectedDifficulty === 'all' ? undefined : selectedDifficulty,
           isPremium: premiumFilter === 'all' ? undefined : premiumFilter === 'premium',
           isPublished: true,
@@ -69,7 +69,7 @@ export default function CommunityDiscordPage() {
           setResources(result.data)
         }
       } catch (error) {
-        console.error('Error fetching Discord communities:', error)
+        console.error('Error fetching documentation:', error)
       } finally {
         setLoading(false)
       }
@@ -99,47 +99,45 @@ export default function CommunityDiscordPage() {
             <Home className="h-4 w-4" />
           </Link>
           <ChevronRight className="h-4 w-4" />
-          <Link href="/community" className="hover:text-cyber-cyan transition-colors">
-            Community
+          <Link href="/academy" className="hover:text-cyber-cyan transition-colors">
+            Academy
           </Link>
           <ChevronRight className="h-4 w-4" />
-          <span className="text-white">Discord</span>
+          <span className="text-white">Documentation</span>
         </div>
 
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center space-x-4 mb-4">
-            <div className="p-3 bg-indigo-500/10 border-indigo-500/20 border rounded-lg">
-              <MessageSquare className="h-8 w-8 text-indigo-400" />
+            <div className="p-3 bg-cyan-500/10 border-cyan-500/20 border rounded-lg">
+              <FileText className="h-8 w-8 text-cyan-400" />
             </div>
             <div>
-              <h1 className="text-4xl font-bold text-white">Discord Communities</h1>
-              <p className="text-xl text-gray-300 mt-2">Join active Discord servers for cybersecurity discussions and networking</p>
+              <h1 className="text-4xl font-bold text-white">Documentation</h1>
+              <p className="text-xl text-gray-300 mt-2">Technical guides and reference materials</p>
             </div>
           </div>
           
           <div className="flex items-center space-x-4 text-sm text-gray-400">
-            <span>{resources?.count || 0} Discord communities</span>
-            <Badge variant="outline" className="text-indigo-400 border-indigo-500/20">
-              Community
+            <span>{resources?.count || 0} docs</span>
+            <Badge variant="outline" className="text-cyan-400 border-cyan-500/20">
+              Academy
             </Badge>
           </div>
         </div>
 
         {/* Search and Filters */}
         <div className="mb-8 space-y-4">
-          {/* Search Bar */}
           <div className="relative">
             <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
             <Input
-              placeholder="Search Discord communities..."
+              placeholder="Search documentation..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10 bg-gray-800 border-gray-700 text-white"
             />
           </div>
 
-          {/* Filter Row */}
           <div className="flex flex-wrap gap-4 items-center">
             <Select value={selectedDifficulty} onValueChange={setSelectedDifficulty}>
               <SelectTrigger className="w-48 bg-gray-800 border-gray-700">
@@ -158,7 +156,7 @@ export default function CommunityDiscordPage() {
                 <SelectValue placeholder="Access Level" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Communities</SelectItem>
+                <SelectItem value="all">All Documentation</SelectItem>
                 <SelectItem value="free">Free Only</SelectItem>
                 <SelectItem value="premium">Premium Only</SelectItem>
               </SelectContent>
@@ -210,12 +208,12 @@ export default function CommunityDiscordPage() {
           </div>
         ) : !resources?.data?.length ? (
           <div className="text-center py-12">
-            <div className="p-4 bg-indigo-500/10 rounded-lg inline-block mb-4">
-              <MessageSquare className="h-12 w-12 text-indigo-400" />
+            <div className="p-4 bg-cyan-500/10 rounded-lg inline-block mb-4">
+              <FileText className="h-12 w-12 text-cyan-400" />
             </div>
-            <h3 className="text-xl font-semibold text-white mb-2">No Discord communities found</h3>
+            <h3 className="text-xl font-semibold text-white mb-2">No documentation found</h3>
             <p className="text-gray-400 mb-4">
-              {searchQuery ? 'Try adjusting your search or filters' : 'No Discord communities are available yet'}
+              {searchQuery ? 'Try adjusting your search or filters' : 'No documentation is available yet'}
             </p>
             <Button onClick={resetFilters} variant="outline">
               Clear Filters
@@ -223,22 +221,20 @@ export default function CommunityDiscordPage() {
           </div>
         ) : (
           <>
-            {/* Results Count */}
             <div className="mb-6">
               <p className="text-gray-400">
-                Showing {resources.data.length} of {resources.count} Discord communities
+                Showing {resources.data.length} of {resources.count} documentation
                 {searchQuery && ` for "${searchQuery}"`}
               </p>
             </div>
 
-            {/* Resource Grid/List */}
             <div className={`grid ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1'} gap-6 mb-8`}>
               {resources.data.map((resource) => (
-                <Card key={resource.id} className="bg-gray-800/50 border-gray-700 hover:border-indigo-500/50 transition-colors group">
+                <Card key={resource.id} className="bg-gray-800/50 border-gray-700 hover:border-cyber-cyan/50 transition-colors group">
                   <CardHeader>
                     <div className="flex items-start justify-between">
                       <div className="flex items-center space-x-2">
-                        <MessageSquare className="h-4 w-4 text-indigo-400" />
+                        <FileText className="h-4 w-4 text-cyan-400" />
                         <Badge variant="outline" className={getDifficultyColor(resource.difficulty_level)}>
                           {resource.difficulty_level}
                         </Badge>
@@ -248,7 +244,7 @@ export default function CommunityDiscordPage() {
                       )}
                     </div>
                     
-                    <CardTitle className="text-white line-clamp-2 group-hover:text-indigo-400 transition-colors">
+                    <CardTitle className="text-white line-clamp-2 group-hover:text-cyber-cyan transition-colors">
                       {resource.title}
                     </CardTitle>
                     
@@ -284,7 +280,7 @@ export default function CommunityDiscordPage() {
                         disabled={resource.is_premium && !canAccessPremiumResources}
                       >
                         <Link href={`/resource/${resource.slug}`}>
-                          View Details
+                          View Documentation
                         </Link>
                       </Button>
                       
@@ -305,7 +301,7 @@ export default function CommunityDiscordPage() {
 
                     {resource.is_premium && !canAccessPremiumResources && (
                       <p className="text-xs text-yellow-400 mt-2">
-                        Premium community - upgrade to access
+                        Premium documentation - upgrade to access
                       </p>
                     )}
                   </CardContent>
@@ -313,7 +309,6 @@ export default function CommunityDiscordPage() {
               ))}
             </div>
 
-            {/* Pagination */}
             {resources.totalPages > 1 && (
               <div className="flex justify-center items-center space-x-4">
                 <Button
@@ -354,28 +349,35 @@ export default function CommunityDiscordPage() {
           </>
         )}
 
-        {/* Quick Links to Other Community Sections */}
+        {/* Quick Links */}
         <div className="mt-12 pt-8 border-t border-gray-700">
-          <h2 className="text-xl font-semibold text-white mb-4">Explore Other Community Platforms</h2>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            <Link href="/community/reddit" className="group">
+          <h2 className="text-xl font-semibold text-white mb-4">Explore More Academy Content</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <Link href="/academy/courses" className="group">
               <div className="flex items-center space-x-2 p-3 bg-gray-800/30 rounded-lg hover:bg-gray-800/50 transition-colors">
-                <Users className="h-4 w-4 text-orange-400" />
-                <span className="text-sm text-white group-hover:text-orange-400 transition-colors">Reddit</span>
+                <GraduationCap className="h-4 w-4 text-blue-400" />
+                <span className="text-sm text-white group-hover:text-blue-400 transition-colors">Courses</span>
               </div>
             </Link>
             
-            <Link href="/community/forums" className="group">
+            <Link href="/academy/videos" className="group">
               <div className="flex items-center space-x-2 p-3 bg-gray-800/30 rounded-lg hover:bg-gray-800/50 transition-colors">
-                <Users className="h-4 w-4 text-blue-400" />
-                <span className="text-sm text-white group-hover:text-blue-400 transition-colors">Forums</span>
+                <GraduationCap className="h-4 w-4 text-red-400" />
+                <span className="text-sm text-white group-hover:text-red-400 transition-colors">Videos</span>
               </div>
             </Link>
             
-            <Link href="/community/skool" className="group">
+            <Link href="/academy/cheatsheets" className="group">
               <div className="flex items-center space-x-2 p-3 bg-gray-800/30 rounded-lg hover:bg-gray-800/50 transition-colors">
-                <Users className="h-4 w-4 text-purple-400" />
-                <span className="text-sm text-white group-hover:text-purple-400 transition-colors">Skool</span>
+                <GraduationCap className="h-4 w-4 text-yellow-400" />
+                <span className="text-sm text-white group-hover:text-yellow-400 transition-colors">Cheat Sheets</span>
+              </div>
+            </Link>
+            
+            <Link href="/academy/learning-paths" className="group">
+              <div className="flex items-center space-x-2 p-3 bg-gray-800/30 rounded-lg hover:bg-gray-800/50 transition-colors">
+                <GraduationCap className="h-4 w-4 text-green-400" />
+                <span className="text-sm text-white group-hover:text-green-400 transition-colors">Learning Paths</span>
               </div>
             </Link>
           </div>

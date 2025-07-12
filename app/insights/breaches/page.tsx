@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { 
-  MessageSquare, 
+  AlertCircle, 
   Search, 
   Clock, 
   Eye, 
@@ -22,7 +22,8 @@ import {
   List,
   ChevronRight,
   Home,
-  Users
+  TrendingUp,
+  Database
 } from 'lucide-react'
 import Link from 'next/link'
 import BookmarkButton from '@/components/bookmarks/BookmarkButton'
@@ -33,7 +34,7 @@ const difficultyColors = {
   advanced: 'bg-red-500/10 text-red-400 border-red-500/20'
 }
 
-export default function CommunityDiscordPage() {
+export default function InsightsBreachesPage() {
   const { user } = useAuth()
   const { canAccessPremiumResources } = useSubscription() || { canAccessPremiumResources: false }
   
@@ -54,7 +55,7 @@ export default function CommunityDiscordPage() {
         setLoading(true)
         
         const result = await ResourcesService.getResources({
-          resourceType: 'community',
+          resourceType: 'breach',
           difficultyLevel: selectedDifficulty === 'all' ? undefined : selectedDifficulty,
           isPremium: premiumFilter === 'all' ? undefined : premiumFilter === 'premium',
           isPublished: true,
@@ -69,7 +70,7 @@ export default function CommunityDiscordPage() {
           setResources(result.data)
         }
       } catch (error) {
-        console.error('Error fetching Discord communities:', error)
+        console.error('Error fetching data breaches:', error)
       } finally {
         setLoading(false)
       }
@@ -99,57 +100,55 @@ export default function CommunityDiscordPage() {
             <Home className="h-4 w-4" />
           </Link>
           <ChevronRight className="h-4 w-4" />
-          <Link href="/community" className="hover:text-cyber-cyan transition-colors">
-            Community
+          <Link href="/insights" className="hover:text-cyber-cyan transition-colors">
+            Insights
           </Link>
           <ChevronRight className="h-4 w-4" />
-          <span className="text-white">Discord</span>
+          <span className="text-white">Data Breaches</span>
         </div>
 
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center space-x-4 mb-4">
-            <div className="p-3 bg-indigo-500/10 border-indigo-500/20 border rounded-lg">
-              <MessageSquare className="h-8 w-8 text-indigo-400" />
+            <div className="p-3 bg-orange-500/10 border-orange-500/20 border rounded-lg">
+              <Database className="h-8 w-8 text-orange-400" />
             </div>
             <div>
-              <h1 className="text-4xl font-bold text-white">Discord Communities</h1>
-              <p className="text-xl text-gray-300 mt-2">Join active Discord servers for cybersecurity discussions and networking</p>
+              <h1 className="text-4xl font-bold text-white">Data Breaches</h1>
+              <p className="text-xl text-gray-300 mt-2">Analysis of recent data breaches and security incidents</p>
             </div>
           </div>
           
           <div className="flex items-center space-x-4 text-sm text-gray-400">
-            <span>{resources?.count || 0} Discord communities</span>
-            <Badge variant="outline" className="text-indigo-400 border-indigo-500/20">
-              Community
+            <span>{resources?.count || 0} breach reports</span>
+            <Badge variant="outline" className="text-orange-400 border-orange-500/20">
+              Insights
             </Badge>
           </div>
         </div>
 
         {/* Search and Filters */}
         <div className="mb-8 space-y-4">
-          {/* Search Bar */}
           <div className="relative">
             <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
             <Input
-              placeholder="Search Discord communities..."
+              placeholder="Search data breaches..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10 bg-gray-800 border-gray-700 text-white"
             />
           </div>
 
-          {/* Filter Row */}
           <div className="flex flex-wrap gap-4 items-center">
             <Select value={selectedDifficulty} onValueChange={setSelectedDifficulty}>
               <SelectTrigger className="w-48 bg-gray-800 border-gray-700">
-                <SelectValue placeholder="Difficulty Level" />
+                <SelectValue placeholder="Impact Level" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Levels</SelectItem>
-                <SelectItem value="beginner">Beginner</SelectItem>
-                <SelectItem value="intermediate">Intermediate</SelectItem>
-                <SelectItem value="advanced">Advanced</SelectItem>
+                <SelectItem value="beginner">Low Impact</SelectItem>
+                <SelectItem value="intermediate">Medium Impact</SelectItem>
+                <SelectItem value="advanced">High Impact</SelectItem>
               </SelectContent>
             </Select>
 
@@ -158,9 +157,9 @@ export default function CommunityDiscordPage() {
                 <SelectValue placeholder="Access Level" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Communities</SelectItem>
-                <SelectItem value="free">Free Only</SelectItem>
-                <SelectItem value="premium">Premium Only</SelectItem>
+                <SelectItem value="all">All Reports</SelectItem>
+                <SelectItem value="free">Public Reports</SelectItem>
+                <SelectItem value="premium">Detailed Analysis</SelectItem>
               </SelectContent>
             </Select>
 
@@ -169,10 +168,10 @@ export default function CommunityDiscordPage() {
                 <SelectValue placeholder="Sort By" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="created_at">Newest</SelectItem>
+                <SelectItem value="created_at">Most Recent</SelectItem>
                 <SelectItem value="title">Alphabetical</SelectItem>
                 <SelectItem value="view_count">Most Viewed</SelectItem>
-                <SelectItem value="like_count">Most Liked</SelectItem>
+                <SelectItem value="like_count">Most Discussed</SelectItem>
               </SelectContent>
             </Select>
 
@@ -210,12 +209,12 @@ export default function CommunityDiscordPage() {
           </div>
         ) : !resources?.data?.length ? (
           <div className="text-center py-12">
-            <div className="p-4 bg-indigo-500/10 rounded-lg inline-block mb-4">
-              <MessageSquare className="h-12 w-12 text-indigo-400" />
+            <div className="p-4 bg-orange-500/10 rounded-lg inline-block mb-4">
+              <Database className="h-12 w-12 text-orange-400" />
             </div>
-            <h3 className="text-xl font-semibold text-white mb-2">No Discord communities found</h3>
+            <h3 className="text-xl font-semibold text-white mb-2">No breach reports found</h3>
             <p className="text-gray-400 mb-4">
-              {searchQuery ? 'Try adjusting your search or filters' : 'No Discord communities are available yet'}
+              {searchQuery ? 'Try adjusting your search or filters' : 'No data breach reports are available yet'}
             </p>
             <Button onClick={resetFilters} variant="outline">
               Clear Filters
@@ -223,24 +222,23 @@ export default function CommunityDiscordPage() {
           </div>
         ) : (
           <>
-            {/* Results Count */}
             <div className="mb-6">
               <p className="text-gray-400">
-                Showing {resources.data.length} of {resources.count} Discord communities
+                Showing {resources.data.length} of {resources.count} breach reports
                 {searchQuery && ` for "${searchQuery}"`}
               </p>
             </div>
 
-            {/* Resource Grid/List */}
             <div className={`grid ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1'} gap-6 mb-8`}>
               {resources.data.map((resource) => (
-                <Card key={resource.id} className="bg-gray-800/50 border-gray-700 hover:border-indigo-500/50 transition-colors group">
+                <Card key={resource.id} className="bg-gray-800/50 border-gray-700 hover:border-cyber-cyan/50 transition-colors group">
                   <CardHeader>
                     <div className="flex items-start justify-between">
                       <div className="flex items-center space-x-2">
-                        <MessageSquare className="h-4 w-4 text-indigo-400" />
+                        <AlertCircle className="h-4 w-4 text-orange-400" />
                         <Badge variant="outline" className={getDifficultyColor(resource.difficulty_level)}>
-                          {resource.difficulty_level}
+                          {resource.difficulty_level === 'beginner' ? 'Low Impact' : 
+                           resource.difficulty_level === 'intermediate' ? 'Medium Impact' : 'High Impact'}
                         </Badge>
                       </div>
                       {resource.is_premium && (
@@ -248,7 +246,7 @@ export default function CommunityDiscordPage() {
                       )}
                     </div>
                     
-                    <CardTitle className="text-white line-clamp-2 group-hover:text-indigo-400 transition-colors">
+                    <CardTitle className="text-white line-clamp-2 group-hover:text-cyber-cyan transition-colors">
                       {resource.title}
                     </CardTitle>
                     
@@ -271,7 +269,7 @@ export default function CommunityDiscordPage() {
                         {resource.estimated_time_minutes && (
                           <div className="flex items-center space-x-1">
                             <Clock className="h-4 w-4" />
-                            <span>{resource.estimated_time_minutes}m</span>
+                            <span>{resource.estimated_time_minutes}m read</span>
                           </div>
                         )}
                       </div>
@@ -284,7 +282,7 @@ export default function CommunityDiscordPage() {
                         disabled={resource.is_premium && !canAccessPremiumResources}
                       >
                         <Link href={`/resource/${resource.slug}`}>
-                          View Details
+                          View Analysis
                         </Link>
                       </Button>
                       
@@ -305,7 +303,7 @@ export default function CommunityDiscordPage() {
 
                     {resource.is_premium && !canAccessPremiumResources && (
                       <p className="text-xs text-yellow-400 mt-2">
-                        Premium community - upgrade to access
+                        Detailed breach analysis - upgrade to access
                       </p>
                     )}
                   </CardContent>
@@ -313,7 +311,6 @@ export default function CommunityDiscordPage() {
               ))}
             </div>
 
-            {/* Pagination */}
             {resources.totalPages > 1 && (
               <div className="flex justify-center items-center space-x-4">
                 <Button
@@ -354,28 +351,35 @@ export default function CommunityDiscordPage() {
           </>
         )}
 
-        {/* Quick Links to Other Community Sections */}
+        {/* Quick Links */}
         <div className="mt-12 pt-8 border-t border-gray-700">
-          <h2 className="text-xl font-semibold text-white mb-4">Explore Other Community Platforms</h2>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            <Link href="/community/reddit" className="group">
+          <h2 className="text-xl font-semibold text-white mb-4">Explore More Insights Content</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <Link href="/insights/news" className="group">
               <div className="flex items-center space-x-2 p-3 bg-gray-800/30 rounded-lg hover:bg-gray-800/50 transition-colors">
-                <Users className="h-4 w-4 text-orange-400" />
-                <span className="text-sm text-white group-hover:text-orange-400 transition-colors">Reddit</span>
+                <TrendingUp className="h-4 w-4 text-blue-400" />
+                <span className="text-sm text-white group-hover:text-blue-400 transition-colors">Latest News</span>
               </div>
             </Link>
             
-            <Link href="/community/forums" className="group">
+            <Link href="/insights/tools" className="group">
               <div className="flex items-center space-x-2 p-3 bg-gray-800/30 rounded-lg hover:bg-gray-800/50 transition-colors">
-                <Users className="h-4 w-4 text-blue-400" />
-                <span className="text-sm text-white group-hover:text-blue-400 transition-colors">Forums</span>
+                <TrendingUp className="h-4 w-4 text-purple-400" />
+                <span className="text-sm text-white group-hover:text-purple-400 transition-colors">Security Tools</span>
               </div>
             </Link>
             
-            <Link href="/community/skool" className="group">
+            <Link href="/insights/podcasts" className="group">
               <div className="flex items-center space-x-2 p-3 bg-gray-800/30 rounded-lg hover:bg-gray-800/50 transition-colors">
-                <Users className="h-4 w-4 text-purple-400" />
-                <span className="text-sm text-white group-hover:text-purple-400 transition-colors">Skool</span>
+                <TrendingUp className="h-4 w-4 text-green-400" />
+                <span className="text-sm text-white group-hover:text-green-400 transition-colors">Podcasts</span>
+              </div>
+            </Link>
+            
+            <Link href="/insights/threats" className="group">
+              <div className="flex items-center space-x-2 p-3 bg-gray-800/30 rounded-lg hover:bg-gray-800/50 transition-colors">
+                <TrendingUp className="h-4 w-4 text-red-400" />
+                <span className="text-sm text-white group-hover:text-red-400 transition-colors">Threat Intel</span>
               </div>
             </Link>
           </div>

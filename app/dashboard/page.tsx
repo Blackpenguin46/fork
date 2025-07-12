@@ -162,10 +162,10 @@ function DashboardContent() {
   // Quick actions based on subscription tier
   const freeQuickActions = [
     {
-      title: 'Browse All Resources',
-      description: 'Explore our complete cybersecurity library',
+      title: 'Start Learning',
+      description: 'Begin your cybersecurity education journey',
       icon: <BookOpen className="w-6 h-6" />,
-      href: '/resources',
+      href: '/academy',
       color: 'green'
     },
     {
@@ -193,10 +193,10 @@ function DashboardContent() {
 
   const proQuickActions = [
     {
-      title: 'Resource Library',
-      description: 'Access all premium and free resources',
+      title: 'Premium Academy',
+      description: 'Access all premium courses and content',
       icon: <BookOpen className="w-6 h-6" />,
-      href: '/resources',
+      href: '/academy',
       color: 'green'
     },
     {

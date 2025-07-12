@@ -34,7 +34,7 @@ export interface Resource {
   slug: string
   description: string
   content?: string
-  resource_type: 'course' | 'article' | 'video' | 'tool' | 'community' | 'documentation'
+  resource_type: 'course' | 'article' | 'video' | 'tool' | 'community' | 'documentation' | 'cheat_sheet' | 'podcast' | 'threat' | 'breach'
   url?: string
   thumbnail_url?: string
   difficulty_level: 'beginner' | 'intermediate' | 'advanced'
@@ -47,6 +47,7 @@ export interface Resource {
   bookmark_count: number
   author_id?: string
   created_by?: string
+  category_id?: string
   seo_title?: string
   seo_description?: string
   seo_keywords?: string[]

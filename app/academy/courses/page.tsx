@@ -1,9 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useParams } from 'next/navigation'
-import { ResourcesService, CategoriesService } from '@/lib/api'
-import type { Resource, Category, PaginatedResponse } from '@/lib/api'
+import { ResourcesService } from '@/lib/api'
+import type { Resource, PaginatedResponse } from '@/lib/api'
 import { useAuth } from '@/app/providers'
 import { useSubscription } from '@/hooks/useSubscription'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -13,12 +12,6 @@ import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { 
   BookOpen, 
-  Play, 
-  FileText, 
-  Wrench, 
-  Users, 
-  Podcast, 
-  Video,
   Search, 
   Clock, 
   Eye, 
@@ -29,21 +22,10 @@ import {
   List,
   ChevronRight,
   Home,
-  ArrowLeft
+  GraduationCap
 } from 'lucide-react'
 import Link from 'next/link'
 import BookmarkButton from '@/components/bookmarks/BookmarkButton'
-
-const resourceTypeIcons = {
-  course: BookOpen,
-  article: FileText,
-  video: Video,
-  tool: Wrench,
-  community: Users,
-  podcast: Podcast,
-  documentation: FileText,
-  cheatsheet: FileText
-}
 
 const difficultyColors = {
   beginner: 'bg-green-500/10 text-green-400 border-green-500/20',
@@ -51,17 +33,13 @@ const difficultyColors = {
   advanced: 'bg-red-500/10 text-red-400 border-red-500/20'
 }
 
-export default function CategoryPage() {
-  const params = useParams()
+export default function AcademyCoursesPage() {
   const { user } = useAuth()
   const { canAccessPremiumResources } = useSubscription() || { canAccessPremiumResources: false }
   
-  const [category, setCategory] = useState<Category | null>(null)
-  const [subcategories, setSubcategories] = useState<Category[]>([])
   const [resources, setResources] = useState<PaginatedResponse<Resource> | null>(null)
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
-  const [selectedType, setSelectedType] = useState<string>('all')
   const [selectedDifficulty, setSelectedDifficulty] = useState<string>('all')
   const [premiumFilter, setPremiumFilter] = useState<string>('all')
   const [sortBy, setSortBy] = useState<'created_at' | 'view_count' | 'like_count' | 'title'>('created_at')
@@ -69,67 +47,36 @@ export default function CategoryPage() {
   const [currentPage, setCurrentPage] = useState(1)
   
   const pageSize = 24
-  const categorySlug = params.slug as string
 
   useEffect(() => {
-    const fetchCategoryData = async () => {
+    const fetchResources = async () => {
       try {
         setLoading(true)
         
-        const [categoryResult, subcategoriesResult, resourcesResult] = await Promise.allSettled([
-          CategoriesService.getCategory(categorySlug),
-          CategoriesService.getCategories({ parentId: categorySlug }),
-          ResourcesService.getResources({
-            categoryId: categorySlug,
-            resourceType: selectedType === 'all' ? undefined : selectedType,
-            difficultyLevel: selectedDifficulty === 'all' ? undefined : selectedDifficulty,
-            isPremium: premiumFilter === 'all' ? undefined : premiumFilter === 'premium',
-            isPublished: true,
-            searchQuery: searchQuery || undefined,
-            sortBy,
-            sortOrder: 'desc',
-            page: currentPage,
-            limit: pageSize
-          })
-        ])
+        const result = await ResourcesService.getResources({
+          resourceType: 'course',
+          difficultyLevel: selectedDifficulty === 'all' ? undefined : selectedDifficulty,
+          isPremium: premiumFilter === 'all' ? undefined : premiumFilter === 'premium',
+          isPublished: true,
+          searchQuery: searchQuery || undefined,
+          sortBy,
+          sortOrder: 'desc',
+          page: currentPage,
+          limit: pageSize
+        })
 
-        if (categoryResult.status === 'fulfilled' && categoryResult.value.success && categoryResult.value.data) {
-          setCategory(categoryResult.value.data)
-        }
-
-        if (subcategoriesResult.status === 'fulfilled' && subcategoriesResult.value.success) {
-          setSubcategories(subcategoriesResult.value.data?.data || [])
-        }
-
-        if (resourcesResult.status === 'fulfilled' && resourcesResult.value.success && resourcesResult.value.data) {
-          setResources(resourcesResult.value.data)
+        if (result.success && result.data) {
+          setResources(result.data)
         }
       } catch (error) {
-        console.error('Error fetching category data:', error)
+        console.error('Error fetching courses:', error)
       } finally {
         setLoading(false)
       }
     }
 
-    fetchCategoryData()
-  }, [categorySlug, selectedType, selectedDifficulty, premiumFilter, sortBy, searchQuery, currentPage])
-
-  const resourceTypes = [
-    { value: 'all', label: 'All Types', icon: Grid3X3 },
-    { value: 'course', label: 'Courses', icon: BookOpen },
-    { value: 'article', label: 'Articles', icon: FileText },
-    { value: 'video', label: 'Videos', icon: Video },
-    { value: 'tool', label: 'Tools', icon: Wrench },
-    { value: 'community', label: 'Communities', icon: Users },
-    { value: 'podcast', label: 'Podcasts', icon: Podcast },
-    { value: 'documentation', label: 'Documentation', icon: FileText },
-    { value: 'cheatsheet', label: 'Cheat Sheets', icon: FileText }
-  ]
-
-  const getResourceIcon = (type: string) => {
-    const IconComponent = resourceTypeIcons[type as keyof typeof resourceTypeIcons] || FileText
-    return <IconComponent className="h-4 w-4" />
-  }
+    fetchResources()
+  }, [selectedDifficulty, premiumFilter, sortBy, searchQuery, currentPage])
 
   const getDifficultyColor = (level: string) => {
     return difficultyColors[level as keyof typeof difficultyColors] || 'bg-gray-500/10 text-gray-400 border-gray-500/20'
@@ -137,46 +84,10 @@ export default function CategoryPage() {
 
   const resetFilters = () => {
     setSearchQuery('')
-    setSelectedType('all')
     setSelectedDifficulty('all')
     setPremiumFilter('all')
     setSortBy('created_at')
     setCurrentPage(1)
-  }
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-deep-space-blue pt-16">
-        <div className="container mx-auto px-4 py-8">
-          <div className="animate-pulse">
-            <div className="h-8 bg-gray-700 rounded w-64 mb-4"></div>
-            <div className="h-6 bg-gray-700 rounded w-96 mb-8"></div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {[...Array(12)].map((_, i) => (
-                <div key={i} className="h-64 bg-gray-700 rounded-lg"></div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
-  if (!category) {
-    return (
-      <div className="min-h-screen bg-deep-space-blue pt-16">
-        <div className="container mx-auto px-4 py-8 text-center">
-          <h1 className="text-2xl font-bold text-white mb-4">Category Not Found</h1>
-          <p className="text-gray-400 mb-6">The category you&apos;re looking for doesn&apos;t exist.</p>
-          <Link href="/resources">
-            <Button>
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Resources
-            </Button>
-          </Link>
-        </div>
-      </div>
-    )
   }
 
   return (
@@ -188,73 +99,32 @@ export default function CategoryPage() {
             <Home className="h-4 w-4" />
           </Link>
           <ChevronRight className="h-4 w-4" />
-          <Link href="/resources" className="hover:text-cyber-cyan transition-colors">
-            Resources
+          <Link href="/academy" className="hover:text-cyber-cyan transition-colors">
+            Academy
           </Link>
           <ChevronRight className="h-4 w-4" />
-          <span className="text-white">{category.name}</span>
+          <span className="text-white">Courses</span>
         </div>
 
-        {/* Category Header */}
+        {/* Header */}
         <div className="mb-8">
-          <div className="flex items-center space-x-3 mb-4">
-            <div className="p-2 bg-cyber-cyan/20 rounded-lg">
-              <BookOpen className="h-8 w-8 text-cyber-cyan" />
+          <div className="flex items-center space-x-4 mb-4">
+            <div className="p-3 bg-blue-500/10 border-blue-500/20 border rounded-lg">
+              <BookOpen className="h-8 w-8 text-blue-400" />
             </div>
             <div>
-              <h1 className="text-4xl font-bold text-white">{category.name}</h1>
-              {category.description && (
-                <p className="text-xl text-gray-300 mt-2">{category.description}</p>
-              )}
+              <h1 className="text-4xl font-bold text-white">Cybersecurity Courses</h1>
+              <p className="text-xl text-gray-300 mt-2">Comprehensive structured learning paths and courses</p>
             </div>
           </div>
           
           <div className="flex items-center space-x-4 text-sm text-gray-400">
-            <span>{resources?.count || 0} resources</span>
-            {subcategories.length > 0 && (
-              <span>{subcategories.length} subcategories</span>
-            )}
+            <span>{resources?.count || 0} courses</span>
+            <Badge variant="outline" className="text-blue-400 border-blue-500/20">
+              Academy
+            </Badge>
           </div>
         </div>
-
-        {/* Subcategories */}
-        {subcategories.length > 0 && (
-          <div className="mb-8">
-            <h2 className="text-xl font-semibold text-white mb-4">Subcategories</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {subcategories.map((subcategory) => (
-                <Link 
-                  key={subcategory.id} 
-                  href={`/category/${subcategory.slug}`}
-                  className="group"
-                >
-                  <Card className="bg-gray-800/50 border-gray-700 hover:border-cyber-cyan/50 transition-all duration-300">
-                    <CardHeader className="pb-3">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-2">
-                          <div className="p-2 bg-gray-700/50 rounded-lg group-hover:bg-cyber-cyan/20 transition-colors">
-                            <BookOpen className="h-4 w-4 text-gray-400 group-hover:text-cyber-cyan" />
-                          </div>
-                          <div>
-                            <CardTitle className="text-white text-sm group-hover:text-cyber-cyan transition-colors">
-                              {subcategory.name}
-                            </CardTitle>
-                            {subcategory.description && (
-                              <CardDescription className="text-xs text-gray-400 mt-1">
-                                {subcategory.description}
-                              </CardDescription>
-                            )}
-                          </div>
-                        </div>
-                        <ChevronRight className="h-4 w-4 text-gray-400 group-hover:text-cyber-cyan group-hover:translate-x-1 transition-all" />
-                      </div>
-                    </CardHeader>
-                  </Card>
-                </Link>
-              ))}
-            </div>
-          </div>
-        )}
 
         {/* Search and Filters */}
         <div className="mb-8 space-y-4">
@@ -262,7 +132,7 @@ export default function CategoryPage() {
           <div className="relative">
             <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
             <Input
-              placeholder={`Search in ${category.name}...`}
+              placeholder="Search courses..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10 bg-gray-800 border-gray-700 text-white"
@@ -271,22 +141,6 @@ export default function CategoryPage() {
 
           {/* Filter Row */}
           <div className="flex flex-wrap gap-4 items-center">
-            <Select value={selectedType} onValueChange={setSelectedType}>
-              <SelectTrigger className="w-48 bg-gray-800 border-gray-700">
-                <SelectValue placeholder="Resource Type" />
-              </SelectTrigger>
-              <SelectContent>
-                {resourceTypes.map((type) => (
-                  <SelectItem key={type.value} value={type.value}>
-                    <div className="flex items-center space-x-2">
-                      <type.icon className="h-4 w-4" />
-                      <span>{type.label}</span>
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
             <Select value={selectedDifficulty} onValueChange={setSelectedDifficulty}>
               <SelectTrigger className="w-48 bg-gray-800 border-gray-700">
                 <SelectValue placeholder="Difficulty Level" />
@@ -304,7 +158,7 @@ export default function CategoryPage() {
                 <SelectValue placeholder="Access Level" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Resources</SelectItem>
+                <SelectItem value="all">All Courses</SelectItem>
                 <SelectItem value="free">Free Only</SelectItem>
                 <SelectItem value="premium">Premium Only</SelectItem>
               </SelectContent>
@@ -346,9 +200,23 @@ export default function CategoryPage() {
         </div>
 
         {/* Results */}
-        {!resources?.data?.length ? (
+        {loading ? (
+          <div className={`grid ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1'} gap-6`}>
+            {[...Array(12)].map((_, i) => (
+              <div key={i} className="animate-pulse">
+                <div className="h-64 bg-gray-700 rounded-lg"></div>
+              </div>
+            ))}
+          </div>
+        ) : !resources?.data?.length ? (
           <div className="text-center py-12">
-            <p className="text-gray-400 mb-4">No resources found in this category</p>
+            <div className="p-4 bg-blue-500/10 rounded-lg inline-block mb-4">
+              <BookOpen className="h-12 w-12 text-blue-400" />
+            </div>
+            <h3 className="text-xl font-semibold text-white mb-2">No courses found</h3>
+            <p className="text-gray-400 mb-4">
+              {searchQuery ? 'Try adjusting your search or filters' : 'No courses are available yet'}
+            </p>
             <Button onClick={resetFilters} variant="outline">
               Clear Filters
             </Button>
@@ -358,7 +226,7 @@ export default function CategoryPage() {
             {/* Results Count */}
             <div className="mb-6">
               <p className="text-gray-400">
-                Showing {resources.data.length} of {resources.count} resources in {category.name}
+                Showing {resources.data.length} of {resources.count} courses
                 {searchQuery && ` for "${searchQuery}"`}
               </p>
             </div>
@@ -370,7 +238,7 @@ export default function CategoryPage() {
                   <CardHeader>
                     <div className="flex items-start justify-between">
                       <div className="flex items-center space-x-2">
-                        {getResourceIcon(resource.resource_type)}
+                        <BookOpen className="h-4 w-4 text-blue-400" />
                         <Badge variant="outline" className={getDifficultyColor(resource.difficulty_level)}>
                           {resource.difficulty_level}
                         </Badge>
@@ -416,7 +284,7 @@ export default function CategoryPage() {
                         disabled={resource.is_premium && !canAccessPremiumResources}
                       >
                         <Link href={`/resource/${resource.slug}`}>
-                          View Resource
+                          View Course
                         </Link>
                       </Button>
                       
@@ -437,7 +305,7 @@ export default function CategoryPage() {
 
                     {resource.is_premium && !canAccessPremiumResources && (
                       <p className="text-xs text-yellow-400 mt-2">
-                        Premium resource - upgrade to access
+                        Premium course - upgrade to access
                       </p>
                     )}
                   </CardContent>
@@ -485,6 +353,40 @@ export default function CategoryPage() {
             )}
           </>
         )}
+
+        {/* Quick Links to Other Academy Sections */}
+        <div className="mt-12 pt-8 border-t border-gray-700">
+          <h2 className="text-xl font-semibold text-white mb-4">Explore More Academy Content</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <Link href="/academy/videos" className="group">
+              <div className="flex items-center space-x-2 p-3 bg-gray-800/30 rounded-lg hover:bg-gray-800/50 transition-colors">
+                <GraduationCap className="h-4 w-4 text-red-400" />
+                <span className="text-sm text-white group-hover:text-red-400 transition-colors">Videos</span>
+              </div>
+            </Link>
+            
+            <Link href="/academy/documentation" className="group">
+              <div className="flex items-center space-x-2 p-3 bg-gray-800/30 rounded-lg hover:bg-gray-800/50 transition-colors">
+                <GraduationCap className="h-4 w-4 text-cyan-400" />
+                <span className="text-sm text-white group-hover:text-cyan-400 transition-colors">Documentation</span>
+              </div>
+            </Link>
+            
+            <Link href="/academy/cheatsheets" className="group">
+              <div className="flex items-center space-x-2 p-3 bg-gray-800/30 rounded-lg hover:bg-gray-800/50 transition-colors">
+                <GraduationCap className="h-4 w-4 text-yellow-400" />
+                <span className="text-sm text-white group-hover:text-yellow-400 transition-colors">Cheat Sheets</span>
+              </div>
+            </Link>
+            
+            <Link href="/academy/learning-paths" className="group">
+              <div className="flex items-center space-x-2 p-3 bg-gray-800/30 rounded-lg hover:bg-gray-800/50 transition-colors">
+                <GraduationCap className="h-4 w-4 text-green-400" />
+                <span className="text-sm text-white group-hover:text-green-400 transition-colors">Learning Paths</span>
+              </div>
+            </Link>
+          </div>
+        </div>
       </div>
     </div>
   )

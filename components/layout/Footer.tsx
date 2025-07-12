@@ -27,20 +27,10 @@ export default function Footer() {
       title: 'Learning',
       links: [
         { name: 'Learning Paths', href: '/academy/learning-paths' },
-        { name: 'YouTube Channels', href: '/academy/youtube' },
-        { name: 'Cheat Sheets', href: '/academy/cheatsheets' },
+        { name: 'Courses', href: '/academy/courses' },
+        { name: 'Videos', href: '/academy/videos' },
         { name: 'Documentation', href: '/academy/documentation' },
-      ]
-    },
-    {
-      title: 'Resources',
-      links: [
-        { name: 'Browse All Resources', href: '/resources' },
-        { name: 'Categories', href: '/categories' },
-        { name: 'Courses', href: '/courses' },
-        { name: 'Articles', href: '/articles' },
-        { name: 'Videos', href: '/videos' },
-        { name: 'Tools', href: '/tools' },
+        { name: 'Cheat Sheets', href: '/academy/cheatsheets' },
       ]
     },
     {
@@ -49,6 +39,8 @@ export default function Footer() {
         { name: 'Latest News', href: '/insights/news' },
         { name: 'Data Breaches', href: '/insights/breaches' },
         { name: 'Threat Intelligence', href: '/insights/threats' },
+        { name: 'Security Tools', href: '/insights/tools' },
+        { name: 'Podcasts', href: '/insights/podcasts' },
         { name: 'Pricing', href: '/pricing' },
       ]
     },

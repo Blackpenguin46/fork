@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { 
-  MessageSquare, 
+  Users, 
   Search, 
   Clock, 
   Eye, 
@@ -22,7 +22,7 @@ import {
   List,
   ChevronRight,
   Home,
-  Users
+  MessageSquare
 } from 'lucide-react'
 import Link from 'next/link'
 import BookmarkButton from '@/components/bookmarks/BookmarkButton'
@@ -33,7 +33,7 @@ const difficultyColors = {
   advanced: 'bg-red-500/10 text-red-400 border-red-500/20'
 }
 
-export default function CommunityDiscordPage() {
+export default function CommunityForumsPage() {
   const { user } = useAuth()
   const { canAccessPremiumResources } = useSubscription() || { canAccessPremiumResources: false }
   
@@ -69,7 +69,7 @@ export default function CommunityDiscordPage() {
           setResources(result.data)
         }
       } catch (error) {
-        console.error('Error fetching Discord communities:', error)
+        console.error('Error fetching forum communities:', error)
       } finally {
         setLoading(false)
       }
@@ -103,24 +103,24 @@ export default function CommunityDiscordPage() {
             Community
           </Link>
           <ChevronRight className="h-4 w-4" />
-          <span className="text-white">Discord</span>
+          <span className="text-white">Forums</span>
         </div>
 
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center space-x-4 mb-4">
-            <div className="p-3 bg-indigo-500/10 border-indigo-500/20 border rounded-lg">
-              <MessageSquare className="h-8 w-8 text-indigo-400" />
+            <div className="p-3 bg-blue-500/10 border-blue-500/20 border rounded-lg">
+              <Users className="h-8 w-8 text-blue-400" />
             </div>
             <div>
-              <h1 className="text-4xl font-bold text-white">Discord Communities</h1>
-              <p className="text-xl text-gray-300 mt-2">Join active Discord servers for cybersecurity discussions and networking</p>
+              <h1 className="text-4xl font-bold text-white">Traditional Forums</h1>
+              <p className="text-xl text-gray-300 mt-2">Explore established cybersecurity forums with in-depth discussions and expertise</p>
             </div>
           </div>
           
           <div className="flex items-center space-x-4 text-sm text-gray-400">
-            <span>{resources?.count || 0} Discord communities</span>
-            <Badge variant="outline" className="text-indigo-400 border-indigo-500/20">
+            <span>{resources?.count || 0} forum communities</span>
+            <Badge variant="outline" className="text-blue-400 border-blue-500/20">
               Community
             </Badge>
           </div>
@@ -132,7 +132,7 @@ export default function CommunityDiscordPage() {
           <div className="relative">
             <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
             <Input
-              placeholder="Search Discord communities..."
+              placeholder="Search forum communities..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10 bg-gray-800 border-gray-700 text-white"
@@ -210,12 +210,12 @@ export default function CommunityDiscordPage() {
           </div>
         ) : !resources?.data?.length ? (
           <div className="text-center py-12">
-            <div className="p-4 bg-indigo-500/10 rounded-lg inline-block mb-4">
-              <MessageSquare className="h-12 w-12 text-indigo-400" />
+            <div className="p-4 bg-blue-500/10 rounded-lg inline-block mb-4">
+              <Users className="h-12 w-12 text-blue-400" />
             </div>
-            <h3 className="text-xl font-semibold text-white mb-2">No Discord communities found</h3>
+            <h3 className="text-xl font-semibold text-white mb-2">No forum communities found</h3>
             <p className="text-gray-400 mb-4">
-              {searchQuery ? 'Try adjusting your search or filters' : 'No Discord communities are available yet'}
+              {searchQuery ? 'Try adjusting your search or filters' : 'No forum communities are available yet'}
             </p>
             <Button onClick={resetFilters} variant="outline">
               Clear Filters
@@ -226,7 +226,7 @@ export default function CommunityDiscordPage() {
             {/* Results Count */}
             <div className="mb-6">
               <p className="text-gray-400">
-                Showing {resources.data.length} of {resources.count} Discord communities
+                Showing {resources.data.length} of {resources.count} forum communities
                 {searchQuery && ` for "${searchQuery}"`}
               </p>
             </div>
@@ -234,11 +234,11 @@ export default function CommunityDiscordPage() {
             {/* Resource Grid/List */}
             <div className={`grid ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1'} gap-6 mb-8`}>
               {resources.data.map((resource) => (
-                <Card key={resource.id} className="bg-gray-800/50 border-gray-700 hover:border-indigo-500/50 transition-colors group">
+                <Card key={resource.id} className="bg-gray-800/50 border-gray-700 hover:border-blue-500/50 transition-colors group">
                   <CardHeader>
                     <div className="flex items-start justify-between">
                       <div className="flex items-center space-x-2">
-                        <MessageSquare className="h-4 w-4 text-indigo-400" />
+                        <Users className="h-4 w-4 text-blue-400" />
                         <Badge variant="outline" className={getDifficultyColor(resource.difficulty_level)}>
                           {resource.difficulty_level}
                         </Badge>
@@ -248,7 +248,7 @@ export default function CommunityDiscordPage() {
                       )}
                     </div>
                     
-                    <CardTitle className="text-white line-clamp-2 group-hover:text-indigo-400 transition-colors">
+                    <CardTitle className="text-white line-clamp-2 group-hover:text-blue-400 transition-colors">
                       {resource.title}
                     </CardTitle>
                     
@@ -358,17 +358,17 @@ export default function CommunityDiscordPage() {
         <div className="mt-12 pt-8 border-t border-gray-700">
           <h2 className="text-xl font-semibold text-white mb-4">Explore Other Community Platforms</h2>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            <Link href="/community/discord" className="group">
+              <div className="flex items-center space-x-2 p-3 bg-gray-800/30 rounded-lg hover:bg-gray-800/50 transition-colors">
+                <MessageSquare className="h-4 w-4 text-indigo-400" />
+                <span className="text-sm text-white group-hover:text-indigo-400 transition-colors">Discord</span>
+              </div>
+            </Link>
+            
             <Link href="/community/reddit" className="group">
               <div className="flex items-center space-x-2 p-3 bg-gray-800/30 rounded-lg hover:bg-gray-800/50 transition-colors">
                 <Users className="h-4 w-4 text-orange-400" />
                 <span className="text-sm text-white group-hover:text-orange-400 transition-colors">Reddit</span>
-              </div>
-            </Link>
-            
-            <Link href="/community/forums" className="group">
-              <div className="flex items-center space-x-2 p-3 bg-gray-800/30 rounded-lg hover:bg-gray-800/50 transition-colors">
-                <Users className="h-4 w-4 text-blue-400" />
-                <span className="text-sm text-white group-hover:text-blue-400 transition-colors">Forums</span>
               </div>
             </Link>
             

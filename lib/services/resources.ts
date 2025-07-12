@@ -49,6 +49,11 @@ export class ResourcesService {
         query = query.eq('is_published', params.isPublished)
       }
 
+      // Category filtering
+      if (params?.categoryId) {
+        query = query.eq('category_id', params.categoryId)
+      }
+
       // Search functionality
       if (params?.searchQuery) {
         query = query.or(`title.ilike.%${params.searchQuery}%,description.ilike.%${params.searchQuery}%`)
