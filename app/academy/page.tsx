@@ -45,7 +45,7 @@ function AcademyPageContent() {
   const [categories, setCategories] = useState<Category[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
-  const [difficultyFilter, setDifficultyFilter] = useState<string>('')
+  const [difficultyFilter, setDifficultyFilter] = useState<string>('all')
   const [activeTab, setActiveTab] = useState('overview')
   const [debugInfo, setDebugInfo] = useState<any>({})
 
@@ -175,7 +175,7 @@ function AcademyPageContent() {
         item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.description.toLowerCase().includes(searchQuery.toLowerCase())
       
-      const matchesDifficulty = !difficultyFilter || item.difficulty_level === difficultyFilter
+      const matchesDifficulty = !difficultyFilter || difficultyFilter === 'all' || item.difficulty_level === difficultyFilter
       
       return matchesSearch && matchesDifficulty
     })
@@ -332,7 +332,7 @@ function AcademyPageContent() {
                 <SelectValue placeholder="All Difficulty Levels" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Levels</SelectItem>
+                <SelectItem value="all">All Levels</SelectItem>
                 <SelectItem value="beginner">Beginner</SelectItem>
                 <SelectItem value="intermediate">Intermediate</SelectItem>
                 <SelectItem value="advanced">Advanced</SelectItem>
