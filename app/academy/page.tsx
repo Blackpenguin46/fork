@@ -28,8 +28,9 @@ import {
   Filter
 } from 'lucide-react'
 import Link from 'next/link'
+import { ErrorBoundary } from '@/components/error-boundary'
 
-export default function AcademyPage() {
+function AcademyPageContent() {
   console.log('🚀 Academy: Component mounting/rendering')
   
   const { user } = useAuth()
@@ -740,5 +741,13 @@ export default function AcademyPage() {
         </Tabs>
       </div>
     </div>
+  )
+}
+
+export default function AcademyPage() {
+  return (
+    <ErrorBoundary>
+      <AcademyPageContent />
+    </ErrorBoundary>
   )
 }

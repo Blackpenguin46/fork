@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { NewsAggregationService } from '@/lib/services/news-aggregation'
 import type { NewsAggregationOptions } from '@/lib/types/news'
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic'
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)

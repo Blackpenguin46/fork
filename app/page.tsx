@@ -1,8 +1,10 @@
 'use client'
 
 import Link from 'next/link'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/app/providers'
+import { UserProgressService, BookmarksService } from '@/lib/api'
 import { 
   Shield, 
   Users, 
@@ -21,6 +23,66 @@ import {
 
 export default function HomePage() {
   const { user, loading } = useAuth()
+  const [userStats, setUserStats] = useState({
+    coursesStarted: 0,
+    coursesCompleted: 0,
+    bookmarksCount: 0,
+    overallProgress: 0
+  })
+  const [statsLoading, setStatsLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchUserStats = async () => {
+      if (!user) {
+        setStatsLoading(false)
+        return
+      }
+
+      try {
+        setStatsLoading(true)
+        
+        // Fetch user progress data
+        const [progressResult, bookmarksResult] = await Promise.allSettled([
+          UserProgressService.getUserProgress(user.id),
+          BookmarksService.getUserBookmarks(user.id)
+        ])
+
+        let coursesStarted = 0
+        let coursesCompleted = 0
+        let overallProgress = 0
+
+        if (progressResult.status === 'fulfilled' && progressResult.value.success && progressResult.value.data) {
+          const progressData = progressResult.value.data
+          coursesStarted = progressData.filter(p => p.status === 'in_progress' || p.status === 'completed').length
+          coursesCompleted = progressData.filter(p => p.status === 'completed').length
+          
+          if (progressData.length > 0) {
+            const totalProgress = progressData.reduce((sum, p) => sum + (p.progress_percentage || 0), 0)
+            overallProgress = Math.round(totalProgress / progressData.length)
+          }
+        }
+
+        let bookmarksCount = 0
+        if (bookmarksResult.status === 'fulfilled' && bookmarksResult.value.success && bookmarksResult.value.data) {
+          bookmarksCount = bookmarksResult.value.data.bookmarks.length
+        }
+
+        setUserStats({
+          coursesStarted,
+          coursesCompleted,
+          bookmarksCount,
+          overallProgress
+        })
+      } catch (error) {
+        console.error('Error fetching user stats:', error)
+      } finally {
+        setStatsLoading(false)
+      }
+    }
+
+    fetchUserStats()
+  }, [user])
+
   const features = [
     {
       icon: Users,
@@ -94,8 +156,17 @@ export default function HomePage() {
               <div className="flex items-center space-x-2">
                 <BookOpen className="h-5 w-5 text-cyber-cyan" />
                 <div>
-                  <p className="text-2xl font-bold text-white">12</p>
-                  <p className="text-sm text-gray-400">Courses Started</p>
+                  {statsLoading ? (
+                    <div className="animate-pulse">
+                      <div className="h-8 bg-gray-600 rounded w-12 mb-1"></div>
+                      <div className="h-4 bg-gray-600 rounded w-20"></div>
+                    </div>
+                  ) : (
+                    <>
+                      <p className="text-2xl font-bold text-white">{userStats.coursesStarted}</p>
+                      <p className="text-sm text-gray-400">Courses Started</p>
+                    </>
+                  )}
                 </div>
               </div>
             </div>
@@ -104,8 +175,17 @@ export default function HomePage() {
               <div className="flex items-center space-x-2">
                 <Award className="h-5 w-5 text-green-400" />
                 <div>
-                  <p className="text-2xl font-bold text-white">5</p>
-                  <p className="text-sm text-gray-400">Completed</p>
+                  {statsLoading ? (
+                    <div className="animate-pulse">
+                      <div className="h-8 bg-gray-600 rounded w-12 mb-1"></div>
+                      <div className="h-4 bg-gray-600 rounded w-20"></div>
+                    </div>
+                  ) : (
+                    <>
+                      <p className="text-2xl font-bold text-white">{userStats.coursesCompleted}</p>
+                      <p className="text-sm text-gray-400">Completed</p>
+                    </>
+                  )}
                 </div>
               </div>
             </div>
@@ -114,8 +194,17 @@ export default function HomePage() {
               <div className="flex items-center space-x-2">
                 <Users className="h-5 w-5 text-blue-400" />
                 <div>
-                  <p className="text-2xl font-bold text-white">25</p>
-                  <p className="text-sm text-gray-400">Bookmarks</p>
+                  {statsLoading ? (
+                    <div className="animate-pulse">
+                      <div className="h-8 bg-gray-600 rounded w-12 mb-1"></div>
+                      <div className="h-4 bg-gray-600 rounded w-20"></div>
+                    </div>
+                  ) : (
+                    <>
+                      <p className="text-2xl font-bold text-white">{userStats.bookmarksCount}</p>
+                      <p className="text-sm text-gray-400">Bookmarks</p>
+                    </>
+                  )}
                 </div>
               </div>
             </div>
@@ -124,8 +213,17 @@ export default function HomePage() {
               <div className="flex items-center space-x-2">
                 <TrendingUp className="h-5 w-5 text-yellow-400" />
                 <div>
-                  <p className="text-2xl font-bold text-white">78%</p>
-                  <p className="text-sm text-gray-400">Progress</p>
+                  {statsLoading ? (
+                    <div className="animate-pulse">
+                      <div className="h-8 bg-gray-600 rounded w-12 mb-1"></div>
+                      <div className="h-4 bg-gray-600 rounded w-20"></div>
+                    </div>
+                  ) : (
+                    <>
+                      <p className="text-2xl font-bold text-white">{userStats.overallProgress}%</p>
+                      <p className="text-sm text-gray-400">Progress</p>
+                    </>
+                  )}
                 </div>
               </div>
             </div>
@@ -180,29 +278,59 @@ export default function HomePage() {
           <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-6">
             <h3 className="text-xl font-semibold text-white mb-4">Recent Activity</h3>
             <div className="space-y-4">
-              <div className="flex items-center space-x-3 p-3 bg-gray-700/30 rounded-lg">
-                <BookOpen className="h-5 w-5 text-blue-400" />
-                <div className="flex-1">
-                  <p className="text-white text-sm">Started course: &ldquo;Advanced Penetration Testing&rdquo;</p>
-                  <p className="text-gray-400 text-xs">2 hours ago</p>
+              {statsLoading ? (
+                <div className="space-y-4">
+                  {[...Array(3)].map((_, i) => (
+                    <div key={i} className="animate-pulse flex items-center space-x-3 p-3 bg-gray-700/30 rounded-lg">
+                      <div className="h-5 w-5 bg-gray-600 rounded"></div>
+                      <div className="flex-1">
+                        <div className="h-4 bg-gray-600 rounded w-3/4 mb-1"></div>
+                        <div className="h-3 bg-gray-600 rounded w-1/4"></div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              </div>
-              
-              <div className="flex items-center space-x-3 p-3 bg-gray-700/30 rounded-lg">
-                <Award className="h-5 w-5 text-green-400" />
-                <div className="flex-1">
-                  <p className="text-white text-sm">Completed: &ldquo;Network Security Fundamentals&rdquo;</p>
-                  <p className="text-gray-400 text-xs">1 day ago</p>
-                </div>
-              </div>
-              
-              <div className="flex items-center space-x-3 p-3 bg-gray-700/30 rounded-lg">
-                <Users className="h-5 w-5 text-purple-400" />
-                <div className="flex-1">
-                  <p className="text-white text-sm">Joined community discussion on &ldquo;Zero Trust Architecture&rdquo;</p>
-                  <p className="text-gray-400 text-xs">3 days ago</p>
-                </div>
-              </div>
+              ) : (
+                <>
+                  {userStats.coursesStarted > 0 ? (
+                    <div className="flex items-center space-x-3 p-3 bg-gray-700/30 rounded-lg">
+                      <BookOpen className="h-5 w-5 text-blue-400" />
+                      <div className="flex-1">
+                        <p className="text-white text-sm">You have {userStats.coursesStarted} active learning {userStats.coursesStarted === 1 ? 'path' : 'paths'}</p>
+                        <p className="text-gray-400 text-xs">Continue your cybersecurity journey</p>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex items-center space-x-3 p-3 bg-gray-700/30 rounded-lg">
+                      <BookOpen className="h-5 w-5 text-blue-400" />
+                      <div className="flex-1">
+                        <p className="text-white text-sm">Ready to start your cybersecurity learning journey?</p>
+                        <p className="text-gray-400 text-xs">Explore our academy to get started</p>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {userStats.coursesCompleted > 0 && (
+                    <div className="flex items-center space-x-3 p-3 bg-gray-700/30 rounded-lg">
+                      <Award className="h-5 w-5 text-green-400" />
+                      <div className="flex-1">
+                        <p className="text-white text-sm">Congratulations! You&apos;ve completed {userStats.coursesCompleted} {userStats.coursesCompleted === 1 ? 'course' : 'courses'}</p>
+                        <p className="text-gray-400 text-xs">Keep up the great work</p>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {userStats.bookmarksCount > 0 && (
+                    <div className="flex items-center space-x-3 p-3 bg-gray-700/30 rounded-lg">
+                      <Users className="h-5 w-5 text-purple-400" />
+                      <div className="flex-1">
+                        <p className="text-white text-sm">You have {userStats.bookmarksCount} bookmarked {userStats.bookmarksCount === 1 ? 'resource' : 'resources'}</p>
+                        <p className="text-gray-400 text-xs">Access them anytime from your dashboard</p>
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
             </div>
           </div>
         </div>
