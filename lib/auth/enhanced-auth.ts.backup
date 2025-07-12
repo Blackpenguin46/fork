@@ -1,0 +1,382 @@
+/**
+ * Enhanced Authentication Provider
+ * Integrates with the new AuthService for improved user management
+ */
+
+'use client'
+
+import React, { createContext, useContext, useEffect, useState } from 'react'
+import { supabase } from '@/lib/supabase'
+import { AuthService, type AuthUser, type UserProfile } from '@/lib/services/auth'
+import type { User } from '@supabase/supabase-js'
+
+interface AuthContextType {
+  user: (AuthUser & { profile?: UserProfile }) | null
+  profile: UserProfile | null
+  loading: boolean
+  error: string | null
+  
+  // Authentication methods
+  signIn: (email: string, password: string) => Promise<{ success: boolean; error?: string }>
+  signUp: (data: { email: string; password: string; username: string; full_name: string }) => Promise<{ success: boolean; error?: string; needsVerification?: boolean }>
+  signOut: () => Promise<{ success: boolean; error?: string }>
+  resetPassword: (email: string) => Promise<{ success: boolean; error?: string }>
+  updatePassword: (newPassword: string) => Promise<{ success: boolean; error?: string }>
+  resendVerification: (email: string) => Promise<{ success: boolean; error?: string }>
+  
+  // User management
+  refreshUser: () => Promise<void>
+  checkUserExists: (email?: string, username?: string) => Promise<{ emailExists: boolean; usernameExists: boolean }>
+  
+  // Admin functions (only available to admin users)
+  isAdmin: boolean
+  isSuperAdmin: boolean
+  promoteToAdmin: (userId: string, role?: 'admin' | 'super_admin') => Promise<{ success: boolean; error?: string }>
+  getUserStats: () => Promise<any>
+  getRecentActivity: () => Promise<any[]>
+  getAuditLogs: (userId?: string) => Promise<any[]>
+}
+
+const AuthContext = createContext<AuthContextType>({
+  user: null,
+  profile: null,
+  loading: true,
+  error: null,
+  signIn: async () => ({ success: false, error: 'Not implemented' }),
+  signUp: async () => ({ success: false, error: 'Not implemented' }),
+  signOut: async () => ({ success: false, error: 'Not implemented' }),
+  resetPassword: async () => ({ success: false, error: 'Not implemented' }),
+  updatePassword: async () => ({ success: false, error: 'Not implemented' }),
+  resendVerification: async () => ({ success: false, error: 'Not implemented' }),
+  refreshUser: async () => {},
+  checkUserExists: async () => ({ emailExists: false, usernameExists: false }),
+  isAdmin: false,
+  isSuperAdmin: false,
+  promoteToAdmin: async () => ({ success: false, error: 'Not implemented' }),
+  getUserStats: async () => ({}),
+  getRecentActivity: async () => ([]),
+  getAuditLogs: async () => ([])
+})
+
+export function useEnhancedAuth() {
+  return useContext(AuthContext)
+}
+
+interface EnhancedAuthProviderProps {
+  children: React.ReactNode
+}
+
+export function EnhancedAuthProvider({ children }: EnhancedAuthProviderProps) {
+  const [user, setUser] = useState<(AuthUser & { profile?: UserProfile }) | null>(null)
+  const [profile, setProfile] = useState<UserProfile | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  // Computed values
+  const isAdmin = profile?.role === 'admin' || profile?.role === 'super_admin'
+  const isSuperAdmin = profile?.role === 'super_admin'
+
+  // Initialize auth state
+  useEffect(() => {
+    let mounted = true
+
+    async function initAuth() {
+      try {
+        setLoading(true)
+        setError(null)
+
+        const result = await AuthService.getCurrentUser()
+        
+        if (!mounted) return
+
+        if (result.success && result.data) {
+          setUser({ ...result.data.user, profile: result.data.profile })
+          setProfile(result.data.profile)
+        } else if (!result.success) {
+          setError(result.error || 'Failed to get user')
+        } else {
+          // No user signed in
+          setUser(null)
+          setProfile(null)
+        }
+      } catch (err) {
+        if (mounted) {
+          setError(err instanceof Error ? err.message : 'Auth initialization failed')
+        }
+      } finally {
+        if (mounted) {
+          setLoading(false)
+        }
+      }
+    }
+
+    initAuth()
+
+    // Set up auth state listener
+    const { data: { subscription } } = supabase!.auth.onAuthStateChange(async (event, session) => {
+      if (!mounted) return
+
+      try {
+        if (event === 'SIGNED_OUT' || !session?.user) {
+          setUser(null)
+          setProfile(null)
+          setError(null)
+        } else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+          // Only proceed if email is confirmed
+          if (session.user.email_confirmed_at) {
+            const result = await AuthService.getCurrentUser()
+            if (result.success && result.data) {
+              setUser({ ...result.data.user, profile: result.data.profile })
+              setProfile(result.data.profile)
+              setError(null)
+            } else {
+              setError(result.error || 'Failed to get user profile')
+            }
+          } else {
+            // User exists but email not confirmed
+            setUser(null)
+            setProfile(null)
+            setError(null)
+          }
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Auth state change error')
+      }
+    })
+
+    return () => {
+      mounted = false
+      subscription.unsubscribe()
+    }
+  }, [])
+
+  // Authentication methods
+  const signIn = async (email: string, password: string) => {
+    try {
+      setError(null)
+      const result = await AuthService.login({ email, password })
+      
+      if (result.success) {
+        setUser({ ...result.data.user, profile: result.data.profile })
+        setProfile(result.data.profile)
+        return { success: true }
+      } else {
+        setError(result.error || 'Login failed')
+        return { success: false, error: result.error }
+      }
+    } catch (err) {
+      const error = err instanceof Error ? err.message : 'Login failed'
+      setError(error)
+      return { success: false, error }
+    }
+  }
+
+  const signUp = async (data: { email: string; password: string; username: string; full_name: string }) => {
+    try {
+      setError(null)
+      const result = await AuthService.register(data)
+      
+      if (result.success) {
+        return { 
+          success: true, 
+          needsVerification: result.data.needsVerification 
+        }
+      } else {
+        setError(result.error || 'Registration failed')
+        return { success: false, error: result.error }
+      }
+    } catch (err) {
+      const error = err instanceof Error ? err.message : 'Registration failed'
+      setError(error)
+      return { success: false, error }
+    }
+  }
+
+  const signOut = async () => {
+    try {
+      setError(null)
+      const result = await AuthService.logout()
+      
+      if (result.success) {
+        setUser(null)
+        setProfile(null)
+        return { success: true }
+      } else {
+        setError(result.error || 'Logout failed')
+        return { success: false, error: result.error }
+      }
+    } catch (err) {
+      const error = err instanceof Error ? err.message : 'Logout failed'
+      setError(error)
+      return { success: false, error }
+    }
+  }
+
+  const resetPassword = async (email: string) => {
+    try {
+      setError(null)
+      const result = await AuthService.resetPassword(email)
+      
+      if (result.success) {
+        return { success: true }
+      } else {
+        setError(result.error || 'Password reset failed')
+        return { success: false, error: result.error }
+      }
+    } catch (err) {
+      const error = err instanceof Error ? err.message : 'Password reset failed'
+      setError(error)
+      return { success: false, error }
+    }
+  }
+
+  const updatePassword = async (newPassword: string) => {
+    try {
+      setError(null)
+      const result = await AuthService.updatePassword(newPassword)
+      
+      if (result.success) {
+        return { success: true }
+      } else {
+        setError(result.error || 'Password update failed')
+        return { success: false, error: result.error }
+      }
+    } catch (err) {
+      const error = err instanceof Error ? err.message : 'Password update failed'
+      setError(error)
+      return { success: false, error }
+    }
+  }
+
+  const resendVerification = async (email: string) => {
+    try {
+      setError(null)
+      const result = await AuthService.resendVerification(email)
+      
+      if (result.success) {
+        return { success: true }
+      } else {
+        setError(result.error || 'Verification resend failed')
+        return { success: false, error: result.error }
+      }
+    } catch (err) {
+      const error = err instanceof Error ? err.message : 'Verification resend failed'
+      setError(error)
+      return { success: false, error }
+    }
+  }
+
+  // User management
+  const refreshUser = async () => {
+    try {
+      const result = await AuthService.getCurrentUser()
+      if (result.success && result.data) {
+        setUser({ ...result.data.user, profile: result.data.profile })
+        setProfile(result.data.profile)
+        setError(null)
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to refresh user')
+    }
+  }
+
+  const checkUserExists = async (email?: string, username?: string) => {
+    try {
+      const result = await AuthService.checkUserExists(email, username)
+      if (result.success) {
+        return {
+          emailExists: result.data.email_exists,
+          usernameExists: result.data.username_exists
+        }
+      }
+      return { emailExists: false, usernameExists: false }
+    } catch (err) {
+      console.error('Check user exists error:', err)
+      return { emailExists: false, usernameExists: false }
+    }
+  }
+
+  // Admin functions
+  const promoteToAdmin = async (userId: string, role: 'admin' | 'super_admin' = 'admin') => {
+    if (!isAdmin) {
+      return { success: false, error: 'Not authorized' }
+    }
+
+    try {
+      const result = await AuthService.promoteToAdmin(userId, role)
+      if (result.success) {
+        return { success: true }
+      } else {
+        return { success: false, error: result.error }
+      }
+    } catch (err) {
+      const error = err instanceof Error ? err.message : 'Failed to promote user'
+      return { success: false, error }
+    }
+  }
+
+  const getUserStats = async () => {
+    if (!isAdmin) return {}
+
+    try {
+      const result = await AuthService.getUserStats()
+      return result.success ? result.data : {}
+    } catch (err) {
+      console.error('Get user stats error:', err)
+      return {}
+    }
+  }
+
+  const getRecentActivity = async () => {
+    if (!isAdmin) return []
+
+    try {
+      const result = await AuthService.getRecentUserActivity()
+      return result.success ? result.data : []
+    } catch (err) {
+      console.error('Get recent activity error:', err)
+      return []
+    }
+  }
+
+  const getAuditLogs = async (userId?: string) => {
+    if (!isAdmin && userId !== user?.id) return []
+
+    try {
+      const result = await AuthService.getAuthAuditLogs(userId)
+      return result.success ? result.data : []
+    } catch (err) {
+      console.error('Get audit logs error:', err)
+      return []
+    }
+  }
+
+  const value: AuthContextType = {
+    user,
+    profile,
+    loading,
+    error,
+    signIn,
+    signUp,
+    signOut,
+    resetPassword,
+    updatePassword,
+    resendVerification,
+    refreshUser,
+    checkUserExists,
+    isAdmin,
+    isSuperAdmin,
+    promoteToAdmin,
+    getUserStats,
+    getRecentActivity,
+    getAuditLogs
+  }
+
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+    </AuthContext.Provider>
+  )
+}
+
+export default AuthContext
