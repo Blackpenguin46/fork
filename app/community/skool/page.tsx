@@ -65,8 +65,19 @@ export default function CommunitySkoolPage() {
           limit: pageSize
         })
 
+        // Filter for Skool-related resources client-side
         if (result.success && result.data) {
-          setResources(result.data)
+          const skoolResources = result.data.data.filter(resource => 
+            resource.title.toLowerCase().includes('skool') ||
+            resource.description.toLowerCase().includes('skool') ||
+            (resource.url && resource.url.includes('skool'))
+          )
+          
+          setResources({
+            ...result.data,
+            data: skoolResources,
+            count: skoolResources.length
+          })
         }
       } catch (error) {
         console.error('Error fetching Skool communities:', error)

@@ -26,6 +26,7 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import BookmarkButton from '@/components/bookmarks/BookmarkButton'
+import { ErrorBoundary } from '@/components/error-boundary'
 
 const difficultyColors = {
   beginner: 'bg-green-500/10 text-green-400 border-green-500/20',
@@ -33,9 +34,10 @@ const difficultyColors = {
   advanced: 'bg-red-500/10 text-red-400 border-red-500/20'
 }
 
-export default function InsightsToolsPage() {
+function InsightsToolsPageContent() {
   const { user } = useAuth()
-  const { canAccessPremiumResources } = useSubscription() || { canAccessPremiumResources: false }
+  const subscriptionData = useSubscription()
+  const { canAccessPremiumResources } = subscriptionData || { canAccessPremiumResources: false }
   
   const [resources, setResources] = useState<PaginatedResponse<Resource> | null>(null)
   const [loading, setLoading] = useState(true)
@@ -67,9 +69,13 @@ export default function InsightsToolsPage() {
 
         if (result.success && result.data) {
           setResources(result.data)
+        } else {
+          console.warn('Failed to fetch tools:', result.error || 'Unknown error')
+          setResources(null)
         }
       } catch (error) {
         console.error('Error fetching tools:', error)
+        setResources(null)
       } finally {
         setLoading(false)
       }
@@ -384,5 +390,13 @@ export default function InsightsToolsPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function InsightsToolsPage() {
+  return (
+    <ErrorBoundary>
+      <InsightsToolsPageContent />
+    </ErrorBoundary>
   )
 }

@@ -26,6 +26,7 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import BookmarkButton from '@/components/bookmarks/BookmarkButton'
+import { ErrorBoundary } from '@/components/error-boundary'
 
 const difficultyColors = {
   beginner: 'bg-green-500/10 text-green-400 border-green-500/20',
@@ -33,9 +34,10 @@ const difficultyColors = {
   advanced: 'bg-red-500/10 text-red-400 border-red-500/20'
 }
 
-export default function AcademyCoursesPage() {
+function AcademyCoursesPageContent() {
   const { user } = useAuth()
-  const { canAccessPremiumResources } = useSubscription() || { canAccessPremiumResources: false }
+  const subscriptionData = useSubscription()
+  const { canAccessPremiumResources } = subscriptionData || { canAccessPremiumResources: false }
   
   const [resources, setResources] = useState<PaginatedResponse<Resource> | null>(null)
   const [loading, setLoading] = useState(true)
@@ -67,9 +69,13 @@ export default function AcademyCoursesPage() {
 
         if (result.success && result.data) {
           setResources(result.data)
+        } else {
+          console.warn('Failed to fetch courses:', result.error || 'Unknown error')
+          setResources(null)
         }
       } catch (error) {
         console.error('Error fetching courses:', error)
+        setResources(null)
       } finally {
         setLoading(false)
       }
@@ -389,5 +395,13 @@ export default function AcademyCoursesPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function AcademyCoursesPage() {
+  return (
+    <ErrorBoundary>
+      <AcademyCoursesPageContent />
+    </ErrorBoundary>
   )
 }

@@ -27,6 +27,7 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import BookmarkButton from '@/components/bookmarks/BookmarkButton'
+import { ErrorBoundary } from '@/components/error-boundary'
 
 const difficultyColors = {
   beginner: 'bg-green-500/10 text-green-400 border-green-500/20',
@@ -34,9 +35,10 @@ const difficultyColors = {
   advanced: 'bg-red-500/10 text-red-400 border-red-500/20'
 }
 
-export default function InsightsPodcastsPage() {
+function InsightsPodcastsPageContent() {
   const { user } = useAuth()
-  const { canAccessPremiumResources } = useSubscription() || { canAccessPremiumResources: false }
+  const subscriptionData = useSubscription()
+  const { canAccessPremiumResources } = subscriptionData || { canAccessPremiumResources: false }
   
   const [resources, setResources] = useState<PaginatedResponse<Resource> | null>(null)
   const [loading, setLoading] = useState(true)
@@ -386,5 +388,13 @@ export default function InsightsPodcastsPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function InsightsPodcastsPage() {
+  return (
+    <ErrorBoundary>
+      <InsightsPodcastsPageContent />
+    </ErrorBoundary>
   )
 }

@@ -65,8 +65,20 @@ export default function CommunityRedditPage() {
           limit: pageSize
         })
 
+        // Filter for Reddit-related resources client-side
         if (result.success && result.data) {
-          setResources(result.data)
+          const redditResources = result.data.data.filter(resource => 
+            resource.title.toLowerCase().includes('reddit') ||
+            resource.description.toLowerCase().includes('reddit') ||
+            resource.title.toLowerCase().includes('subreddit') ||
+            (resource.url && resource.url.includes('reddit'))
+          )
+          
+          setResources({
+            ...result.data,
+            data: redditResources,
+            count: redditResources.length
+          })
         }
       } catch (error) {
         console.error('Error fetching Reddit communities:', error)

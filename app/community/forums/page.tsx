@@ -65,8 +65,22 @@ export default function CommunityForumsPage() {
           limit: pageSize
         })
 
+        // Filter for Forum-related resources client-side
         if (result.success && result.data) {
-          setResources(result.data)
+          const forumResources = result.data.data.filter(resource => 
+            resource.title.toLowerCase().includes('forum') ||
+            resource.description.toLowerCase().includes('forum') ||
+            resource.title.toLowerCase().includes('community') ||
+            (!resource.title.toLowerCase().includes('discord') && 
+             !resource.title.toLowerCase().includes('reddit') &&
+             !resource.title.toLowerCase().includes('skool'))
+          )
+          
+          setResources({
+            ...result.data,
+            data: forumResources,
+            count: forumResources.length
+          })
         }
       } catch (error) {
         console.error('Error fetching forum communities:', error)

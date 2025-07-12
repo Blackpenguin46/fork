@@ -53,6 +53,8 @@ export default function CommunityDiscordPage() {
       try {
         setLoading(true)
         
+        // For now, use the community resource type and filter client-side for discord
+        // TODO: Implement proper categoryId filtering once database is properly set up
         const result = await ResourcesService.getResources({
           resourceType: 'community',
           difficultyLevel: selectedDifficulty === 'all' ? undefined : selectedDifficulty,
@@ -65,8 +67,19 @@ export default function CommunityDiscordPage() {
           limit: pageSize
         })
 
+        // Filter for Discord-related resources client-side
         if (result.success && result.data) {
-          setResources(result.data)
+          const discordResources = result.data.data.filter(resource => 
+            resource.title.toLowerCase().includes('discord') ||
+            resource.description.toLowerCase().includes('discord') ||
+            (resource.url && resource.url.includes('discord'))
+          )
+          
+          setResources({
+            ...result.data,
+            data: discordResources,
+            count: discordResources.length
+          })
         }
       } catch (error) {
         console.error('Error fetching Discord communities:', error)
