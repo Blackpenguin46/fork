@@ -15,7 +15,11 @@ import Link from 'next/link'
 
 export default function CommunityPage() {
   const { user } = useAuth()
-  const { canAccessPremiumResources, canAccessPremiumDiscord } = useSubscription()
+  const subscriptionData = useSubscription()
+  const { canAccessPremiumResources, canAccessPremiumDiscord } = subscriptionData || { 
+    canAccessPremiumResources: false, 
+    canAccessPremiumDiscord: false 
+  }
   
   const [resources, setResources] = useState<Resource[]>([])
   const [categories, setCategories] = useState<Category[]>([])

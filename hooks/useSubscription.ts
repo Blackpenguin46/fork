@@ -11,21 +11,22 @@ import {
 } from '@/lib/subscription/access-control'
 
 export function useSubscription() {
-  const { user } = useAuth()
+  const authData = useAuth()
+  const { user } = authData || {}
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [accessLevel, setAccessLevel] = useState<AccessLevel | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     async function fetchSubscriptionData() {
-      if (!user?.id) {
-        setProfile(null)
-        setAccessLevel(null)
-        setLoading(false)
-        return
-      }
-
       try {
+        if (!user?.id) {
+          setProfile(null)
+          setAccessLevel(null)
+          setLoading(false)
+          return
+        }
+
         setLoading(true)
         const [userProfile, userAccessLevel] = await Promise.all([
           getUserProfile(user.id),

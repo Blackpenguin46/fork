@@ -17,7 +17,8 @@ import NewsFeed from '@/components/news/NewsFeed'
 
 export default function InsightsPage() {
   const { user } = useAuth()
-  const { canAccessPremiumResources } = useSubscription()
+  const subscriptionData = useSubscription()
+  const { canAccessPremiumResources } = subscriptionData || { canAccessPremiumResources: false }
 
   return (
     <div className="min-h-screen bg-deep-space-blue pt-16">

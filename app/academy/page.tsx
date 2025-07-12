@@ -30,7 +30,8 @@ import Link from 'next/link'
 
 export default function AcademyPage() {
   const { user } = useAuth()
-  const { canAccessPremiumResources } = useSubscription()
+  const subscriptionData = useSubscription()
+  const { canAccessPremiumResources } = subscriptionData || { canAccessPremiumResources: false }
   
   const [learningPaths, setLearningPaths] = useState<LearningPath[]>([])
   const [courses, setCourses] = useState<Resource[]>([])
