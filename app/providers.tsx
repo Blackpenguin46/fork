@@ -29,6 +29,7 @@ interface ProvidersProps {
 }
 
 export function Providers({ children }: ProvidersProps) {
+  console.log('🔄 Providers: Component mounting')
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
 

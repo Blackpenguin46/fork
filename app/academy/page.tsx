@@ -30,9 +30,13 @@ import {
 import Link from 'next/link'
 
 export default function AcademyPage() {
+  console.log('🚀 Academy: Component mounting/rendering')
+  
   const { user } = useAuth()
   const subscriptionData = useSubscription()
   const { canAccessPremiumResources } = subscriptionData || { canAccessPremiumResources: false }
+  
+  console.log('👤 Academy: Auth state:', { user: !!user, hasSubscriptionData: !!subscriptionData })
   
   const [learningPaths, setLearningPaths] = useState<any[]>([])
   const [courses, setCourses] = useState<any[]>([])
@@ -43,6 +47,12 @@ export default function AcademyPage() {
   const [difficultyFilter, setDifficultyFilter] = useState<string>('')
   const [activeTab, setActiveTab] = useState('overview')
   const [debugInfo, setDebugInfo] = useState<any>({})
+
+  // Basic useEffect to test if React hooks are working
+  useEffect(() => {
+    console.log('⚡ Academy: Basic useEffect running')
+    setDebugInfo({ basicTest: 'useEffect working', timestamp: Date.now() })
+  }, [])
 
   useEffect(() => {
     const fetchData = async () => {
@@ -204,14 +214,38 @@ export default function AcademyPage() {
         {/* Debug Panel (remove in production) */}
         {process.env.NODE_ENV === 'development' && (
           <div className="mb-4 p-4 bg-gray-800/50 border border-yellow-500/30 rounded">
-            <h3 className="text-yellow-400 text-sm font-bold mb-2">Debug Info:</h3>
+            <h3 className="text-yellow-400 text-sm font-bold mb-2">🔧 Debug Panel</h3>
+            <div className="mb-2">
+              <button 
+                onClick={() => {
+                  console.log('🔵 Button clicked!')
+                  alert('Button works! Check console for logs.')
+                }}
+                className="px-3 py-1 bg-blue-600 text-white rounded text-xs mr-2"
+              >
+                Test Console Log
+              </button>
+              <button 
+                onClick={() => {
+                  console.log('🔄 Forcing data refetch...')
+                  setLoading(true)
+                  // Force re-run of data fetch
+                  setDebugInfo({ ...debugInfo, forcedRefetch: Date.now() })
+                }}
+                className="px-3 py-1 bg-green-600 text-white rounded text-xs"
+              >
+                Force Refetch
+              </button>
+            </div>
             <pre className="text-xs text-gray-300">
               {JSON.stringify({
+                componentRendered: true,
                 loading,
                 pathsCount: learningPaths.length,
                 coursesCount: courses.length,
                 articlesCount: articles.length,
                 hasSupabase: !!supabase,
+                timestamp: new Date().toISOString(),
                 debugInfo
               }, null, 2)}
             </pre>
