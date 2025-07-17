@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { BookmarksService } from '@/lib/api'
-import type { Bookmark, Resource } from '@/lib/api'
+import type { Bookmark, Resource, BookmarkCollection } from '@/lib/api'
 import { useAuth } from '@/app/providers'
 import { useSubscription } from '@/hooks/useSubscription'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -10,6 +10,8 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { 
   Bookmark as BookmarkIcon, 
   Search, 
@@ -24,10 +26,20 @@ import {
   BookOpen,
   Video,
   Users,
-  Globe
+  Globe,
+  Plus,
+  Folder,
+  Grid,
+  List,
+  Star,
+  Archive,
+  Tag,
+  SortAsc,
+  SortDesc
 } from 'lucide-react'
 import Link from 'next/link'
 import BookmarkButton from '@/components/bookmarks/BookmarkButton'
+import { motion } from 'framer-motion'
 
 export default function BookmarksPage() {
   const { user } = useAuth()

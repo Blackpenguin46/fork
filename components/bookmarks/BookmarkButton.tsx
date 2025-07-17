@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { BookmarksService } from '@/lib/api'
+import { isBookmarked, addBookmark, removeBookmark } from '@/lib/api/bookmarks'
 import { useAuth } from '@/app/providers'
 import { useSubscription } from '@/hooks/useSubscription'
 import { Button } from '@/components/ui/button'
@@ -27,7 +27,7 @@ export default function BookmarkButton({
   const { user } = useAuth()
   const { canBookmarkResources } = useSubscription()
   
-  const [isBookmarked, setIsBookmarked] = useState(false)
+  const [bookmarked, setBookmarked] = useState(false)
   const [loading, setLoading] = useState(false)
   const [checking, setChecking] = useState(true)
 
@@ -39,9 +39,9 @@ export default function BookmarkButton({
       }
 
       try {
-        const result = await BookmarksService.isBookmarked(user.id, resourceId)
+        const result = await isBookmarked(user.id, resourceId)
         if (result.success && result.data !== undefined) {
-          setIsBookmarked(result.data)
+          setBookmarked(result.data)
         }
       } catch (error) {
         console.error('Error checking bookmark status:', error)
@@ -65,10 +65,16 @@ export default function BookmarkButton({
     setLoading(true)
 
     try {
-      const result = await BookmarksService.toggleBookmark(user.id, resourceId)
-      
-      if (result.success && result.data) {
-        setIsBookmarked(result.data.isBookmarked)
+      if (bookmarked) {
+        const result = await removeBookmark(user.id, resourceId)
+        if (result.success) {
+          setBookmarked(false)
+        }
+      } else {
+        const result = await addBookmark(user.id, resourceId)
+        if (result.success) {
+          setBookmarked(true)
+        }
       }
     } catch (error) {
       console.error('Error toggling bookmark:', error)
@@ -112,19 +118,19 @@ export default function BookmarkButton({
       variant={variant}
       onClick={handleToggleBookmark}
       disabled={loading}
-      className={`${className} ${isBookmarked ? 'text-yellow-400 border-yellow-400' : ''}`}
-      title={isBookmarked ? 'Remove bookmark' : 'Add bookmark'}
+      className={`${className} ${bookmarked ? 'text-yellow-400 border-yellow-400' : ''}`}
+      title={bookmarked ? 'Remove bookmark' : 'Add bookmark'}
     >
       {loading ? (
         <Loader2 className="h-4 w-4 animate-spin" />
-      ) : isBookmarked ? (
+      ) : bookmarked ? (
         <BookmarkCheck className="h-4 w-4" />
       ) : (
         <Bookmark className="h-4 w-4" />
       )}
       {showText && (
         <span className="ml-2">
-          {isBookmarked ? 'Bookmarked' : 'Bookmark'}
+          {bookmarked ? 'Bookmarked' : 'Bookmark'}
         </span>
       )}
     </Button>
