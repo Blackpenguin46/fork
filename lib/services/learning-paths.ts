@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase'
 import type { LearningPath, ApiResponse, PaginatedResponse } from '@/lib/types/database'
+import type { LearningPathResource } from '@/lib/types/learning-paths'
 
 export class LearningPathsService {
   
@@ -372,6 +373,137 @@ export class LearningPathsService {
       }
 
       return { success: true, data: data || [] }
+    } catch (error) {
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : 'Unknown error' 
+      }
+    }
+  }
+
+  /**
+   * Get a learning path by slug
+   */
+  static async getLearningPathBySlug(slug: string): Promise<ApiResponse<LearningPath>> {
+    try {
+      if (!supabase) {
+        return { success: false, error: 'Database not available' }
+      }
+
+      const { data, error } = await supabase
+        .from('learning_paths')
+        .select('*')
+        .eq('slug', slug)
+        .eq('is_published', true)
+        .single()
+
+      if (error) {
+        return { success: false, error: error.message }
+      }
+
+      if (!data) {
+        return { success: false, error: 'Learning path not found' }
+      }
+
+      return { success: true, data }
+    } catch (error) {
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : 'Unknown error' 
+      }
+    }
+  }
+
+  /**
+   * Get resources for a learning path
+   */
+  static async getLearningPathResources(pathSlug: string): Promise<ApiResponse<LearningPathResource[]>> {
+    try {
+      if (!supabase) {
+        return { success: false, error: 'Database not available' }
+      }
+
+      // First get the learning path ID from the slug
+      const pathResult = await this.getLearningPathBySlug(pathSlug)
+      if (!pathResult.success) {
+        return { success: false, error: pathResult.error }
+      }
+
+      const learningPathId = pathResult.data.id
+
+      // Now get the resources for this learning path
+      const { data, error } = await supabase
+        .from('learning_path_resources')
+        .select(`
+          *,
+          resources:resource_id (
+            title,
+            slug,
+            description,
+            resource_type,
+            estimated_time_minutes,
+            is_premium
+          )
+        `)
+        .eq('learning_path_id', learningPathId)
+        .order('position', { ascending: true })
+
+      if (error) {
+        return { success: false, error: error.message }
+      }
+
+      // Transform the data to match the LearningPathResource interface
+      const resources: LearningPathResource[] = data.map(item => ({
+        id: item.id,
+        learning_path_id: item.learning_path_id,
+        resource_id: item.resource_id,
+        title: item.resources?.title || item.title,
+        description: item.resources?.description || item.description,
+        resource_type: item.resources?.resource_type || 'unknown',
+        resource_slug: item.resources?.slug,
+        position: item.position,
+        is_required: item.is_required || false,
+        estimated_time_minutes: item.resources?.estimated_time_minutes || item.estimated_time_minutes,
+        created_at: item.created_at,
+        updated_at: item.updated_at
+      }));
+
+      return { success: true, data: resources }
+    } catch (error) {
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : 'Unknown error' 
+      }
+    }
+  }
+
+  /**
+   * Enroll a user in a learning path
+   */
+  static async enrollInLearningPath(
+    learningPathId: string,
+    userId: string
+  ): Promise<ApiResponse<{ success: boolean }>> {
+    try {
+      if (!supabase) {
+        return { success: false, error: 'Database not available' }
+      }
+
+      // Create enrollment record
+      const { error } = await supabase
+        .from('learning_path_enrollments')
+        .insert({
+          user_id: userId,
+          learning_path_id: learningPathId,
+          status: 'active',
+          enrolled_at: new Date().toISOString()
+        })
+
+      if (error && !error.message.includes('duplicate')) {
+        return { success: false, error: error.message }
+      }
+
+      return { success: true, data: { success: true } }
     } catch (error) {
       return { 
         success: false, 

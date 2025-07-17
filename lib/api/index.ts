@@ -25,6 +25,9 @@ export type {
   ApiResponse
 } from '@/lib/types/database'
 
+// Export learning path specific types
+export type { LearningPathResource } from '@/lib/types/learning-paths'
+
 // Common API utilities
 export class ApiUtils {
   /**

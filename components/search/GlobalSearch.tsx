@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { ResourcesService, CategoriesService } from '@/lib/api'
 import type { Resource, Category } from '@/lib/api'
 import { useAuth } from '@/app/providers'
@@ -77,6 +77,7 @@ export default function GlobalSearch({
     }
   }, [isOpen, focusOnOpen])
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (query.length >= 2) {
       performSearch(query)
@@ -85,7 +86,7 @@ export default function GlobalSearch({
     }
   }, [query, typeFilter, difficultyFilter])
 
-  const performSearch = async (searchQuery: string) => {
+  const performSearch = useCallback(async (searchQuery: string) => {
     try {
       setLoading(true)
       
@@ -145,7 +146,7 @@ export default function GlobalSearch({
     } finally {
       setLoading(false)
     }
-  }
+  }, [typeFilter, difficultyFilter])
 
   const generateSearchSuggestions = (query: string): SearchResult[] => {
     const suggestions = [

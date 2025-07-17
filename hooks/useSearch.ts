@@ -98,6 +98,7 @@ export function useSearch(initialFilters: SearchFilters = {}, options: SearchOpt
   }, [limit])
 
   // Debounced search effect
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (!autoSearch) return
 
@@ -106,7 +107,7 @@ export function useSearch(initialFilters: SearchFilters = {}, options: SearchOpt
     }, debounceMs)
 
     return () => clearTimeout(timeoutId)
-  }, [filters, currentPage, performSearch, autoSearch, debounceMs])
+  }, [filters, currentPage, autoSearch, debounceMs])
 
   // Update individual filter values
   const updateFilter = useCallback((key: keyof SearchFilters, value: any) => {
