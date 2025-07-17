@@ -449,7 +449,7 @@ export default function LearningPathDetailPage() {
                   {learningPath.skills_covered && learningPath.skills_covered.length > 0 && (
                     <Card className="bg-gray-800/50 border-gray-700">
                       <CardHeader>
-                        <CardTitle className="text-white">Skills You'll Learn</CardTitle>
+                        <CardTitle className="text-white">Skills You&apos;ll Learn</CardTitle>
                       </CardHeader>
                       <CardContent>
                         <div className="flex flex-wrap gap-2">
@@ -596,7 +596,7 @@ export default function LearningPathDetailPage() {
                       <Unlock className="h-12 w-12 text-green-400 mx-auto mb-3" />
                       <h4 className="text-white font-medium mb-2">No Prerequisites Required</h4>
                       <p className="text-gray-400">
-                        This learning path is designed for beginners and doesn't require any prior knowledge.
+                        This learning path is designed for beginners and doesn&apos;t require any prior knowledge.
                       </p>
                     </div>
                   )}

@@ -141,7 +141,7 @@ function AcademyPageContent() {
     }
 
     fetchData()
-  }, [])
+  }, [learningPaths.length, courses.length, articles.length])
 
   const getDifficultyColor = (level: string) => {
     switch (level) {

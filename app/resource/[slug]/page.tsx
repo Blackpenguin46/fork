@@ -1,5 +1,6 @@
 import { Metadata } from 'next';
 import { notFound, redirect } from 'next/navigation';
+import Image from 'next/image';
 import { SEOService } from '@/lib/services/seo-service';
 import { createServerComponentClient } from '@supabase/auth-helpers-nextjs';
 import { cookies } from 'next/headers';
@@ -195,10 +196,12 @@ export default async function ResourcePage({ params }: ResourcePageProps) {
               {resource.author && (
                 <div className="flex items-center space-x-2">
                   {resource.author.avatar_url && (
-                    <img
+                    <Image
                       src={resource.author.avatar_url}
                       alt={resource.author.full_name || resource.author.username}
-                      className="w-8 h-8 rounded-full"
+                      width={32}
+                      height={32}
+                      className="w-8 h-8 rounded-full object-cover"
                     />
                   )}
                   <span>

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, Suspense } from 'react';
+import React, { useState, useEffect, useCallback, Suspense } from 'react';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/app/providers';
 import { useSearchParams } from 'next/navigation';
@@ -33,18 +33,19 @@ const PricingContent: React.FC = () => {
     } else {
       setLoading(false);
     }
-  }, [user]);
+  }, [user, loadCurrentPlan]);
 
-  const loadCurrentPlan = async () => {
+  const loadCurrentPlan = useCallback(async () => {
     try {
-      const { plan } = await subscriptionService.getUserSubscription(user!.id);
+      if (!user) return;
+      const { plan } = await subscriptionService.getUserSubscription(user.id);
       setCurrentPlan(plan.id);
     } catch (error) {
       console.error('Error loading current plan:', error);
     } finally {
       setLoading(false);
     }
-  };
+  }, [user, subscriptionService]);
 
   const handleSelectPlan = async (planId: string) => {
     try {

@@ -203,7 +203,7 @@ export default function AdminDashboard() {
             <AlertTriangle className="h-16 w-16 text-red-400 mx-auto mb-4" />
             <h3 className="text-xl font-semibold text-white mb-2">Access Denied</h3>
             <p className="text-gray-400 mb-6">
-              You don't have permission to access the admin dashboard.
+              You don&apos;t have permission to access the admin dashboard.
             </p>
             <Button asChild>
               <Link href="/dashboard">Go to Dashboard</Link>
