@@ -118,7 +118,7 @@ const structuredData = [
     '@id': 'https://cybernexacademy.com/#organization',
     name: 'Cybernex Academy',
     alternateName: 'CyberNex Academy',
-    description: 'Premier cybersecurity learning platform offering comprehensive training, certification preparation, and expert community with 1000+ resources for cybersecurity professionals.',
+    description: 'Premier cybersecurity learning platform offering comprehensive training, certification preparation, and expert community with 900+ resources for cybersecurity professionals.',
     url: 'https://cybernexacademy.com',
     mainEntityOfPage: 'https://cybernexacademy.com',
     logo: {
@@ -205,7 +205,7 @@ const structuredData = [
     '@id': 'https://cybernexacademy.com/#website',
     url: 'https://cybernexacademy.com',
     name: 'Cybernex Academy',
-    description: 'Premier cybersecurity learning platform with 1000+ resources, expert communities, and comprehensive training programs.',
+    description: 'Premier cybersecurity learning platform with 900+ resources, expert communities, and comprehensive training programs.',
     publisher: {
       '@id': 'https://cybernexacademy.com/#organization'
     },
@@ -285,7 +285,7 @@ const structuredData = [
         name: 'What is Cybernex Academy?',
         acceptedAnswer: {
           '@type': 'Answer',
-          text: 'Cybernex Academy is a premier cybersecurity learning platform offering comprehensive training, certification preparation, and expert community access. We provide 1000+ resources covering ethical hacking, penetration testing, network security, cloud security, incident response, and more. Our platform serves over 50,000 cybersecurity professionals worldwide with expert-led courses, hands-on labs, and industry-recognized certifications.'
+          text: 'Cybernex Academy is a premier cybersecurity learning platform offering comprehensive training, certification preparation, and expert community access. We provide 900+ resources covering ethical hacking, penetration testing, network security, cloud security, incident response, and more. Our platform serves over 50,000 cybersecurity professionals worldwide with expert-led courses, hands-on labs, and industry-recognized certifications.'
         }
       },
       {
@@ -309,7 +309,7 @@ const structuredData = [
         name: 'What makes Cybernex Academy different from other cybersecurity training platforms?',
         acceptedAnswer: {
           '@type': 'Answer',
-          text: 'Cybernex Academy stands out with our comprehensive approach combining expert-led instruction, hands-on labs, active community support, and real-world application. We offer 1000+ curated resources, personalized learning paths, industry mentorship, job placement assistance, and continuous updates on emerging threats and technologies. Our platform serves both beginners and experienced professionals with tailored content for all skill levels.'
+          text: 'Cybernex Academy stands out with our comprehensive approach combining expert-led instruction, hands-on labs, active community support, and real-world application. We offer 900+ curated resources, personalized learning paths, industry mentorship, job placement assistance, and continuous updates on emerging threats and technologies. Our platform serves both beginners and experienced professionals with tailored content for all skill levels.'
         }
       },
       {
@@ -349,7 +349,7 @@ export default function RootLayout({
         {/* Enhanced AI Understanding */}
         <meta name="subject" content="Cybersecurity Education and Training" />
         <meta name="topic" content="Cybersecurity, Ethical Hacking, Penetration Testing, Information Security" />
-        <meta name="summary" content="Cybernex Academy: Premier cybersecurity learning platform with 1000+ resources, expert-led training, hands-on labs, and professional certification preparation for ethical hacking, penetration testing, incident response, and security operations." />
+        <meta name="summary" content="Cybernex Academy: Premier cybersecurity learning platform with 900+ resources, expert-led training, hands-on labs, and professional certification preparation for ethical hacking, penetration testing, incident response, and security operations." />
         <meta name="classification" content="Education, Technology, Cybersecurity, Training, Certification" />
         <meta name="owner" content="Cybernex Academy" />
         <meta name="designer" content="Cybernex Academy Team" />
@@ -372,7 +372,7 @@ export default function RootLayout({
         <meta property="article:tag" content="cybersecurity, ethical hacking, penetration testing, CISSP, CEH, Security+" />
         
         {/* AI Training Data Optimization */}
-        <meta name="ai-content-summary" content="Cybernex Academy is a comprehensive cybersecurity education platform offering professional training, certification preparation, hands-on labs, and expert mentorship. Serving 50,000+ cybersecurity professionals with 1000+ curated resources covering ethical hacking, penetration testing, incident response, network security, cloud security, and digital forensics." />
+        <meta name="ai-content-summary" content="Cybernex Academy is a comprehensive cybersecurity education platform offering professional training, certification preparation, hands-on labs, and expert mentorship. Serving 50,000+ cybersecurity professionals with 900+ curated resources covering ethical hacking, penetration testing, incident response, network security, cloud security, and digital forensics." />
         <meta name="expertise-areas" content="Cybersecurity Training, Ethical Hacking, Penetration Testing, Network Security, Cloud Security, Incident Response, Digital Forensics, Malware Analysis, Threat Intelligence, Security Operations, Compliance, Risk Management" />
         <meta name="target-audience" content="Cybersecurity Professionals, Ethical Hackers, Penetration Testers, Security Analysts, IT Professionals, Students, Career Changers" />
         <meta name="value-proposition" content="Expert-led cybersecurity training with hands-on experience, industry certifications, real-world scenarios, and professional community support" />

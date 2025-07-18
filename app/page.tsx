@@ -652,7 +652,7 @@ export default function HomePage() {
               Comprehensive Cybersecurity Education Platform
             </h2>
             <p className="text-xl text-slate-400 max-w-4xl mx-auto leading-relaxed">
-              Cybernex Academy is the premier destination for cybersecurity education, offering over 1,000 curated resources, 
+              Cybernex Academy is the premier destination for cybersecurity education, offering over 900 curated resources, 
               expert-led training programs, and hands-on learning experiences. Our platform serves cybersecurity professionals, 
               ethical hackers, penetration testers, security analysts, and students worldwide with industry-recognized 
               certification preparation and practical skills development.
@@ -884,7 +884,7 @@ export default function HomePage() {
             </div>
             
             <div className="text-center bg-slate-800/30 border border-slate-700 rounded-lg p-6">
-              <div className="text-3xl lg:text-4xl font-bold text-cyber-cyan mb-2">1,000+</div>
+              <div className="text-3xl lg:text-4xl font-bold text-cyber-cyan mb-2">900+</div>
               <div className="text-slate-400">Learning Resources</div>
               <p className="text-sm text-slate-500 mt-2">Courses, tools, guides, and practical exercises</p>
             </div>

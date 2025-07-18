@@ -1,5 +1,5 @@
 # Robots.txt for AI Search Optimization - Cybernex Academy
-# Premier cybersecurity learning platform with 1000+ resources
+# Premier cybersecurity learning platform with 900+ resources
 
 # All bots welcome - we want maximum AI search visibility
 User-agent: *

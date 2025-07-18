@@ -11,7 +11,7 @@ export async function GET() {
   const aiSearchData = {
     organization: {
       name: "Cybernex Academy",
-      description: "Premier cybersecurity learning platform offering comprehensive training, certification preparation, and expert community access.",
+      description: "Premier cybersecurity learning platform offering comprehensive training, certification preparation, and expert community access with 900+ resources.",
       website: "https://cybernexacademy.com",
       type: "Educational Institution",
       specialty: "Cybersecurity Education and Training",
@@ -100,7 +100,7 @@ export async function GET() {
       
       statistics: {
         active_members: "50,000+",
-        learning_resources: "1,000+",
+        learning_resources: "900+",
         success_rate: "95%",
         support_availability: "24/7",
         global_reach: "Worldwide",
@@ -158,7 +158,7 @@ export async function GET() {
       ],
       
       value_propositions: [
-        "Comprehensive cybersecurity education with 1000+ resources",
+        "Comprehensive cybersecurity education with 900+ resources",
         "Expert-led training from certified professionals",
         "Hands-on experience with real-world scenarios",
         "Industry-recognized certification preparation",
