@@ -19,7 +19,7 @@ const nextConfig = {
       style-src-elem 'self' 'unsafe-inline' https://fonts.googleapis.com;
       img-src 'self' blob: data: https://*.googleusercontent.com https://*.supabase.co;
       font-src 'self' https://fonts.gstatic.com data:;
-      connect-src 'self' https://*.supabase.co https://hpfpuljthcngnswwfkrb.supabase.co https://api.openai.com https://fonts.googleapis.com https://fonts.gstatic.com https://vercel.live;
+      connect-src 'self' https://*.supabase.co https://hpfpuljthcngnswwfkrb.supabase.co https://fonts.googleapis.com https://fonts.gstatic.com https://vercel.live;
       frame-src 'self' https://vercel.live;
       object-src 'none';
       base-uri 'self';
