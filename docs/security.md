@@ -9,7 +9,7 @@ const cspValue = `default-src 'self';
   script-src 'self' 'unsafe-inline' https://*.vercel.app https://vercel.live;
   style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
   img-src 'self' blob: data: https://*.googleusercontent.com https://*.supabase.co;
-  connect-src 'self' https://*.supabase.co https://api.openai.com;
+  connect-src 'self' https://*.supabase.co;
   object-src 'none';
   base-uri 'self';
   form-action 'self';
@@ -616,7 +616,6 @@ export class SecurityLogger {
 export class SSRFPreventionService {
   private static readonly allowedDomains = [
     'api.github.com',
-    'api.openai.com',
     'api.stripe.com',
     'hpfpuljthcngnswwfkrb.supabase.co'
   ];
