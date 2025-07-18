@@ -3,9 +3,19 @@
  * Generates 1,000 high-quality cybersecurity resources for the database
  */
 
+require('dotenv').config({ path: '.env.local' });
 const { createClient } = require('@supabase/supabase-js');
 const fs = require('fs');
 const path = require('path');
+
+// Verify environment variables
+if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+  console.error('❌ Missing environment variables!');
+  console.error('Please ensure .env.local contains:');
+  console.error('NEXT_PUBLIC_SUPABASE_URL=your_supabase_url');
+  console.error('SUPABASE_SERVICE_ROLE_KEY=your_service_role_key');
+  process.exit(1);
+}
 
 // Initialize Supabase client
 const supabase = createClient(
@@ -21,8 +31,8 @@ const RESOURCE_DATA = {
     'tool': { weight: 25, description: 'Security tools and software' },
     'video': { weight: 15, description: 'Educational videos and tutorials' },
     'course': { weight: 10, description: 'Structured learning modules' },
-    'community': { weight: 5, description: 'Community resources and forums' },
-    'documentation': { weight: 5, description: 'Technical guides and references' }
+    'guide': { weight: 5, description: 'Community resources and forums' },
+    'whitepaper': { weight: 5, description: 'Technical guides and references' }
   },
 
   // Difficulty levels
@@ -176,7 +186,7 @@ const RESOURCE_DATA = {
       'https://www.pluralsight.com/paths/cyber-security',
       'https://www.linuxacademy.com/library/search/cybersecurity'
     ],
-    community: [
+    guide: [
       'https://www.reddit.com/r/cybersecurity/',
       'https://discord.gg/cybersecurity',
       'https://www.owasp.org/index.php/OWASP_Local_Chapters',
@@ -188,7 +198,7 @@ const RESOURCE_DATA = {
       'https://stackoverflow.com/questions/tagged/security',
       'https://infosec.exchange/'
     ],
-    documentation: [
+    whitepaper: [
       'https://attack.mitre.org/',
       'https://owasp.org/www-project-cheat-sheets/',
       'https://www.cisecurity.org/controls/',
@@ -237,8 +247,8 @@ function generateEstimatedReadTime(type, difficulty) {
     tool: 3,
     video: 10,
     course: 30,
-    community: 2,
-    documentation: 8
+    guide: 8,
+    whitepaper: 12
   };
   
   const difficultyMultiplier = {
@@ -386,7 +396,7 @@ Upon completion, participants receive:
 - Continuing education credits
 - Access to alumni network and resources`,
 
-    community: `# ${title} - Community Resource
+    guide: `# ${title} - Community Guide
 
 ## Community Overview
 Connect with cybersecurity professionals in the ${subtopic} community within ${topic}. This platform is designed for ${difficulty} level practitioners.
@@ -421,12 +431,12 @@ Connect with cybersecurity professionals in the ${subtopic} community within ${t
 - Follow relevant discussion topics
 - Share your expertise and experience`,
 
-    documentation: `# ${title} - Technical Documentation
+    whitepaper: `# ${title} - Technical Whitepaper
 
-## Documentation Overview
-Comprehensive technical documentation for ${subtopic} within ${topic}, designed for ${difficulty} level implementation.
+## Executive Summary
+Comprehensive technical whitepaper covering ${subtopic} within ${topic}, designed for ${difficulty} level implementation.
 
-## Documentation Sections
+## Technical Sections
 - **Architecture Overview** - System design and components
 - **Configuration Guide** - Setup and customization
 - **API Reference** - Technical specifications
@@ -530,7 +540,7 @@ function generateResource(index) {
       `${subtopic} Expert Certification`,
       `${subtopic} Career Track`
     ],
-    community: [
+    guide: [
       `${subtopic} Community Forum`,
       `${subtopic} Discussion Group`,
       `${subtopic} Professional Network`,
@@ -539,7 +549,7 @@ function generateResource(index) {
       `${subtopic} Support Community`,
       `${subtopic} Collaboration Hub`
     ],
-    documentation: [
+    whitepaper: [
       `${subtopic} Technical Documentation`,
       `${subtopic} Implementation Guide`,
       `${subtopic} Reference Manual`,
@@ -551,7 +561,7 @@ function generateResource(index) {
   };
 
   const title = getRandomFromArray(titleTemplates[type]);
-  const slug = generateSlug(title);
+  const slug = generateSlug(title) + '-' + Math.random().toString(36).substring(2, 8);
   
   // Generate tags
   const tags = [
@@ -564,6 +574,12 @@ function generateResource(index) {
   // Add additional relevant tags
   if (type === 'tool') {
     tags.push('security-tools', 'practical');
+  }
+  if (type === 'guide') {
+    tags.push('community', 'networking');
+  }
+  if (type === 'whitepaper') {
+    tags.push('technical', 'documentation');
   }
   if (difficulty === 'beginner') {
     tags.push('fundamentals', 'getting-started');
@@ -595,12 +611,8 @@ function generateResource(index) {
     tags,
     is_premium: Math.random() > 0.7, // 30% premium content
     is_published: Math.random() > 0.1, // 90% published
-    is_featured: Math.random() > 0.9, // 10% featured
     author: 'Cybernex Academy',
     estimated_read_time: generateEstimatedReadTime(type, difficulty),
-    seo_title: `${title} | Cybernex Academy`,
-    seo_description: `Learn ${subtopic} with our comprehensive ${difficulty} level guide. Master ${topic} security concepts and practical applications.`,
-    seo_keywords: seoKeywords,
     view_count: Math.floor(Math.random() * 1000),
     like_count: Math.floor(Math.random() * 100),
     bookmark_count: Math.floor(Math.random() * 50),
