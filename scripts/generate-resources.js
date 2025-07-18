@@ -471,27 +471,36 @@ Comprehensive technical whitepaper covering ${subtopic} within ${topic}, designe
   return templates[type] || templates.article;
 }
 
-// Category mapping (you'll need to get actual category IDs from your database)
-const CATEGORY_MAPPING = {
-  'Academy': {
-    'Courses': 'courses',
-    'Videos': 'videos',
-    'Documentation': 'documentation',
-    'Cheat Sheets': 'cheat-sheets'
-  },
-  'Insights': {
-    'Latest News': 'latest-news',
-    'Security Tools': 'security-tools',
-    'Podcasts': 'podcasts',
-    'Threat Intelligence': 'threat-intelligence',
-    'Data Breaches': 'data-breaches'
-  },
-  'Community': {
-    'Discord Servers': 'discord-servers',
-    'Reddit Communities': 'reddit-communities',
-    'Forums': 'forums',
-    'Skool Communities': 'skool-communities'
-  }
+// Category mapping with actual category IDs from database
+const CATEGORY_IDS = {
+  // Academy subsections
+  'courses': '0db03444-b1ef-4ae9-9413-b81e03c7dbc9',
+  'videos': 'd9d6288b-7ebe-48d2-a886-c0651dbe60fe',
+  'documentation': 'b7f3529e-bbde-4b94-be87-261760fec5e1',
+  'cheatsheets': 'b1b86d8f-c6db-49a6-a64a-ad8d2b6a9e2b',
+  
+  // Insights subsections
+  'news': 'fa04b179-2f79-4df0-8a74-2e53575a60ec',
+  'tools': '989f9fd3-0b86-4735-8734-73fcb2b5d5cd',
+  'podcasts': 'db6ade9c-51f7-4c6d-b4a8-87a94d7f2e3c',
+  'threats': '57e061dd-2338-4dd7-be15-b5bc5607efa1',
+  'breaches': 'ea3db6b5-b66d-4457-bae7-6d59812daa1a',
+  
+  // Community subsections
+  'discord': 'bf2a5b79-17e9-4481-8ddb-cf43dca9410e',
+  'reddit': '3e56808d-0142-4bf3-adf9-ef1c023f9a09',
+  'forums': 'eb134234-8363-4b69-8915-44bd6ca4a372',
+  'skool': '85173041-e147-4cad-a3eb-a832050e513f'
+};
+
+// Resource type to category mapping
+const RESOURCE_TYPE_TO_CATEGORY = {
+  'course': 'courses',
+  'video': 'videos',
+  'article': 'news',
+  'tool': 'tools',
+  'guide': 'forums',
+  'whitepaper': 'documentation'
 };
 
 // Generate a single resource
@@ -600,6 +609,18 @@ function generateResource(index) {
     `${subtopic} best practices`
   ];
 
+  // Assign category_id based on resource type
+  const categorySlug = RESOURCE_TYPE_TO_CATEGORY[type];
+  const category_id = CATEGORY_IDS[categorySlug];
+  
+  // For community resources, randomly assign to one of the community subsections
+  let finalCategoryId = category_id;
+  if (type === 'guide') {
+    const communityCategories = ['discord', 'reddit', 'forums', 'skool'];
+    const randomCommunitySlug = getRandomFromArray(communityCategories);
+    finalCategoryId = CATEGORY_IDS[randomCommunitySlug];
+  }
+
   const resource = {
     title,
     slug,
@@ -608,6 +629,7 @@ function generateResource(index) {
     content_url: getRandomFromArray(RESOURCE_DATA.urls[type]),
     resource_type: type,
     difficulty_level: difficulty,
+    category_id: finalCategoryId,
     tags,
     is_premium: Math.random() > 0.7, // 30% premium content
     is_published: Math.random() > 0.1, // 90% published

@@ -1,224 +1,119 @@
-# Resource Generation Guide
+# Resource Import System
 
-## Overview
+This document describes the Resource Import System, which is designed to efficiently process and import large volumes of resources (1,000+) into the application's database.
 
-This guide explains how to generate and populate the Cybernex Academy database with 1,000 high-quality cybersecurity resources using the automated resource generator.
+## Implemented Components
 
-## Quick Start
+So far, we have implemented the following components:
 
-```bash
-# Generate 1,000 resources
-npm run generate:resources
+1. **Base Types and Interfaces**
+   - Defined types for raw resources, validated resources, categorized resources, and enriched resources
+   - Created interfaces for import options, progress tracking, and results
 
-# Alternative command
-npm run seed:resources
-```
+2. **File Processors**
+   - Created a base file processor interface
+   - Implemented a CSV file processor with support for different formats and encodings
+   - Implemented a JSON file processor with support for different structures
 
-## Content Distribution
+3. **Utility Functions**
+   - Created file type detection and validation utilities
 
-The generator creates resources with the following distribution:
+## Remaining Components
 
-### Resource Types
-- **Articles (40%)** - 400 comprehensive guides and tutorials
-- **Tools (25%)** - 250 security tool reviews and guides
-- **Videos (15%)** - 150 educational video tutorials
-- **Courses (10%)** - 100 structured learning modules
-- **Community (5%)** - 50 community resources and forums
-- **Documentation (5%)** - 50 technical guides and references
+To complete the full implementation, the following components need to be developed:
 
-### Difficulty Levels
-- **Beginner (40%)** - 400 resources for newcomers
-- **Intermediate (35%)** - 350 resources for developing skills
-- **Advanced (20%)** - 200 resources for experts
-- **Expert (5%)** - 50 highly specialized resources
+1. **Validation Engine**
+   - Create validation rules for resource fields
+   - Implement a resource validator that applies rules to resources
+   - Build detailed error reporting
 
-### Premium Content
-- **Free (70%)** - 700 accessible resources
-- **Premium (30%)** - 300 high-value subscriber content
+2. **Categorization Service**
+   - Implement category management functions
+   - Create categorization strategies
+   - Build fallback categorization logic
 
-## Content Topics
+3. **Enrichment Service**
+   - Implement metadata enrichment providers
+   - Develop slug generation
+   - Implement duplicate detection
 
-The generator covers comprehensive cybersecurity domains:
+4. **Database Writer**
+   - Create batch processing system
+   - Implement resource storage functions
+   - Build related entity storage (categories, tags)
 
-### Core Security Areas
-1. **Network Security** - Firewalls, VPNs, monitoring, intrusion detection
-2. **Web Application Security** - OWASP Top 10, XSS, SQL injection, authentication
-3. **Endpoint Security** - EDR, device management, encryption, patching
-4. **Cloud Security** - AWS, Azure, GCP, container security, compliance
-5. **Identity & Access Management** - MFA, SSO, PAM, directory services
-6. **Incident Response** - Digital forensics, malware analysis, threat hunting
-7. **Compliance & Governance** - GDPR, SOX, PCI DSS, NIST, ISO 27001
-8. **Cryptography** - Encryption, PKI, key management, digital signatures
-9. **Threat Intelligence** - IOCs, threat feeds, attribution, MITRE ATT&CK
-10. **Security Operations** - SOC, SIEM, monitoring, automation
+5. **Reporting and Monitoring System**
+   - Implement progress tracking
+   - Develop import reporting
+   - Build export functionality for reports
 
-### Real-World Tools Coverage
-- **Network Tools**: Wireshark, Nmap, Nessus, Metasploit, Burp Suite
-- **Penetration Testing**: Kali Linux, Cobalt Strike, Bloodhound, Mimikatz
-- **Incident Response**: Volatility, Autopsy, YARA, Cuckoo Sandbox
-- **Cloud Security**: AWS Config, Azure Security Center, Prisma Cloud
+6. **Main Import Service Orchestrator**
+   - Create main import workflow
+   - Implement pipeline architecture
+   - Build error handling and recovery
 
-## Generated Resource Structure
+## Usage
 
-Each resource includes:
+Once fully implemented, the system will be used as follows:
 
-### Core Fields
-- **Title** - SEO-optimized, descriptive titles
-- **Slug** - URL-friendly identifiers
-- **Description** - Comprehensive summaries
-- **Content** - Detailed, educational content
-- **Content URL** - External resource links
+1. **Command Line Interface**
+   ```bash
+   node scripts/import-resources.js resources.csv --batch-size=100 --visibility=unpublished
+   ```
 
-### Classification
-- **Resource Type** - Article, tool, video, course, community, documentation
-- **Difficulty Level** - Beginner to expert classifications
-- **Topics & Tags** - Comprehensive tagging system
-- **Premium Status** - Free vs premium content designation
+2. **Programmatic API**
+   ```typescript
+   import { ResourceImportService } from '@/lib/services/resource-import';
 
-### SEO Optimization
-- **SEO Title** - Search engine optimized titles
-- **SEO Description** - Meta descriptions for search results
-- **SEO Keywords** - Relevant keyword arrays
-- **Search Vector** - Full-text search optimization
+   const importService = new ResourceImportService({
+     batchSize: 100,
+     createMissingCategories: true,
+     defaultVisibility: 'unpublished',
+     skipDuplicates: true
+   });
 
-### Engagement Metrics
-- **View Count** - Realistic view statistics
-- **Like Count** - User engagement metrics
-- **Bookmark Count** - Save/favorite statistics
-- **Rating** - Quality ratings (3.0-5.0 scale)
-- **Rating Count** - Number of ratings
+   const result = await importService.importFile('path/to/resources.csv');
+   console.log(`Imported ${result.summary.successfulImports} resources`);
+   ```
 
-### Metadata
-- **Author** - Content creator information
-- **Estimated Read Time** - Reading time estimates
-- **Created/Updated Dates** - Timestamp information
-- **Publication Status** - Published/unpublished state
+## Supported File Formats
 
-## Content Quality Features
+The system supports the following file formats:
 
-### Realistic Data
-- Authentic URLs to real cybersecurity resources
-- Industry-standard tool references
-- Actual certification and platform names
-- Realistic engagement metrics
+1. **CSV**
+   - Comma-separated values
+   - Semicolon-separated values
+   - Tab-separated values
+   - Custom delimiters
+   - Different encodings
 
-### Educational Value
-- Structured learning progressions
-- Practical, hands-on content
-- Industry best practices
-- Real-world applications
+2. **JSON**
+   - Array of resources
+   - Object with array property
+   - Nested structures with path specification
 
-### Professional Standards
-- Proper technical terminology
-- Industry-recognized frameworks
-- Compliance-aware content
-- Enterprise-focused solutions
+## Performance Considerations
 
-## Running the Generator
+For handling 1,000+ resources efficiently:
 
-### Prerequisites
-Ensure your environment variables are configured:
-```bash
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
-SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
-```
+1. **Batch Processing**: Resources are processed in configurable batches (default: 100)
+2. **Database Optimization**: Bulk inserts and updates are used
+3. **Memory Management**: Streaming approaches for file processing to minimize memory usage
 
-### Execution Process
-1. **Initialization** - Connects to Supabase database
-2. **Batch Processing** - Generates resources in batches of 50
-3. **Content Creation** - Creates realistic, educational content
-4. **Database Insertion** - Inserts resources with proper structure
-5. **Statistics** - Provides completion summary and metrics
+## Error Handling
 
-### Progress Monitoring
-The generator provides real-time feedback:
-- Batch processing progress
-- Resource type distribution
-- Success/error reporting
-- Final statistics summary
+The system implements a comprehensive error handling strategy:
 
-## Customization Options
+1. **Validation Errors**: Collected and reported without halting the import process
+2. **Database Errors**: Retried with exponential backoff before failing
+3. **File Processing Errors**: Reported with specific line/record information
 
-### Content Modification
-Edit `scripts/generate-resources.js` to customize:
-- Resource type distribution
-- Topic coverage areas
-- Difficulty level balance
-- Premium content percentage
-- URL references and links
+## Future Enhancements
 
-### Batch Size Adjustment
-Modify the `batchSize` variable to change processing speed:
-```javascript
-const batchSize = 50; // Adjust as needed
-```
+Potential future enhancements include:
 
-### Total Resource Count
-Change the `totalResources` variable to generate different amounts:
-```javascript
-const totalResources = 1000; // Adjust as needed
-```
-
-## Database Impact
-
-### Storage Requirements
-- Each resource: ~5-10KB average
-- 1,000 resources: ~5-10MB total
-- Full-text search vectors: Additional ~2-5MB
-- Indexes and metadata: ~1-2MB
-
-### Performance Considerations
-- Batch processing prevents database overload
-- Optimized for Supabase connection limits
-- Includes processing delays between batches
-- Efficient query structures for bulk operations
-
-## Post-Generation Steps
-
-### Verification
-1. Check total resource count in database
-2. Verify resource type distribution
-3. Confirm category assignments
-4. Test search functionality
-5. Validate premium content access
-
-### Optional Enhancements
-1. **Category Assignment** - Manually assign specific categories
-2. **Author Profiles** - Link resources to specific author accounts
-3. **Learning Paths** - Create structured learning sequences
-4. **Featured Content** - Manually select featured resources
-5. **Community Engagement** - Seed initial likes and bookmarks
-
-## Troubleshooting
-
-### Common Issues
-1. **Database Connection** - Verify Supabase credentials
-2. **Rate Limits** - Adjust batch sizes if needed
-3. **Duplicate Content** - Check for unique slug conflicts
-4. **Memory Issues** - Reduce batch size for large datasets
-
-### Error Recovery
-The generator includes error handling for:
-- Network connectivity issues
-- Database constraint violations
-- Invalid data formats
-- Rate limiting scenarios
-
-## Maintenance
-
-### Regular Updates
-- Monitor resource engagement metrics
-- Update content based on industry changes
-- Refresh external URL references
-- Maintain category relevance
-
-### Content Refresh
-Run periodic updates to:
-- Add new cybersecurity topics
-- Update tool references
-- Refresh compliance standards
-- Incorporate new threat intelligence
-
----
-
-For questions or issues with resource generation, refer to the project documentation or contact the development team.
+1. **AI-Powered Categorization**: Using machine learning for more accurate categorization
+2. **Content Extraction**: Automatically extracting content from URLs
+3. **Scheduled Imports**: Setting up recurring imports from external sources
+4. **Import Templates**: Saving import configurations as templates
+5. **Data Transformation Rules**: Custom rules for transforming data during import
