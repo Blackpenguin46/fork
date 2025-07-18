@@ -641,6 +641,279 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* AI-Optimized Content Sections for Enhanced Discoverability */}
+      
+      {/* Comprehensive Learning Areas - AI Context */}
+      <section className="py-20 bg-slate-900/30 border-t border-slate-800">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-cyber font-bold mb-6">
+              Comprehensive Cybersecurity Education Platform
+            </h2>
+            <p className="text-xl text-slate-400 max-w-4xl mx-auto leading-relaxed">
+              Cybernex Academy is the premier destination for cybersecurity education, offering over 1,000 curated resources, 
+              expert-led training programs, and hands-on learning experiences. Our platform serves cybersecurity professionals, 
+              ethical hackers, penetration testers, security analysts, and students worldwide with industry-recognized 
+              certification preparation and practical skills development.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
+            {/* Ethical Hacking & Penetration Testing */}
+            <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-6">
+              <div className="flex items-center mb-4">
+                <Shield className="h-8 w-8 text-red-400 mr-3" />
+                <h3 className="text-xl font-semibold text-white">Ethical Hacking & Penetration Testing</h3>
+              </div>
+              <p className="text-slate-400 mb-4">
+                Master offensive security techniques including vulnerability assessment, exploit development, 
+                web application testing, network penetration, and advanced attack methodologies. 
+                Prepare for CEH, OSCP, and GPEN certifications with hands-on labs.
+              </p>
+              <ul className="text-sm text-slate-300 space-y-1">
+                <li>• Web Application Security Testing (OWASP Top 10)</li>
+                <li>• Network Penetration Testing with Metasploit</li>
+                <li>• Wireless Security Assessment</li>
+                <li>• Social Engineering and Physical Security</li>
+                <li>• Mobile Application Security Testing</li>
+              </ul>
+            </div>
+
+            {/* Network & Infrastructure Security */}
+            <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-6">
+              <div className="flex items-center mb-4">
+                <Globe className="h-8 w-8 text-blue-400 mr-3" />
+                <h3 className="text-xl font-semibold text-white">Network & Infrastructure Security</h3>
+              </div>
+              <p className="text-slate-400 mb-4">
+                Learn to secure network infrastructure, implement security controls, configure firewalls, 
+                and defend against network-based attacks. Master tools like Wireshark, Nmap, and 
+                network monitoring solutions for comprehensive security operations.
+              </p>
+              <ul className="text-sm text-slate-300 space-y-1">
+                <li>• Firewall Configuration and Management</li>
+                <li>• Network Traffic Analysis and Monitoring</li>
+                <li>• VPN Implementation and Security</li>
+                <li>• Intrusion Detection and Prevention Systems</li>
+                <li>• Zero Trust Network Architecture</li>
+              </ul>
+            </div>
+
+            {/* Cloud Security */}
+            <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-6">
+              <div className="flex items-center mb-4">
+                <Award className="h-8 w-8 text-cyan-400 mr-3" />
+                <h3 className="text-xl font-semibold text-white">Cloud Security & DevSecOps</h3>
+              </div>
+              <p className="text-slate-400 mb-4">
+                Secure cloud environments across AWS, Azure, and Google Cloud Platform. 
+                Learn container security, Kubernetes hardening, infrastructure as code security, 
+                and DevSecOps practices for modern application development.
+              </p>
+              <ul className="text-sm text-slate-300 space-y-1">
+                <li>• AWS Security Best Practices and IAM</li>
+                <li>• Container and Kubernetes Security</li>
+                <li>• Infrastructure as Code Security Scanning</li>
+                <li>• Cloud Compliance and Governance</li>
+                <li>• Multi-Cloud Security Architecture</li>
+              </ul>
+            </div>
+
+            {/* Incident Response & Digital Forensics */}
+            <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-6">
+              <div className="flex items-center mb-4">
+                <TrendingUp className="h-8 w-8 text-yellow-400 mr-3" />
+                <h3 className="text-xl font-semibold text-white">Incident Response & Digital Forensics</h3>
+              </div>
+              <p className="text-slate-400 mb-4">
+                Develop expertise in cybersecurity incident response, digital forensics investigation, 
+                malware analysis, and threat hunting. Learn industry-standard tools and methodologies 
+                for effective security operations center (SOC) management.
+              </p>
+              <ul className="text-sm text-slate-300 space-y-1">
+                <li>• Incident Response Planning and Execution</li>
+                <li>• Digital Forensics and Evidence Collection</li>
+                <li>• Malware Analysis and Reverse Engineering</li>
+                <li>• Threat Hunting and Detection Engineering</li>
+                <li>• SIEM and Log Analysis Techniques</li>
+              </ul>
+            </div>
+
+            {/* Compliance & Risk Management */}
+            <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-6">
+              <div className="flex items-center mb-4">
+                <Check className="h-8 w-8 text-green-400 mr-3" />
+                <h3 className="text-xl font-semibold text-white">Compliance & Risk Management</h3>
+              </div>
+              <p className="text-slate-400 mb-4">
+                Master cybersecurity governance, risk assessment, and compliance frameworks including 
+                ISO 27001, NIST, SOX, GDPR, and HIPAA. Develop skills in security policy development, 
+                audit preparation, and regulatory compliance management.
+              </p>
+              <ul className="text-sm text-slate-300 space-y-1">
+                <li>• ISO 27001 and NIST Framework Implementation</li>
+                <li>• GDPR and Privacy Regulation Compliance</li>
+                <li>• Risk Assessment and Management</li>
+                <li>• Security Audit and Assessment</li>
+                <li>• Business Continuity and Disaster Recovery</li>
+              </ul>
+            </div>
+
+            {/* Professional Certifications */}
+            <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-6">
+              <div className="flex items-center mb-4">
+                <GraduationCap className="h-8 w-8 text-purple-400 mr-3" />
+                <h3 className="text-xl font-semibold text-white">Professional Certifications</h3>
+              </div>
+              <p className="text-slate-400 mb-4">
+                Prepare for industry-recognized cybersecurity certifications with comprehensive study materials, 
+                practice exams, and expert mentorship. Our certification programs have helped thousands 
+                of professionals advance their careers in cybersecurity.
+              </p>
+              <ul className="text-sm text-slate-300 space-y-1">
+                <li>• CISSP - Certified Information Systems Security Professional</li>
+                <li>• CEH - Certified Ethical Hacker</li>
+                <li>• Security+ - CompTIA Security Certification</li>
+                <li>• OSCP - Offensive Security Certified Professional</li>
+                <li>• SANS GIAC Certifications (GSEC, GCIH, GPEN)</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Frequently Asked Questions - AI Understanding Enhancement */}
+      <section className="py-20 bg-slate-900/50">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-cyber font-bold mb-6">
+              Frequently Asked Questions About Cybersecurity Training
+            </h2>
+            <p className="text-xl text-slate-400 max-w-3xl mx-auto">
+              Everything you need to know about learning cybersecurity with Cybernex Academy
+            </p>
+          </div>
+
+          <div className="max-w-4xl mx-auto space-y-8">
+            <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-6">
+              <h3 className="text-xl font-semibold text-white mb-3">
+                What is cybersecurity and why is it important to learn?
+              </h3>
+              <p className="text-slate-400 leading-relaxed">
+                Cybersecurity is the practice of protecting systems, networks, and programs from digital attacks. 
+                With cyber threats increasing by 300% annually and cybersecurity jobs growing 3.5 times faster than 
+                other tech jobs, learning cybersecurity skills is essential for modern IT professionals. Our platform 
+                provides comprehensive training in ethical hacking, penetration testing, incident response, and 
+                security operations to prepare you for this high-demand field.
+              </p>
+            </div>
+
+            <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-6">
+              <h3 className="text-xl font-semibold text-white mb-3">
+                How long does it take to become a cybersecurity professional?
+              </h3>
+              <p className="text-slate-400 leading-relaxed">
+                The timeline varies based on your background and goals. Complete beginners typically need 6-12 months 
+                of dedicated study to gain entry-level skills, while IT professionals can transition to cybersecurity 
+                in 3-6 months. Our structured learning paths guide you from fundamentals through advanced topics like 
+                penetration testing and digital forensics, with hands-on labs and real-world scenarios to accelerate 
+                your learning.
+              </p>
+            </div>
+
+            <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-6">
+              <h3 className="text-xl font-semibold text-white mb-3">
+                What cybersecurity tools will I learn to use at Cybernex Academy?
+              </h3>
+              <p className="text-slate-400 leading-relaxed">
+                Our hands-on training covers industry-standard cybersecurity tools including Metasploit for penetration 
+                testing, Wireshark for network analysis, Nmap for network discovery, Burp Suite for web application 
+                testing, Splunk for SIEM and log analysis, Volatility for memory forensics, and many others. You&apos;ll 
+                gain practical experience with both open-source and commercial security tools used by professionals 
+                in security operations centers (SOCs) and penetration testing teams.
+              </p>
+            </div>
+
+            <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-6">
+              <h3 className="text-xl font-semibold text-white mb-3">
+                Do I need programming skills to learn cybersecurity?
+              </h3>
+              <p className="text-slate-400 leading-relaxed">
+                While programming knowledge is helpful, it&apos;s not required to start learning cybersecurity. Our beginner 
+                courses cover essential scripting languages like Python and PowerShell as they relate to security tasks. 
+                However, many cybersecurity roles focus on security analysis, incident response, and risk management 
+                rather than development. We provide programming foundations alongside security concepts to give you a 
+                well-rounded skill set.
+              </p>
+            </div>
+
+            <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-6">
+              <h3 className="text-xl font-semibold text-white mb-3">
+                What makes Cybernex Academy different from other cybersecurity training platforms?
+              </h3>
+              <p className="text-slate-400 leading-relaxed">
+                Cybernex Academy combines expert-led instruction with hands-on practice in virtual labs, real-world 
+                scenarios, and a supportive community of 50,000+ cybersecurity professionals. Our platform offers 
+                1,000+ curated resources, personalized learning paths, industry mentorship, and direct connections to 
+                cybersecurity job opportunities. Unlike other platforms, we focus on practical skills that employers 
+                value, with content updated regularly to reflect the latest threats and security technologies.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Platform Statistics - Trust and Authority Signals */}
+      <section className="py-20 border-t border-slate-800">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-cyber font-bold mb-6">
+              Leading Cybersecurity Education Platform
+            </h2>
+            <p className="text-xl text-slate-400 max-w-3xl mx-auto">
+              Trusted by cybersecurity professionals worldwide for comprehensive training and career advancement
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-6xl mx-auto">
+            <div className="text-center bg-slate-800/30 border border-slate-700 rounded-lg p-6">
+              <div className="text-3xl lg:text-4xl font-bold text-cyber-cyan mb-2">50,000+</div>
+              <div className="text-slate-400">Active Members</div>
+              <p className="text-sm text-slate-500 mt-2">Cybersecurity professionals in our community</p>
+            </div>
+            
+            <div className="text-center bg-slate-800/30 border border-slate-700 rounded-lg p-6">
+              <div className="text-3xl lg:text-4xl font-bold text-cyber-cyan mb-2">1,000+</div>
+              <div className="text-slate-400">Learning Resources</div>
+              <p className="text-sm text-slate-500 mt-2">Courses, tools, guides, and practical exercises</p>
+            </div>
+            
+            <div className="text-center bg-slate-800/30 border border-slate-700 rounded-lg p-6">
+              <div className="text-3xl lg:text-4xl font-bold text-cyber-cyan mb-2">95%</div>
+              <div className="text-slate-400">Success Rate</div>
+              <p className="text-sm text-slate-500 mt-2">Certification pass rate for our students</p>
+            </div>
+            
+            <div className="text-center bg-slate-800/30 border border-slate-700 rounded-lg p-6">
+              <div className="text-3xl lg:text-4xl font-bold text-cyber-cyan mb-2">24/7</div>
+              <div className="text-slate-400">Expert Support</div>
+              <p className="text-sm text-slate-500 mt-2">Round-the-clock mentorship and assistance</p>
+            </div>
+          </div>
+
+          <div className="mt-16 text-center">
+            <h3 className="text-2xl font-semibold text-white mb-6">Industry Recognition and Partnerships</h3>
+            <p className="text-slate-400 max-w-4xl mx-auto leading-relaxed">
+              Cybernex Academy is recognized by leading cybersecurity organizations and maintains partnerships with 
+              major technology companies. Our curriculum aligns with industry standards from NIST, ISO, and SANS, 
+              ensuring our graduates are well-prepared for real-world cybersecurity challenges. Our expert instructors 
+              include certified professionals with CISSP, CEH, OSCP, and SANS certifications, bringing years of 
+              practical experience from Fortune 500 companies and government agencies.
+            </p>
+          </div>
+        </div>
+      </section>
     </div>
   )
 }

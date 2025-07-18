@@ -1,9 +1,52 @@
-# *
+# Robots.txt for AI Search Optimization - Cybernex Academy
+# Premier cybersecurity learning platform with 1000+ resources
+
+# All bots welcome - we want maximum AI search visibility
 User-agent: *
 Allow: /
+Crawl-delay: 1
 
-# Host
+# AI-specific search engines and crawlers
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: GPTBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: YouBot
+Allow: /
+
+User-agent: Applebot
+Allow: /
+
+User-agent: BingBot
+Allow: /
+
+User-agent: Googlebot
+Allow: /
+
+# Disallow admin areas for security
+User-agent: *
+Disallow: /admin/
+Disallow: /api/admin/
+Disallow: /auth/debug
+Disallow: /debug/
+
+# Host information
 Host: https://www.cybernexacademy.com
 
-# Sitemaps
+# Comprehensive Sitemaps for AI Discovery
 Sitemap: https://www.cybernexacademy.com/sitemap.xml
+Sitemap: https://www.cybernexacademy.com/sitemap-0.xml
+
+# Additional metadata for AI understanding
+# Cybernex Academy: Cybersecurity education platform
+# Topics: Ethical hacking, penetration testing, network security, cloud security
+# Audience: Cybersecurity professionals, students, career changers
+# Value: Expert training, hands-on labs, industry certifications
