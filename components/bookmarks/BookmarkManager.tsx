@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Bookmark as BookmarkIcon, 
@@ -47,13 +47,7 @@ const BookmarkManager: React.FC<BookmarkManagerProps> = ({ onClose }) => {
     }
   }, [user?.id]);
 
-  useEffect(() => {
-    if (user?.id) {
-      loadBookmarks();
-    }
-  }, [selectedCollection, selectedTags, user?.id]);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       setLoading(true);
       // For now, just load basic data - collections feature not implemented yet
@@ -64,11 +58,13 @@ const BookmarkManager: React.FC<BookmarkManagerProps> = ({ onClose }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const loadBookmarks = async () => {
+  const loadBookmarks = useCallback(async () => {
     try {
-      const result = await BookmarksService.getUserBookmarks(user!.id, {
+      if (!user?.id) return;
+      
+      const result = await BookmarksService.getUserBookmarks(user.id, {
         limit: 100,
         page: 1
       });
@@ -79,7 +75,19 @@ const BookmarkManager: React.FC<BookmarkManagerProps> = ({ onClose }) => {
       console.error('Error loading bookmarks:', error);
       toast.error('Failed to load bookmarks');
     }
-  };
+  }, [user?.id]);
+
+  useEffect(() => {
+    if (user?.id) {
+      loadData();
+    }
+  }, [user?.id, loadData]);
+
+  useEffect(() => {
+    if (user?.id) {
+      loadBookmarks();
+    }
+  }, [selectedCollection, selectedTags, user?.id, loadBookmarks]);
 
   const handleCreateCollection = async (name: string, description: string, color: string) => {
     try {

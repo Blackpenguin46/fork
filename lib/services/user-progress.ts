@@ -426,4 +426,123 @@ export class UserProgressService {
       timeSpentMinutes: minutes
     })
   }
+
+  /**
+   * Get user's progress for a specific learning path
+   */
+  static async getUserLearningPathProgress(
+    userId: string,
+    learningPathSlug: string
+  ): Promise<ApiResponse<any>> {
+    try {
+      if (!supabase) {
+        return { success: false, error: 'Database not available' }
+      }
+
+      // First get the learning path ID from the slug
+      const { data: learningPath, error: pathError } = await supabase
+        .from('learning_paths')
+        .select('id')
+        .eq('slug', learningPathSlug)
+        .single()
+
+      if (pathError || !learningPath) {
+        return { success: false, error: pathError?.message || 'Learning path not found' }
+      }
+
+      // Get user's enrollment status for this learning path
+      const { data: enrollment, error: enrollmentError } = await supabase
+        .from('learning_path_enrollments')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('learning_path_id', learningPath.id)
+        .maybeSingle()
+
+      if (enrollmentError) {
+        return { success: false, error: enrollmentError.message }
+      }
+
+      // If not enrolled, return null
+      if (!enrollment) {
+        return { success: true, data: null }
+      }
+
+      // Get progress data
+      const { data: progressData, error: progressError } = await supabase
+        .from('user_progress')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('learning_path_id', learningPath.id)
+        .maybeSingle()
+
+      if (progressError) {
+        return { success: false, error: progressError.message }
+      }
+
+      return { success: true, data: progressData || enrollment }
+    } catch (error) {
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : 'Unknown error' 
+      }
+    }
+  }
+
+  /**
+   * Get user's progress for all resources in a learning path
+   */
+  static async getUserProgressByPath(
+    userId: string,
+    learningPathSlug: string
+  ): Promise<ApiResponse<UserProgress[]>> {
+    try {
+      if (!supabase) {
+        return { success: false, error: 'Database not available' }
+      }
+
+      // First get the learning path ID from the slug
+      const { data: learningPath, error: pathError } = await supabase
+        .from('learning_paths')
+        .select('id')
+        .eq('slug', learningPathSlug)
+        .single()
+
+      if (pathError || !learningPath) {
+        return { success: false, error: pathError?.message || 'Learning path not found' }
+      }
+
+      // Get all resources in this learning path
+      const { data: pathResources, error: resourcesError } = await supabase
+        .from('learning_path_resources')
+        .select('resource_id')
+        .eq('learning_path_id', learningPath.id)
+
+      if (resourcesError) {
+        return { success: false, error: resourcesError.message }
+      }
+
+      if (!pathResources || pathResources.length === 0) {
+        return { success: true, data: [] }
+      }
+
+      // Get user's progress for these resources
+      const resourceIds = pathResources.map(r => r.resource_id)
+      const { data: progressData, error: progressError } = await supabase
+        .from('user_progress')
+        .select('*')
+        .eq('user_id', userId)
+        .in('resource_id', resourceIds)
+
+      if (progressError) {
+        return { success: false, error: progressError.message }
+      }
+
+      return { success: true, data: progressData || [] }
+    } catch (error) {
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : 'Unknown error' 
+      }
+    }
+  }
 }

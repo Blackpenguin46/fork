@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -55,12 +55,7 @@ export default function ResourcesPage() {
   const [hasNext, setHasNext] = useState(false)
   const [hasPrev, setHasPrev] = useState(false)
 
-  useEffect(() => {
-    loadResources()
-    loadStats()
-  }, [searchQuery, selectedType, selectedDifficulty, showPremiumOnly, sortBy, currentPage])
-
-  const loadResources = async () => {
+  const loadResources = useCallback(async () => {
     try {
       setLoading(true)
 
@@ -84,9 +79,9 @@ export default function ResourcesPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [searchQuery, selectedType, selectedDifficulty, showPremiumOnly, sortBy, currentPage])
 
-  const loadStats = async () => {
+  const loadStats = useCallback(async () => {
     try {
       const result = await getResourceStats()
       if (result.success) {
@@ -95,7 +90,12 @@ export default function ResourcesPage() {
     } catch (error) {
       console.error('Error loading stats:', error)
     }
-  }
+  }, [])
+
+  useEffect(() => {
+    loadResources()
+    loadStats()
+  }, [loadResources, loadStats])
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()

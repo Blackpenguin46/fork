@@ -193,7 +193,7 @@ export default function NewsFeed({
   useEffect(() => {
     fetchMetadata()
     fetchArticles(true)
-  }, [])
+  }, [fetchMetadata, fetchArticles])
 
   // Auto-refresh
   useEffect(() => {

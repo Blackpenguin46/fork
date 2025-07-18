@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { motion } from 'framer-motion'
+import Image from 'next/image'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -121,11 +122,15 @@ export default function NewsCard({
       >
         <div className="flex items-start space-x-3 p-3 rounded-lg hover:bg-gray-800/30 transition-colors">
           {article.thumbnail_url && (
-            <img
-              src={article.thumbnail_url}
-              alt={article.title}
-              className="w-16 h-16 object-cover rounded-lg flex-shrink-0"
-            />
+            <div className="relative w-16 h-16 flex-shrink-0 rounded-lg overflow-hidden">
+              <Image
+                src={article.thumbnail_url}
+                alt={article.title}
+                fill
+                sizes="64px"
+                className="object-cover"
+              />
+            </div>
           )}
           
           <div className="flex-1 min-w-0">
@@ -172,11 +177,15 @@ export default function NewsCard({
           <CardContent className="p-4">
             <div className="flex items-start space-x-4">
               {article.thumbnail_url && (
-                <img
-                  src={article.thumbnail_url}
-                  alt={article.title}
-                  className="w-20 h-20 object-cover rounded-lg flex-shrink-0"
-                />
+                <div className="relative w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden">
+                  <Image
+                    src={article.thumbnail_url}
+                    alt={article.title}
+                    fill
+                    sizes="80px"
+                    className="object-cover"
+                  />
+                </div>
               )}
               
               <div className="flex-1 min-w-0">
@@ -291,11 +300,13 @@ export default function NewsCard({
         variant === 'featured' ? 'border-cyber-cyan/30 bg-gradient-to-br from-cyan-900/10 to-blue-900/10' : ''
       }`}>
         {article.thumbnail_url && (
-          <div className="relative overflow-hidden">
-            <img
+          <div className="relative overflow-hidden h-48">
+            <Image
               src={article.thumbnail_url}
               alt={article.title}
-              className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+              fill
+              sizes="(max-width: 768px) 100vw, 33vw"
+              className="object-cover group-hover:scale-105 transition-transform duration-300"
             />
             {isPremium && (
               <div className="absolute top-2 right-2">

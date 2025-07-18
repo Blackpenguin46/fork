@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { ResourcesService } from '@/lib/api'
 import type { Resource, PaginatedResponse } from '@/lib/api'
 import { useAuth } from '@/app/providers'
@@ -42,7 +42,7 @@ export default function ResourcesPage({
   const [currentPage, setCurrentPage] = useState(1)
   const pageSize = 12
 
-  const fetchResources = async () => {
+  const fetchResources = useCallback(async () => {
     try {
       setLoading(true)
       setError(null)
@@ -70,11 +70,11 @@ export default function ResourcesPage({
     } finally {
       setLoading(false)
     }
-  }
+  }, [currentPage, searchQuery, difficultyFilter, typeFilter, premiumFilter, sortBy, pageSize])
 
   useEffect(() => {
     fetchResources()
-  }, [currentPage, searchQuery, difficultyFilter, typeFilter, premiumFilter, sortBy])
+  }, [fetchResources])
 
   useEffect(() => {
     setCurrentPage(1) // Reset to first page when filters change

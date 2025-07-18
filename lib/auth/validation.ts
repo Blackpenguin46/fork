@@ -121,6 +121,55 @@ export function validateFullName(fullName: string): ValidationError | null {
 }
 
 /**
+ * Validate password
+ */
+export function validatePassword(password: string): ValidationResult {
+  const errors: ValidationError[] = []
+  
+  if (!password) {
+    errors.push({ field: 'password', message: 'Password is required' })
+  } else if (password.length < 8) {
+    errors.push({ field: 'password', message: 'Password must be at least 8 characters long' })
+  } else {
+    const strength = validatePasswordStrength(password)
+    if (!strength.isStrong) {
+      errors.push({
+        field: 'password',
+        message: strength.feedback[0] || 'Password is not strong enough'
+      })
+    }
+  }
+  
+  return {
+    isValid: errors.length === 0,
+    errors
+  }
+}
+
+/**
+ * Get password strength for UI display
+ */
+export function getPasswordStrength(password: string): {
+  score: number;
+  color: string;
+  feedback: string[];
+} {
+  const strength = validatePasswordStrength(password)
+  
+  let color = 'gray'
+  if (strength.score === 0 || strength.score === 1) color = 'red'
+  else if (strength.score === 2) color = 'orange'
+  else if (strength.score === 3) color = 'yellow'
+  else if (strength.score === 4) color = 'green'
+  
+  return {
+    score: strength.score,
+    color,
+    feedback: strength.feedback
+  }
+}
+
+/**
  * Comprehensive password strength validation
  */
 export function validatePasswordStrength(password: string): PasswordStrength {

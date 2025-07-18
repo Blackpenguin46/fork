@@ -50,16 +50,16 @@ export default function LearningPathsPage() {
         setLoading(true)
         
         const [pathsResult, progressResult] = await Promise.allSettled([
-          LearningPathsService.getAllLearningPaths(),
-          user?.id ? UserProgressService.getUserLearningPathProgress(user.id) : Promise.resolve({ success: false })
+          LearningPathsService.getLearningPaths(),
+          user?.id ? UserProgressService.getUserProgress(user.id, { learningPathId: 'all' }) : Promise.resolve({ success: false })
         ])
 
         if (pathsResult.status === 'fulfilled' && pathsResult.value.success) {
-          setLearningPaths(pathsResult.value.data || [])
+          setLearningPaths((pathsResult.value.data as any)?.data || [])
         }
 
         if (progressResult.status === 'fulfilled' && progressResult.value.success) {
-          const progressData = progressResult.value.data || []
+          const progressData = (progressResult.value as any).data || []
           const progressMap = progressData.reduce((acc: any, progress: any) => {
             acc[progress.learning_path_id] = progress
             return acc
@@ -120,7 +120,7 @@ export default function LearningPathsPage() {
     // Sort paths
     switch (sortBy) {
       case 'popular':
-        filtered.sort((a, b) => (b.enrollment_count || 0) - (a.enrollment_count || 0))
+        filtered.sort((a, b) => ((b as any).enrollment_count || 0) - ((a as any).enrollment_count || 0))
         break
       case 'newest':
         filtered.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
@@ -379,15 +379,15 @@ export default function LearningPathsPage() {
                             <span>{path.estimated_duration_hours}h</span>
                           </div>
                         )}
-                        {path.enrollment_count && (
+                        {(path as any).enrollment_count && (
                           <div className="flex items-center space-x-1">
                             <Users className="h-4 w-4" />
-                            <span>{path.enrollment_count}</span>
+                            <span>{(path as any).enrollment_count}</span>
                           </div>
                         )}
                       </div>
                       
-                      {path.completion_certificate && (
+                      {(path as any).completion_certificate && (
                         <div className="flex items-center space-x-1 text-yellow-400">
                           <Award className="h-4 w-4" />
                           <span className="text-xs">Certificate</span>
@@ -396,18 +396,18 @@ export default function LearningPathsPage() {
                     </div>
 
                     {/* Prerequisites */}
-                    {path.prerequisites && path.prerequisites.length > 0 && (
+                    {(path as any).prerequisites && (path as any).prerequisites.length > 0 && (
                       <div className="mb-4">
                         <p className="text-xs text-gray-400 mb-2">Prerequisites:</p>
                         <div className="flex flex-wrap gap-1">
-                          {path.prerequisites.slice(0, 2).map((prereq, i) => (
+                          {(path as any).prerequisites.slice(0, 2).map((prereq: string, i: number) => (
                             <Badge key={i} variant="outline" className="text-xs">
                               {prereq}
                             </Badge>
                           ))}
-                          {path.prerequisites.length > 2 && (
+                          {(path as any).prerequisites.length > 2 && (
                             <Badge variant="outline" className="text-xs">
-                              +{path.prerequisites.length - 2} more
+                              +{(path as any).prerequisites.length - 2} more
                             </Badge>
                           )}
                         </div>

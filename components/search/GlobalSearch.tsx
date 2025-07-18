@@ -77,14 +77,13 @@ export default function GlobalSearch({
     }
   }, [isOpen, focusOnOpen])
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (query.length >= 2) {
       performSearch(query)
     } else {
       setResults([])
     }
-  }, [query, typeFilter, difficultyFilter])
+  }, [query, typeFilter, difficultyFilter, performSearch])
 
   const performSearch = useCallback(async (searchQuery: string) => {
     try {

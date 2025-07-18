@@ -66,7 +66,7 @@ export default function LearningPathDetailPage() {
         ])
 
         if (pathResult.status === 'fulfilled' && pathResult.value.success) {
-          setLearningPath(pathResult.value.data)
+          setLearningPath(pathResult.value.data || null)
         }
 
         if (resourcesResult.status === 'fulfilled' && resourcesResult.value.success) {
@@ -74,11 +74,11 @@ export default function LearningPathDetailPage() {
         }
 
         if (progressResult.status === 'fulfilled' && progressResult.value.success) {
-          setUserProgress(progressResult.value.data)
+          setUserProgress((progressResult.value as any).data || null)
         }
 
         if (resourceProgressResult.status === 'fulfilled' && resourceProgressResult.value.success) {
-          const progressData = resourceProgressResult.value.data || []
+          const progressData = (resourceProgressResult.value as any).data || []
           const progressMap = progressData.reduce((acc: any, progress: any) => {
             acc[progress.resource_id] = progress
             return acc
@@ -265,7 +265,7 @@ export default function LearningPathDetailPage() {
                   {learningPath.difficulty_level}
                 </Badge>
                 {learningPath.is_premium && <Crown className="h-5 w-5 text-yellow-400" />}
-                {learningPath.completion_certificate && (
+                {(learningPath as any).completion_certificate && (
                   <div className="flex items-center space-x-1 text-yellow-400">
                     <Award className="h-4 w-4" />
                     <span className="text-sm">Certificate</span>
@@ -283,10 +283,10 @@ export default function LearningPathDetailPage() {
                     <span>{learningPath.estimated_duration_hours} hours</span>
                   </div>
                 )}
-                {learningPath.enrollment_count && (
+                {(learningPath as any).enrollment_count && (
                   <div className="flex items-center space-x-2">
                     <Users className="h-4 w-4" />
-                    <span>{learningPath.enrollment_count} enrolled</span>
+                    <span>{(learningPath as any).enrollment_count} enrolled</span>
                   </div>
                 )}
                 <div className="flex items-center space-x-2">
@@ -356,7 +356,7 @@ export default function LearningPathDetailPage() {
                         Continue Learning
                       </Link>
                     </Button>
-                    {overallProgress >= 100 && learningPath.completion_certificate && (
+                    {overallProgress >= 100 && (learningPath as any).completion_certificate && (
                       <Button variant="outline" className="w-full">
                         <Download className="h-4 w-4 mr-2" />
                         Download Certificate
@@ -396,11 +396,11 @@ export default function LearningPathDetailPage() {
                           {learningPath.description}
                         </p>
                         
-                        {learningPath.learning_objectives && learningPath.learning_objectives.length > 0 && (
+                        {(learningPath as any).learning_objectives && (learningPath as any).learning_objectives.length > 0 && (
                           <div className="mt-6">
                             <h4 className="text-white font-semibold mb-3">Learning Objectives</h4>
                             <ul className="space-y-2">
-                              {learningPath.learning_objectives.map((objective, index) => (
+                              {(learningPath as any).learning_objectives.map((objective: string, index: number) => (
                                 <li key={index} className="flex items-start space-x-2">
                                   <CheckCircle className="h-4 w-4 text-green-400 mt-0.5 flex-shrink-0" />
                                   <span className="text-gray-300">{objective}</span>
@@ -440,21 +440,21 @@ export default function LearningPathDetailPage() {
                       <div className="flex items-center justify-between">
                         <span className="text-gray-400">Students Enrolled</span>
                         <span className="text-white font-medium">
-                          {learningPath.enrollment_count || 0}
+                          {(learningPath as any).enrollment_count || 0}
                         </span>
                       </div>
                     </CardContent>
                   </Card>
 
                   {/* Skills You'll Learn */}
-                  {learningPath.skills_covered && learningPath.skills_covered.length > 0 && (
+                  {(learningPath as any).skills_covered && (learningPath as any).skills_covered.length > 0 && (
                     <Card className="bg-gray-800/50 border-gray-700">
                       <CardHeader>
                         <CardTitle className="text-white">Skills You&apos;ll Learn</CardTitle>
                       </CardHeader>
                       <CardContent>
                         <div className="flex flex-wrap gap-2">
-                          {learningPath.skills_covered.map((skill, index) => (
+                          {(learningPath as any).skills_covered.map((skill: string, index: number) => (
                             <Badge key={index} variant="outline" className="text-cyber-cyan border-cyber-cyan/30">
                               {skill}
                             </Badge>
@@ -580,11 +580,11 @@ export default function LearningPathDetailPage() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  {learningPath.prerequisites && learningPath.prerequisites.length > 0 ? (
+                  {(learningPath as any).prerequisites && (learningPath as any).prerequisites.length > 0 ? (
                     <div className="space-y-4">
                       <h4 className="text-white font-medium">Required Knowledge</h4>
                       <ul className="space-y-2">
-                        {learningPath.prerequisites.map((prereq, index) => (
+                        {(learningPath as any).prerequisites.map((prereq: string, index: number) => (
                           <li key={index} className="flex items-start space-x-2">
                             <Target className="h-4 w-4 text-cyber-cyan mt-0.5 flex-shrink-0" />
                             <span className="text-gray-300">{prereq}</span>
