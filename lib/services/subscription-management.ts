@@ -6,9 +6,14 @@
 import Stripe from 'stripe'
 import { createClient } from '@supabase/supabase-js'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2025-05-28.basil',
-})
+const getStripeClient = () => {
+  if (!process.env.STRIPE_SECRET_KEY) {
+    throw new Error('STRIPE_SECRET_KEY is not configured')
+  }
+  return new Stripe(process.env.STRIPE_SECRET_KEY, {
+    apiVersion: '2025-05-28.basil',
+  })
+}
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -131,6 +136,7 @@ export class SubscriptionManagementService {
    * Create a new Stripe customer
    */
   static async createCustomer(userId: string, email: string, name?: string): Promise<Stripe.Customer> {
+    const stripe = getStripeClient()
     const customer = await stripe.customers.create({
       email,
       name,
@@ -194,6 +200,7 @@ export class SubscriptionManagementService {
       }
     }
 
+    const stripe = getStripeClient()
     return await stripe.checkout.sessions.create(sessionConfig)
   }
 
@@ -201,6 +208,7 @@ export class SubscriptionManagementService {
    * Create a customer portal session
    */
   static async createPortalSession(customerId: string, returnUrl: string): Promise<Stripe.BillingPortal.Session> {
+    const stripe = getStripeClient()
     return await stripe.billingPortal.sessions.create({
       customer: customerId,
       return_url: returnUrl,
@@ -276,6 +284,7 @@ export class SubscriptionManagementService {
    * Cancel subscription
    */
   static async cancelSubscription(subscriptionId: string, immediately = false): Promise<Stripe.Subscription> {
+    const stripe = getStripeClient()
     if (immediately) {
       return await stripe.subscriptions.cancel(subscriptionId)
     } else {
@@ -289,6 +298,7 @@ export class SubscriptionManagementService {
    * Reactivate subscription
    */
   static async reactivateSubscription(subscriptionId: string): Promise<Stripe.Subscription> {
+    const stripe = getStripeClient()
     return await stripe.subscriptions.update(subscriptionId, {
       cancel_at_period_end: false
     })
@@ -298,6 +308,7 @@ export class SubscriptionManagementService {
    * Change subscription plan
    */
   static async changeSubscriptionPlan(subscriptionId: string, newPriceId: string): Promise<Stripe.Subscription> {
+    const stripe = getStripeClient()
     const subscription = await stripe.subscriptions.retrieve(subscriptionId)
     
     return await stripe.subscriptions.update(subscriptionId, {
