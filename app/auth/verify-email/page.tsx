@@ -52,8 +52,8 @@ function VerifyEmailContent() {
 
     // Validate email
     const validation = validateEmail(email)
-    if (!validation.isValid) {
-      setError(validation.errors[0]?.message || 'Please enter a valid email address')
+    if (validation) {
+      setError(validation.message || 'Please enter a valid email address')
       setLoading(false)
       return
     }

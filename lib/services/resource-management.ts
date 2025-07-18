@@ -164,8 +164,26 @@ export class ResourceManagementService {
         .lte('created_at', filters.dateRange.end.toISOString())
     }
 
-    // Get total count
-    const { count } = await query.select('*', { count: 'exact', head: true })
+    // Get total count - create a fresh query
+    let countQuery = supabase.from('resources').select('*', { count: 'exact', head: true })
+    
+    if (filters.category) {
+      countQuery = countQuery.eq('category_id', filters.category)
+    }
+    if (filters.type) {
+      countQuery = countQuery.eq('resource_type', filters.type)
+    }
+    if (filters.difficulty) {
+      countQuery = countQuery.eq('difficulty_level', filters.difficulty)
+    }
+    if (filters.isPremium !== undefined) {
+      countQuery = countQuery.eq('is_premium', filters.isPremium)
+    }
+    if (filters.search) {
+      countQuery = countQuery.or(`title.ilike.%${filters.search}%,description.ilike.%${filters.search}%`)
+    }
+    
+    const { count } = await countQuery
 
     // Apply pagination
     const offset = (page - 1) * limit
@@ -202,7 +220,7 @@ export class ResourceManagementService {
       errors.push('Description is required')
     }
 
-    if (!resource.content_url?.trim()) {
+    if (!resource.url?.trim()) {
       errors.push('Content URL is required')
     }
 
@@ -227,15 +245,13 @@ export class ResourceManagementService {
       warnings.push('Description should be at least 50 characters long')
     }
 
-    if (resource.content_url && !this.isValidUrl(resource.content_url)) {
+    if (resource.url && !this.isValidUrl(resource.url)) {
       errors.push('Content URL is not valid')
     }
 
-    if (resource.tags && resource.tags.length === 0) {
-      warnings.push('Adding tags will improve discoverability')
-    }
+    // Tags validation removed as it's not part of the Resource type
 
-    if (!resource.estimated_read_time) {
+    if (!resource.estimated_time_minutes) {
       warnings.push('Estimated read time helps users plan their learning')
     }
 
@@ -571,8 +587,12 @@ export class ResourceManagementService {
       .from('user_progress')
       .select('progress_percentage, time_spent_minutes')
 
-    const averageTimeSpent = progressData?.reduce((sum, p) => sum + (p.time_spent_minutes || 0), 0) / (progressData?.length || 1) || 0
-    const completionRate = progressData?.filter(p => p.progress_percentage >= 100).length / (progressData?.length || 1) * 100 || 0
+    const averageTimeSpent = progressData && progressData.length > 0 
+      ? progressData.reduce((sum, p) => sum + (p.time_spent_minutes || 0), 0) / progressData.length 
+      : 0
+    const completionRate = progressData && progressData.length > 0 
+      ? (progressData.filter(p => p.progress_percentage >= 100).length / progressData.length) * 100 
+      : 0
 
     const { count: totalBookmarks } = await supabase
       .from('user_bookmarks')

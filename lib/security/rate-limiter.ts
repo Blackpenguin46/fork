@@ -22,8 +22,8 @@ export interface RateLimitResult {
 }
 
 export class RateLimiter {
-  private store: Map<string, { count: number; resetTime: number; failures: number }> = new Map()
-  private config: Required<RateLimitConfig>
+  protected store: Map<string, { count: number; resetTime: number; failures: number }> = new Map()
+  protected config: Required<RateLimitConfig>
 
   constructor(config: RateLimitConfig) {
     this.config = {
@@ -315,27 +315,27 @@ export class GeoRateLimiter extends RateLimiter {
   }
 
   async checkLimitWithGeo(req: NextRequest, geoData?: { country?: string; isVpn?: boolean }): Promise<RateLimitResult> {
-    let adjustedConfig = { ...this.config }
+    let adjustedMaxRequests = this.config.maxRequests
+    let adjustedWindowMs = this.config.windowMs
 
     // Apply stricter limits for suspicious countries or VPNs
     if (geoData?.country && this.suspiciousCountries.has(geoData.country)) {
-      adjustedConfig.maxRequests = Math.floor(adjustedConfig.maxRequests * 0.5)
+      adjustedMaxRequests = Math.floor(adjustedMaxRequests * 0.5)
     }
 
     if (geoData?.isVpn) {
-      adjustedConfig.maxRequests = Math.floor(adjustedConfig.maxRequests * 0.3)
+      adjustedMaxRequests = Math.floor(adjustedMaxRequests * 0.3)
     }
 
-    // Temporarily override config
-    const originalConfig = this.config
-    Object.assign(this.config, adjustedConfig)
+    // Create a temporary rate limiter with adjusted settings
+    const tempLimiter = new RateLimiter({
+      windowMs: adjustedWindowMs,
+      maxRequests: adjustedMaxRequests,
+      skipSuccessfulRequests: this.config.skipSuccessfulRequests,
+      onLimitReached: this.config.onLimitReached
+    })
     
-    const result = await this.checkLimit(req)
-    
-    // Restore original config
-    Object.assign(this.config, originalConfig)
-    
-    return result
+    return tempLimiter.checkLimit(req)
   }
 }
 

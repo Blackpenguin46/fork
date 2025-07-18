@@ -25,6 +25,9 @@ export type {
   ApiResponse
 } from '@/lib/types/database'
 
+// Re-export BookmarkCollection from bookmarks API
+export type { BookmarkCollection } from '@/lib/api/bookmarks'
+
 // Export learning path specific types
 export type { LearningPathResource } from '@/lib/types/learning-paths'
 

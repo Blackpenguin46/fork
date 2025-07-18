@@ -77,14 +77,6 @@ export default function GlobalSearch({
     }
   }, [isOpen, focusOnOpen])
 
-  useEffect(() => {
-    if (query.length >= 2) {
-      performSearch(query)
-    } else {
-      setResults([])
-    }
-  }, [query, typeFilter, difficultyFilter, performSearch])
-
   const performSearch = useCallback(async (searchQuery: string) => {
     try {
       setLoading(true)
@@ -146,6 +138,14 @@ export default function GlobalSearch({
       setLoading(false)
     }
   }, [typeFilter, difficultyFilter])
+
+  useEffect(() => {
+    if (query.length >= 2) {
+      performSearch(query)
+    } else {
+      setResults([])
+    }
+  }, [query, typeFilter, difficultyFilter, performSearch])
 
   const generateSearchSuggestions = (query: string): SearchResult[] => {
     const suggestions = [

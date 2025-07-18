@@ -21,7 +21,7 @@ interface BulkOperationRequest {
 export async function POST(request: NextRequest) {
   try {
     // Rate limiting
-    const rateLimitResult = await rateLimiters.admin.checkLimit(request)
+    const rateLimitResult = await rateLimiters.api.checkLimit(request)
     if (!rateLimitResult.allowed) {
       return NextResponse.json(
         { error: 'Too many requests' },
@@ -149,7 +149,7 @@ export async function POST(request: NextRequest) {
 export async function GET(request: NextRequest) {
   try {
     // Rate limiting
-    const rateLimitResult = await rateLimiters.admin.checkLimit(request)
+    const rateLimitResult = await rateLimiters.api.checkLimit(request)
     if (!rateLimitResult.allowed) {
       return NextResponse.json(
         { error: 'Too many requests' },

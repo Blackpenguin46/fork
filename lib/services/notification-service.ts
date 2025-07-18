@@ -164,8 +164,20 @@ export class NotificationService {
       query = query.eq('priority', options.priority)
     }
 
-    // Get total count
-    const { count: totalCount } = await query.select('*', { count: 'exact', head: true })
+    // Get total count - create a fresh query for count
+    let countQuery = supabase.from('notifications').select('*', { count: 'exact', head: true }).eq('user_id', userId)
+    
+    if (options.category) {
+      countQuery = countQuery.eq('category', options.category)
+    }
+    if (options.unreadOnly) {
+      countQuery = countQuery.eq('is_read', false)
+    }
+    if (options.priority) {
+      countQuery = countQuery.eq('priority', options.priority)
+    }
+    
+    const { count: totalCount } = await countQuery
 
     // Get unread count
     const { count: unreadCount } = await supabase

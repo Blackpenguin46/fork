@@ -74,15 +74,15 @@ export default function AdminResourcesPage() {
         setLoading(true)
         
         // In a real app, this would be an admin-specific API call
-        const result = await ResourcesService.getResources(
-          { search: filters.search },
-          1,
-          100
+        const result = await ResourcesService.getResources({
+          searchQuery: filters.search,
+          page: 1,
+          limit: 100
           // Add other filters as needed
-        )
+        })
 
         if (result.success) {
-          setResources(result.data || [])
+          setResources(result.data?.data || [])
         }
       } catch (error) {
         console.error('Error fetching resources:', error)

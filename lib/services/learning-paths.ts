@@ -3,7 +3,7 @@ import type { LearningPath, ApiResponse, PaginatedResponse } from '@/lib/types/d
 import type { LearningPathResource } from '@/lib/types/learning-paths'
 
 export class LearningPathsService {
-  
+
   /**
    * Get learning paths with filtering and pagination
    */
@@ -76,9 +76,9 @@ export class LearningPathsService {
         }
       }
     } catch (error) {
-      return { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Unknown error' 
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error'
       }
     }
   }
@@ -108,7 +108,7 @@ export class LearningPathsService {
           .eq('slug', identifier)
           .eq('is_published', true)
           .maybeSingle()
-        
+
         data = result.data
         error = result.error
       }
@@ -123,9 +123,9 @@ export class LearningPathsService {
 
       return { success: true, data }
     } catch (error) {
-      return { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Unknown error' 
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error'
       }
     }
   }
@@ -153,9 +153,9 @@ export class LearningPathsService {
 
       return { success: true, data: data || [] }
     } catch (error) {
-      return { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Unknown error' 
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error'
       }
     }
   }
@@ -187,9 +187,9 @@ export class LearningPathsService {
 
       return { success: true, data: data || [] }
     } catch (error) {
-      return { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Unknown error' 
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error'
       }
     }
   }
@@ -222,9 +222,9 @@ export class LearningPathsService {
 
       return { success: true, data: data || [] }
     } catch (error) {
-      return { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Unknown error' 
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error'
       }
     }
   }
@@ -268,7 +268,7 @@ export class LearningPathsService {
       const sortedProgress = progress
         .filter(p => p.last_accessed_at)
         .sort((a, b) => new Date(b.last_accessed_at!).getTime() - new Date(a.last_accessed_at!).getTime())
-      
+
       const lastAccessedAt = sortedProgress.length > 0 ? sortedProgress[0].last_accessed_at! : undefined
 
       return {
@@ -282,9 +282,9 @@ export class LearningPathsService {
         }
       }
     } catch (error) {
-      return { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Unknown error' 
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error'
       }
     }
   }
@@ -322,14 +322,14 @@ export class LearningPathsService {
         return { success: false, error: error.message }
       }
 
-      return { 
-        success: true, 
+      return {
+        success: true,
         data: { message: 'Learning path started successfully' }
       }
     } catch (error) {
-      return { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Unknown error' 
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error'
       }
     }
   }
@@ -374,9 +374,9 @@ export class LearningPathsService {
 
       return { success: true, data: data || [] }
     } catch (error) {
-      return { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Unknown error' 
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error'
       }
     }
   }
@@ -407,9 +407,9 @@ export class LearningPathsService {
 
       return { success: true, data }
     } catch (error) {
-      return { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Unknown error' 
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error'
       }
     }
   }
@@ -429,7 +429,10 @@ export class LearningPathsService {
         return { success: false, error: pathResult.error }
       }
 
-      const learningPathId = pathResult.data.id
+      const learningPathId = pathResult.data?.id
+      if (!learningPathId) {
+        return { success: false, error: 'Learning path not found' }
+      }
 
       // Now get the resources for this learning path
       const { data, error } = await supabase
@@ -470,9 +473,9 @@ export class LearningPathsService {
 
       return { success: true, data: resources }
     } catch (error) {
-      return { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Unknown error' 
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error'
       }
     }
   }
@@ -505,9 +508,9 @@ export class LearningPathsService {
 
       return { success: true, data: { success: true } }
     } catch (error) {
-      return { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Unknown error' 
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error'
       }
     }
   }

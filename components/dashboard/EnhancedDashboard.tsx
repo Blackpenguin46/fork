@@ -46,12 +46,6 @@ export function EnhancedDashboard() {
   const [recommendedResources, setRecommendedResources] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    if (user) {
-      loadDashboardData()
-    }
-  }, [user, loadDashboardData])
-
   const loadDashboardData = useCallback(async () => {
     if (!user) return
 
@@ -81,7 +75,7 @@ export function EnhancedDashboard() {
       }
 
       if (progressResult.status === 'fulfilled' && progressResult.value.success) {
-        setRecentProgress(statsResult.value.data?.slice(0, 5) || [])
+        setRecentProgress(progressResult.value.data?.slice(0, 5) || [])
       }
 
       if (bookmarksResult.status === 'fulfilled' && bookmarksResult.value.success) {
@@ -105,7 +99,13 @@ export function EnhancedDashboard() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [user])
+
+  useEffect(() => {
+    if (user) {
+      loadDashboardData()
+    }
+  }, [user, loadDashboardData])
 
   const formatTime = (minutes: number) => {
     if (minutes < 60) return `${minutes}m`

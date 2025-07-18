@@ -41,12 +41,6 @@ const BookmarkManager: React.FC<BookmarkManagerProps> = ({ onClose }) => {
   const [showCollectionForm, setShowCollectionForm] = useState(false);
   const [editingBookmark, setEditingBookmark] = useState<Bookmark | null>(null);
 
-  useEffect(() => {
-    if (user?.id) {
-      loadData();
-    }
-  }, [user?.id]);
-
   const loadData = useCallback(async () => {
     try {
       setLoading(true);
@@ -59,6 +53,12 @@ const BookmarkManager: React.FC<BookmarkManagerProps> = ({ onClose }) => {
       setLoading(false);
     }
   }, []);
+
+  useEffect(() => {
+    if (user?.id) {
+      loadData();
+    }
+  }, [user?.id, loadData]);
 
   const loadBookmarks = useCallback(async () => {
     try {

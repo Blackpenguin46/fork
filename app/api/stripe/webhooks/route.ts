@@ -9,7 +9,7 @@ import Stripe from 'stripe'
 import { supabase } from '@/lib/supabase'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2023-10-16',
+  apiVersion: '2025-05-28.basil',
 })
 
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!
@@ -125,13 +125,13 @@ async function handleSubscriptionCreated(subscription: Stripe.Subscription) {
       stripe_customer_id: customerId,
       status: subscription.status,
       price_id: priceId,
-      current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
-      current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
-      trial_start: subscription.trial_start ? new Date(subscription.trial_start * 1000).toISOString() : null,
-      trial_end: subscription.trial_end ? new Date(subscription.trial_end * 1000).toISOString() : null,
+      current_period_start: new Date((subscription as any).current_period_start * 1000).toISOString(),
+      current_period_end: new Date((subscription as any).current_period_end * 1000).toISOString(),
+      trial_start: (subscription as any).trial_start ? new Date((subscription as any).trial_start * 1000).toISOString() : null,
+      trial_end: (subscription as any).trial_end ? new Date((subscription as any).trial_end * 1000).toISOString() : null,
       cancel_at_period_end: subscription.cancel_at_period_end,
-      canceled_at: subscription.canceled_at ? new Date(subscription.canceled_at * 1000).toISOString() : null,
-      created_at: new Date(subscription.created * 1000).toISOString()
+      canceled_at: (subscription as any).canceled_at ? new Date((subscription as any).canceled_at * 1000).toISOString() : null,
+      created_at: new Date((subscription as any).created * 1000).toISOString()
     })
 
   if (subscriptionError) {
@@ -144,8 +144,8 @@ async function handleSubscriptionCreated(subscription: Stripe.Subscription) {
     .update({
       subscription_tier: subscriptionTier,
       subscription_status: subscription.status,
-      subscription_start_date: new Date(subscription.created * 1000).toISOString(),
-      subscription_end_date: new Date(subscription.current_period_end * 1000).toISOString(),
+      subscription_start_date: new Date((subscription as any).created * 1000).toISOString(),
+      subscription_end_date: new Date((subscription as any).current_period_end * 1000).toISOString(),
       updated_at: new Date().toISOString()
     })
     .eq('id', profile.id)
@@ -174,12 +174,12 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
     .update({
       status: subscription.status,
       price_id: priceId,
-      current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
-      current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
-      trial_start: subscription.trial_start ? new Date(subscription.trial_start * 1000).toISOString() : null,
-      trial_end: subscription.trial_end ? new Date(subscription.trial_end * 1000).toISOString() : null,
+      current_period_start: new Date((subscription as any).current_period_start * 1000).toISOString(),
+      current_period_end: new Date((subscription as any).current_period_end * 1000).toISOString(),
+      trial_start: (subscription as any).trial_start ? new Date((subscription as any).trial_start * 1000).toISOString() : null,
+      trial_end: (subscription as any).trial_end ? new Date((subscription as any).trial_end * 1000).toISOString() : null,
       cancel_at_period_end: subscription.cancel_at_period_end,
-      canceled_at: subscription.canceled_at ? new Date(subscription.canceled_at * 1000).toISOString() : null,
+      canceled_at: (subscription as any).canceled_at ? new Date((subscription as any).canceled_at * 1000).toISOString() : null,
       updated_at: new Date().toISOString()
     })
     .eq('stripe_subscription_id', subscription.id)
@@ -194,7 +194,7 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
     .update({
       subscription_tier: subscriptionTier,
       subscription_status: subscription.status,
-      subscription_end_date: new Date(subscription.current_period_end * 1000).toISOString(),
+      subscription_end_date: new Date((subscription as any).current_period_end * 1000).toISOString(),
       updated_at: new Date().toISOString()
     })
     .eq('stripe_customer_id', customerId)

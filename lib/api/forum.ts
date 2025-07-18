@@ -225,12 +225,20 @@ export class ForumAPI {
       })
 
       // Update view count
-      await supabase
+      const { data: postData } = await supabase
         .from('forum_posts')
-        .update({
-          view_count: supabase.raw('view_count + 1')
-        })
+        .select('view_count')
         .eq('id', postId)
+        .single()
+      
+      if (postData) {
+        await supabase
+          .from('forum_posts')
+          .update({
+            view_count: (postData.view_count || 0) + 1
+          })
+          .eq('id', postId)
+      }
 
       return {
         success: true,
@@ -282,12 +290,20 @@ export class ForumAPI {
       }
 
       // Update category post count
-      await supabase
+      const { data: categoryData } = await supabase
         .from('forum_categories')
-        .update({
-          post_count: supabase.raw('post_count + 1')
-        })
+        .select('post_count')
         .eq('id', categoryId)
+        .single()
+      
+      if (categoryData) {
+        await supabase
+          .from('forum_categories')
+          .update({
+            post_count: (categoryData.post_count || 0) + 1
+          })
+          .eq('id', categoryId)
+      }
 
       return { success: true, data }
 

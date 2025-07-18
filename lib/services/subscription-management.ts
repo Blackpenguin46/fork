@@ -7,7 +7,7 @@ import Stripe from 'stripe'
 import { createClient } from '@supabase/supabase-js'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2023-10-16',
+  apiVersion: '2025-05-28.basil',
 })
 
 const supabase = createClient(
@@ -525,7 +525,7 @@ export class SubscriptionManagementService {
    */
   static async processSuccessfulPayment(invoiceData: Stripe.Invoice): Promise<void> {
     const customerId = invoiceData.customer as string
-    const subscriptionId = invoiceData.subscription as string
+    const subscriptionId = (invoiceData as any).subscription as string
 
     // Get user ID from customer
     const { data: profile } = await supabase
@@ -534,7 +534,7 @@ export class SubscriptionManagementService {
       .eq('stripe_customer_id', customerId)
       .single()
 
-    if (!profile) return
+    if (!profile || !invoiceData.id) return
 
     // Record payment
     await this.recordPayment({

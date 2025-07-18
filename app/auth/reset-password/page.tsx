@@ -56,8 +56,8 @@ function ResetPasswordContent() {
 
     // Validate password confirmation
     const confirmValidation = validatePasswordConfirmation(formData.password, formData.confirmPassword)
-    if (!confirmValidation.isValid) {
-      setError(confirmValidation.errors[0]?.message || 'Passwords do not match')
+    if (confirmValidation) {
+      setError(confirmValidation.message || 'Passwords do not match')
       setLoading(false)
       return
     }

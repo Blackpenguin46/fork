@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, Suspense } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, Suspense } from 'react';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/app/providers';
 import { useSearchParams } from 'next/navigation';
@@ -15,7 +15,19 @@ const PricingContent: React.FC = () => {
   const [currentPlan, setCurrentPlan] = useState<string>('free');
   const [loading, setLoading] = useState(true);
 
-  const subscriptionService = new SubscriptionService();
+  const subscriptionService = useMemo(() => new SubscriptionService(), []);
+
+  const loadCurrentPlan = useCallback(async () => {
+    try {
+      if (!user) return;
+      const { plan } = await subscriptionService.getUserSubscription(user.id);
+      setCurrentPlan(plan.id);
+    } catch (error) {
+      console.error('Error loading current plan:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [user, subscriptionService]);
 
   useEffect(() => {
     // Check for success/cancel messages
@@ -34,18 +46,6 @@ const PricingContent: React.FC = () => {
       setLoading(false);
     }
   }, [user, loadCurrentPlan]);
-
-  const loadCurrentPlan = useCallback(async () => {
-    try {
-      if (!user) return;
-      const { plan } = await subscriptionService.getUserSubscription(user.id);
-      setCurrentPlan(plan.id);
-    } catch (error) {
-      console.error('Error loading current plan:', error);
-    } finally {
-      setLoading(false);
-    }
-  }, [user, subscriptionService]);
 
   const handleSelectPlan = async (planId: string) => {
     try {

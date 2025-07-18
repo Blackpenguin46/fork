@@ -312,12 +312,22 @@ export class ResourcesAPI {
       }
 
       // Increment view count
-      const { error: updateError } = await supabase
+      const { data: resourceData } = await supabase
         .from('resources')
-        .update({
-          view_count: supabase.raw('view_count + 1')
-        })
+        .select('view_count')
         .eq('id', resourceId)
+        .single()
+      
+      let updateError = null
+      if (resourceData) {
+        const result = await supabase
+          .from('resources')
+          .update({
+            view_count: (resourceData.view_count || 0) + 1
+          })
+          .eq('id', resourceId)
+        updateError = result.error
+      }
 
       if (updateError) {
         return { success: false, error: updateError.message }

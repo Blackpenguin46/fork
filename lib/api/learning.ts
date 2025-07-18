@@ -325,12 +325,20 @@ export class LearningAPI {
       }
 
       // Update enrollment count
-      await supabase
+      const { data: pathData } = await supabase
         .from('learning_paths')
-        .update({
-          enrollment_count: supabase.raw('enrollment_count + 1')
-        })
+        .select('enrollment_count')
         .eq('id', pathId)
+        .single()
+      
+      if (pathData) {
+        await supabase
+          .from('learning_paths')
+          .update({
+            enrollment_count: (pathData.enrollment_count || 0) + 1
+          })
+          .eq('id', pathId)
+      }
 
       return { success: true, data }
 
@@ -522,12 +530,20 @@ export class LearningAPI {
             newAchievements.push(newAchievement)
 
             // Update achievement earned count
-            await supabase
+            const { data: achievementData } = await supabase
               .from('achievements')
-              .update({
-                earned_count: supabase.raw('earned_count + 1')
-              })
+              .select('earned_count')
               .eq('id', achievement.id)
+              .single()
+            
+            if (achievementData) {
+              await supabase
+                .from('achievements')
+                .update({
+                  earned_count: (achievementData.earned_count || 0) + 1
+                })
+                .eq('id', achievement.id)
+            }
 
             // Create notification
             await supabase

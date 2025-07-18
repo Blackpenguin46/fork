@@ -67,6 +67,7 @@ export function useSubscription() {
     canAccessAI: accessLevel?.canAccessAI || false,
     canAccessNewsFeed: accessLevel?.canAccessNewsFeed || false,
     canAccessCustomRoadmaps: accessLevel?.canAccessCustomRoadmaps || false,
+    canAccessPremiumInsights: accessLevel?.canAccessInsights || isPro,
     canAccessProgressTracker: accessLevel?.canAccessProgressTracker || false,
     dashboardType: accessLevel?.dashboardType || 'basic'
   }

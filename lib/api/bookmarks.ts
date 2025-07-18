@@ -10,7 +10,7 @@ type UserBookmark = Database['public']['Tables']['user_bookmarks']['Row']
 type UserBookmarkInsert = Database['public']['Tables']['user_bookmarks']['Insert']
 type UserBookmarkUpdate = Database['public']['Tables']['user_bookmarks']['Update']
 
-type BookmarkCollection = Database['public']['Tables']['bookmark_collections']['Row']
+export type BookmarkCollection = Database['public']['Tables']['bookmark_collections']['Row']
 type BookmarkCollectionInsert = Database['public']['Tables']['bookmark_collections']['Insert']
 type BookmarkCollectionUpdate = Database['public']['Tables']['bookmark_collections']['Update']
 
@@ -117,12 +117,20 @@ export class BookmarksAPI {
       }
 
       // Update resource bookmark count
-      await supabase
+      const { data: resource } = await supabase
         .from('resources')
-        .update({
-          bookmark_count: supabase.raw('bookmark_count + 1')
-        })
+        .select('bookmark_count')
         .eq('id', resourceId)
+        .single()
+      
+      if (resource) {
+        await supabase
+          .from('resources')
+          .update({
+            bookmark_count: (resource.bookmark_count || 0) + 1
+          })
+          .eq('id', resourceId)
+      }
 
       return { success: true, data }
 
@@ -154,12 +162,20 @@ export class BookmarksAPI {
       }
 
       // Update resource bookmark count
-      await supabase
+      const { data: resource } = await supabase
         .from('resources')
-        .update({
-          bookmark_count: supabase.raw('bookmark_count - 1')
-        })
+        .select('bookmark_count')
         .eq('id', resourceId)
+        .single()
+      
+      if (resource) {
+        await supabase
+          .from('resources')
+          .update({
+            bookmark_count: Math.max(0, (resource.bookmark_count || 0) - 1)
+          })
+          .eq('id', resourceId)
+      }
 
       return { success: true, data: true }
 

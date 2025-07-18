@@ -19,7 +19,7 @@ interface AnalyticsQuery {
 export async function GET(request: NextRequest) {
   try {
     // Rate limiting
-    const rateLimitResult = await rateLimiters.admin.checkLimit(request)
+    const rateLimitResult = await rateLimiters.api.checkLimit(request)
     if (!rateLimitResult.allowed) {
       return NextResponse.json(
         { error: 'Too many requests' },
@@ -141,7 +141,7 @@ export async function GET(request: NextRequest) {
 
       const totalSessions = progressData?.length || 0
       const completedSessions = progressData?.filter(p => p.status === 'completed').length || 0
-      const averageProgress = progressData?.reduce((sum, p) => sum + p.progress_percentage, 0) / totalSessions || 0
+      const averageProgress = totalSessions > 0 ? (progressData?.reduce((sum, p) => sum + p.progress_percentage, 0) || 0) / totalSessions : 0
       const totalTimeSpent = progressData?.reduce((sum, p) => sum + (p.time_spent_minutes || 0), 0) || 0
 
       analytics.learning = {
@@ -186,7 +186,7 @@ export async function GET(request: NextRequest) {
         .gte('created_at', startDate.toISOString())
 
       const totalPageViews = pageViews?.length || 0
-      const averageLoadTime = pageViews?.reduce((sum, pv) => sum + (pv.load_time || 0), 0) / totalPageViews || 0
+      const averageLoadTime = totalPageViews > 0 ? (pageViews?.reduce((sum, pv) => sum + (pv.load_time || 0), 0) || 0) / totalPageViews : 0
       
       const topPages = pageViews?.reduce((acc, pv) => {
         acc[pv.page_path] = (acc[pv.page_path] || 0) + 1
@@ -289,7 +289,7 @@ async function getDailyBreakdown(supabase: any, startDate: Date, endDate: Date) 
   }
 
   // Count users by day
-  dailyUsers?.forEach(user => {
+  dailyUsers?.forEach((user: any) => {
     const dateKey = user.created_at.split('T')[0]
     if (dailyData[dateKey]) {
       dailyData[dateKey].users++
@@ -297,7 +297,7 @@ async function getDailyBreakdown(supabase: any, startDate: Date, endDate: Date) 
   })
 
   // Count views by day
-  dailyViews?.forEach(view => {
+  dailyViews?.forEach((view: any) => {
     const dateKey = view.created_at.split('T')[0]
     if (dailyData[dateKey]) {
       dailyData[dateKey].views++
