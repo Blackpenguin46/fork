@@ -1,6 +1,9 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+// Force dynamic rendering to prevent prerendering errors
+export const dynamic = 'force-dynamic'
+
+import { useState, useEffect, useCallback, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -39,7 +42,7 @@ const difficultyLevels = [
   { value: 'expert', label: 'Expert', color: 'bg-red-100 text-red-800' }
 ]
 
-export default function ResourcesPage() {
+function ResourcesPageContent() {
   const searchParams = useSearchParams()
   const [resources, setResources] = useState<Resource[]>([])
   const [stats, setStats] = useState<any>(null)
@@ -54,10 +57,12 @@ export default function ResourcesPage() {
   const [totalPages, setTotalPages] = useState(1)
   const [hasNext, setHasNext] = useState(false)
   const [hasPrev, setHasPrev] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const loadResources = useCallback(async () => {
     try {
       setLoading(true)
+      setError(null)
 
       const filters: ResourceFilters = {}
       
@@ -73,9 +78,12 @@ export default function ResourcesPage() {
         setTotalPages(result.data.totalPages)
         setHasNext(result.data.hasNext)
         setHasPrev(result.data.hasPrev)
+      } else {
+        setError(result.error || 'Failed to load resources')
       }
     } catch (error) {
       console.error('Error loading resources:', error)
+      setError('Failed to load resources')
     } finally {
       setLoading(false)
     }
@@ -89,6 +97,7 @@ export default function ResourcesPage() {
       }
     } catch (error) {
       console.error('Error loading stats:', error)
+      // Don't set error state for stats as they're not critical
     }
   }, [])
 
@@ -298,6 +307,14 @@ export default function ResourcesPage() {
           ))}
         </div>
 
+        {/* Error State */}
+        {error && (
+          <div className="text-center py-12">
+            <div className="text-red-500 mb-4">Error: {error}</div>
+            <Button onClick={() => loadResources()}>Try Again</Button>
+          </div>
+        )}
+
         {/* Loading State */}
         {loading && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -314,7 +331,7 @@ export default function ResourcesPage() {
         )}
 
         {/* Resources Grid/List */}
-        {!loading && (
+        {!loading && !error && (
           <>
             {resources.length > 0 ? (
               <>
@@ -394,5 +411,13 @@ export default function ResourcesPage() {
         )}
       </div>
     </div>
+  )
+}
+
+export default function ResourcesPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-background pt-16 flex items-center justify-center">Loading...</div>}>
+      <ResourcesPageContent />
+    </Suspense>
   )
 }

@@ -1,6 +1,9 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+// Force dynamic rendering to prevent prerendering errors
+export const dynamic = 'force-dynamic'
+
+import { useState, useEffect, Suspense } from 'react'
 import { useAuth } from '@/app/providers'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { ResourcesService } from '@/lib/api'
@@ -50,7 +53,7 @@ interface ResourceFilters {
   premium: 'all' | 'free' | 'premium'
 }
 
-export default function AdminResourcesPage() {
+function AdminResourcesPageContent() {
   const { user } = useAuth()
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -67,11 +70,13 @@ export default function AdminResourcesPage() {
     difficulty: 'all',
     premium: 'all'
   })
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     const fetchResources = async () => {
       try {
         setLoading(true)
+        setError(null)
         
         // In a real app, this would be an admin-specific API call
         const result = await ResourcesService.getResources({
@@ -83,9 +88,12 @@ export default function AdminResourcesPage() {
 
         if (result.success) {
           setResources(result.data?.data || [])
+        } else {
+          setError(result.error || 'Failed to fetch resources')
         }
       } catch (error) {
         console.error('Error fetching resources:', error)
+        setError('Failed to fetch resources')
       } finally {
         setLoading(false)
       }
@@ -567,5 +575,13 @@ export default function AdminResourcesPage() {
         {/* Pagination would go here */}
       </div>
     </div>
+  )
+}
+
+export default function AdminResourcesPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-deep-space-blue pt-16 flex items-center justify-center text-white">Loading...</div>}>
+      <AdminResourcesPageContent />
+    </Suspense>
   )
 }
