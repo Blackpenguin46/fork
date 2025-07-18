@@ -15,7 +15,9 @@
     "db:resources": "node scripts/supabase-cli.js resources",
     "db:categories": "node scripts/supabase-cli.js categories",
     "db:stats": "node scripts/supabase-cli.js stats",
-    "db:tables": "node scripts/supabase-cli.js tables"
+    "db:tables": "node scripts/supabase-cli.js tables",
+    "generate:resources": "node scripts/generate-resources.js",
+    "seed:resources": "npm run generate:resources"
   },
   "dependencies": {
     "@discordjs/rest": "^2.5.1",
