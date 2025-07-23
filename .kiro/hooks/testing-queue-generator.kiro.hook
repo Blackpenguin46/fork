@@ -1,0 +1,22 @@
+{
+  "enabled": true,
+  "name": "Testing Queue Generator",
+  "description": "Automatically generates testing task prompts when new components or API routes are created and saves them to a testing queue",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      "components/**/*.tsx",
+      "components/**/*.ts",
+      "app/api/**/*.ts",
+      "app/**/page.tsx",
+      "app/**/layout.tsx",
+      "lib/**/*.ts",
+      "hooks/**/*.ts"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "New components or API routes have been detected. Please analyze the created/modified files and generate comprehensive testing task prompts for the AI testing queue.\n\n**Create/Update: `.kiro/testing-queue.json`**\n\nThis file should contain a structured queue of testing tasks that can be executed by AI agents later. Each task should be comprehensive and actionable.\n\n**Task Generation Logic:**\n\n1. **Analyze Each Modified File**:\n   - Determine file type (component, API route, hook, service)\n   - Extract component/function names and props/parameters\n   - Identify dependencies and imports\n   - Analyze complexity and testing requirements\n\n2. **Component Testing Tasks**:\n   - **Unit tests**: Rendering, props, interactions, state management\n   - **Integration tests**: Component communication and data flow\n   - **Accessibility tests**: Keyboard navigation, screen readers\n   - **Performance tests**: Rendering optimization, memory leaks\n\n3. **API Route Testing Tasks**:\n   - **Endpoint testing**: All HTTP methods and routes\n   - **Authentication**: Auth middleware and permissions\n   - **Validation**: Input validation and sanitization\n   - **Security**: CSRF, rate limiting, injection attacks\n   - **Database**: Operations and transactions\n\n4. **Hook Testing Tasks**:\n   - **Functionality**: Hook return values and side effects\n   - **Lifecycle**: Hook lifecycle and cleanup\n   - **Dependencies**: External dependencies and mocking\n   - **Edge cases**: Error conditions and edge cases\n\n5. **Service/Utility Testing Tasks**:\n   - **Functions**: All exported functions\n   - **Error handling**: Error scenarios and recovery\n   - **Async operations**: Promises and async/await\n   - **Mocking**: External dependencies\n\n**Priority Assignment:**\n- **Critical**: Authentication, payment, security components\n- **High**: Core user features, data handling, API routes\n- **Medium**: UI components, utility functions\n- **Low**: Styling components, static content\n\n**Framework Selection:**\n- **Components**: Jest + React Testing Library\n- **API Routes**: Jest + Supertest\n- **Hooks**: Jest + React Hooks Testing Library\n- **E2E**: Playwright or Cypress\n\n**Cybernex-Specific Testing Considerations:**\n- **Security Testing**: Authentication flows, data protection\n- **Performance Testing**: Learning content loading, real-time features\n- **Accessibility Testing**: Professional user experience\n- **Integration Testing**: Supabase, Stripe, external APIs\n\n**Queue Management Features:**\n- **Task Prioritization**: Critical security features first\n- **Dependency Tracking**: Test dependencies before dependents\n- **Status Tracking**: Pending, in-progress, completed, failed\n- **Retry Logic**: Failed tests can be retried\n- **Batch Execution**: Group related tests together\n\n**Instructions:**\n1. **Analyze all modified files**\n2. **Generate specific testing tasks** for each file type\n3. **Assign appropriate priorities** based on criticality\n4. **Create detailed prompts** with specific testing requirements\n5. **Include framework recommendations** and dependencies\n6. **Add Cybernex-specific considerations** for security and performance\n7. **Update queue statistics** and maintain task ordering\n\nThe testing queue should be comprehensive enough that any AI agent can pick up a task and execute it independently with clear, actionable instructions."
+  }
+}

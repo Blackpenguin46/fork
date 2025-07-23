@@ -1,0 +1,22 @@
+{
+  "enabled": true,
+  "name": "News Parser Generator",
+  "description": "Automatically implements parser functions when new API endpoints are added to news sources configuration",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      "lib/config/news-sources.ts",
+      "lib/config/news-sources.json",
+      "config/news-sources.ts",
+      "config/news-sources.json",
+      "lib/services/news-aggregation.ts",
+      "database/migrations/*news*.sql",
+      "supabase/migrations/*news*.sql"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "News sources configuration has been modified. Please analyze the changes and automatically implement parser functions for any new API endpoints or RSS feeds.\n\n**Analysis Tasks:**\n\n1. **Detect New News Sources**:\n   - Scan for new entries in news sources configuration\n   - Identify new `feed_url` or API endpoints\n   - Check for new source types (RSS, JSON API, XML feeds)\n   - Note any custom parsing requirements\n\n2. **Parser Implementation Strategy**:\n\n   **For RSS Feeds** (most common):\n   - Extend the existing RSS parser in `NewsAggregationService`\n   - Handle source-specific field mappings\n   - Implement custom content extraction if needed\n\n   **For JSON APIs**:\n   - Create new parser methods in `NewsAggregationService`\n   - Handle authentication if required\n   - Map JSON response to `NewsArticle` format\n\n   **For Custom XML/Other Formats**:\n   - Implement specialized parsing logic\n   - Handle unique data structures\n\n3. **Implementation Requirements**:\n\n   **Update `lib/services/news-aggregation.ts`**:\n   ```typescript\n   // Add source-specific parser methods\n   private static async parseSourceSpecific(source: NewsSource, data: any): Promise<NewsArticle[]> {\n     switch (source.name.toLowerCase()) {\n       case 'new-source-name':\n         return this.parseNewSourceFormat(data, source)\n       default:\n         return this.parseGenericRSS(data, source)\n     }\n   }\n   ```\n\n   **Handle Different Content Types**:\n   - **RSS/XML**: Use existing RSS parser with custom field mapping\n   - **JSON API**: Implement HTTP client with proper headers\n   - **Authentication**: Handle API keys, OAuth, or other auth methods\n\n   **Error Handling & Validation**:\n   - Add robust error handling for new sources\n   - Handle network issues and malformed data\n   - Implement proper timeout and retry logic\n\n**Important Notes:**\n- **Preserve functionality** - ensure all imports and exports work\n- **Maintain existing RSS parsing** while adding new capabilities\n- **Follow established patterns** for content analysis and tagging\n- **Add comprehensive error handling** and logging\n\nPlease analyze the modified files and implement the necessary parser functions for any new news sources."
+  }
+}

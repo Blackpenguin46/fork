@@ -1,0 +1,21 @@
+{
+  "enabled": true,
+  "name": "Schema Sync Updater",
+  "description": "Automatically updates TypeScript definitions and creates AI prompts when database schema changes are detected",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      "database/migrations/*.sql",
+      "supabase/migrations/*.sql",
+      "lib/types/database.ts",
+      "types/supabase.ts",
+      "database/schema.sql",
+      "supabase/schema.sql"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "Database schema changes have been detected. Please analyze the changes and update TypeScript definitions, then create comprehensive prompts for updating affected components.\n\n**Primary Tasks:**\n\n## 1. Analyze Schema Changes\n\nExamine the modified SQL files to identify:\n- **New tables** created\n- **Modified table structures** (added/removed/changed columns)\n- **New relationships** (foreign keys, joins)\n- **Index changes** that might affect queries\n- **RLS policy updates** that affect data access\n- **Function/trigger changes** that affect business logic\n\n## 2. Update TypeScript Definitions\n\n**Update: `lib/types/database.ts`**\n\nGenerate comprehensive TypeScript interfaces based on the schema changes:\n\n```typescript\n/**\n * Database Type Definitions\n * Auto-updated from schema changes\n */\n\nexport interface Database {\n  public: {\n    Tables: {\n      // Generate all table interfaces with Row, Insert, Update types\n    }\n    Views: {\n      // Include any database views\n    }\n    Functions: {\n      // Include database functions with proper typing\n    }\n    Enums: {\n      // Extract and type all enum values\n    }\n  }\n}\n\n// Convenience types for easy importing\nexport type Profile = Database['public']['Tables']['profiles']['Row']\n// ... continue for all tables\n\n// Relationship types for common join patterns\n// API response types\n// Form types for common operations\n// Query filter types\n```\n\n## 3. Create Component Update Tasks\n\n**Create: `.kiro/schema-update-tasks.md`**\n\nGenerate detailed tasks for updating affected components:\n\n### High Priority - Critical Updates\n- **Service Layer Updates**: Database interaction services\n- **API Route Updates**: Endpoint validation and responses\n- **Component Updates**: UI components displaying data\n\n### Medium Priority - Enhancement Updates\n- **Form Updates**: Input forms and validation\n- **Dashboard Updates**: Data visualization components\n\n### Low Priority - Optimization Updates\n- **Utility Updates**: Helper functions and hooks\n\n## 4. Testing Updates Required\n- Database migration tests\n- API endpoint tests\n- Component integration tests\n- User experience validation\n\n## 5. Deployment Considerations\n- Migration checklists\n- Performance monitoring\n- Rollback strategies\n- Data integrity validation\n\n**Instructions:**\n1. **Analyze all schema changes** in the modified SQL files\n2. **Generate comprehensive TypeScript types** based on new schema\n3. **Create detailed component update tasks** with specific requirements\n4. **Prioritize tasks** by impact and dependencies\n5. **Include testing requirements** for all changes\n6. **Add deployment and monitoring considerations**\n\nThe goal is to ensure that schema changes are properly reflected throughout the entire Cybernex Academy application with minimal disruption to existing functionality."
+  }
+}

@@ -8,6 +8,12 @@
   "github": {
     "autoAlias": false
   },
+  "crons": [
+    {
+      "path": "/api/cron/news-sync",
+      "schedule": "*/30 * * * *"
+    }
+  ],
   "rewrites": [
     {
       "source": "/api/(.*)",

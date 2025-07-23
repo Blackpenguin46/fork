@@ -1,0 +1,19 @@
+{
+  "enabled": true,
+  "name": "Page Tasks Generator",
+  "description": "Automatically creates a tasks.md file with common development tasks when new page routes are created",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      "app/**/page.tsx",
+      "app/**/layout.tsx",
+      "pages/**/*.tsx",
+      "pages/**/*.ts"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "New page routes have been detected. Please analyze the created pages and generate comprehensive tasks.md files for development workflow.\n\n**Analysis & Task Generation:**\n\n1. **Identify New Pages**:\n   - Analyze each new page.tsx or layout.tsx file\n   - Determine the route path and page purpose\n   - Identify page type (landing, dashboard, form, content, etc.)\n   - Check if it's a dynamic route with parameters\n\n2. **For Each New Page Route, Create: `[route-folder]/tasks.md`**\n\n**Task Categories to Include:**\n\n### Core Implementation Tasks\n- **SEO & Meta Tags**: Page titles, descriptions, Open Graph, structured data\n- **Analytics & Tracking**: Page views, user interactions, conversion tracking\n- **Error Handling & Loading States**: Error boundaries, loading skeletons, retry mechanisms\n- **Performance Optimization**: Lazy loading, caching, bundle optimization\n- **Accessibility (a11y)**: ARIA labels, keyboard navigation, screen reader support\n- **Security Implementation**: Authentication checks, input sanitization, CSRF protection\n- **Mobile Responsiveness**: Multi-device testing, touch interactions\n\n### Feature-Specific Tasks\n- Customize based on page type (landing, dashboard, form, content)\n- Include Cybernex-specific features (learning progress, community integration)\n- Add subscription tier handling and premium content access\n\n### Testing Tasks\n- **Unit Testing**: Component logic and interactions\n- **Integration Testing**: API connections and data flow\n- **E2E Testing**: Complete user journeys\n- **Accessibility Testing**: Compliance validation\n\n### Deployment Tasks\n- Pre-deployment checklists\n- Performance audits\n- Post-deployment monitoring\n\n**Customize Tasks by Page Type:**\n- **Landing Pages**: Focus on SEO, conversion tracking, A/B testing\n- **Dashboard Pages**: Emphasize data visualization, real-time updates\n- **Form Pages**: Priority on validation, security, accessibility\n- **Content Pages**: SEO, readability, social sharing\n- **Academy Pages**: Learning progress tracking, educational features\n\n**Include Code Examples:**\n- TypeScript/React code snippets\n- Next.js 14 App Router patterns\n- Tailwind CSS implementations\n- Supabase integration examples\n\nPlease analyze the new page routes and generate comprehensive, actionable tasks.md files for each new page in the Cybernex Academy platform."
+  }
+}

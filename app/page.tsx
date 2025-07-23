@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/app/providers'
 import { UserProgressService, BookmarksService } from '@/lib/api'
+import MainDashboard from '@/components/dashboard/MainDashboard'
 import { 
   Shield, 
   Users, 

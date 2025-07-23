@@ -1,0 +1,19 @@
+{
+  "enabled": true,
+  "name": "Component Organizer",
+  "description": "Automatically organizes new components into proper folder structure with section-based organization",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      "components/**/*.tsx",
+      "components/**/*.ts",
+      "app/**/*.tsx",
+      "lib/**/*.tsx"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "New or modified component files have been detected. Please analyze and organize them according to the project's component structure conventions.\n\n**Project Component Structure:**\n```\ncomponents/\n├── ui/                    # Base UI components (Radix-based) - DO NOT MOVE\n├── layout/                # Layout components (Navbar, Footer)\n├── auth/                  # Authentication components\n├── dashboard/             # Dashboard-specific components\n├── resources/             # Resource display components\n├── search/                # Search and filtering\n├── academy/               # Learning platform components\n├── community/             # Community features\n├── insights/              # Threat intelligence components\n├── pricing/               # Pricing and subscription components\n├── bookmarks/             # Bookmark management\n├── news/                  # News and content components\n└── [feature]/             # Other feature-specific components\n```\n\n**Organization Actions:**\n- **Create proper folder structure** if component is in wrong location\n- **Move related files together** (types, styles, tests)\n- **Update import statements** in files that reference moved components\n- **Create index.tsx** for clean exports if missing\n- **Maintain existing ui/ components** - DO NOT reorganize Radix UI components\n\n**Folder Structure for Each Component:**\n```\ncomponents/[section]/[component-name]/\n├── index.tsx              # Main component export\n├── [ComponentName].tsx    # Component implementation\n├── [ComponentName].types.ts # TypeScript interfaces (if complex)\n└── __tests__/             # Component tests (if they exist)\n```\n\n**Important Notes:**\n- **DO NOT move or reorganize** components in `components/ui/` - these are base Radix UI components\n- **Preserve functionality** - ensure all imports and exports work after reorganization\n- **Consider component dependencies** when moving files\n- **Maintain TypeScript strict mode compliance**\n\nPlease analyze the changed component files and organize them according to these conventions."
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "enabled": true,
+  "name": "Documentation Updater",
+  "description": "Automatically updates documentation when source code changes are detected",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      "**/*.ts",
+      "**/*.tsx",
+      "**/*.js",
+      "**/*.jsx",
+      "app/**/*",
+      "components/**/*",
+      "lib/**/*",
+      "hooks/**/*",
+      "types/**/*",
+      "middleware.ts",
+      "next.config.js",
+      "tailwind.config.ts",
+      "package.json",
+      "tsconfig.json",
+      "vercel.json",
+      "supabase/**/*.sql",
+      "database/**/*",
+      "scripts/**/*"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "Source code files have been modified in this Next.js/TypeScript project. Please analyze the changes and update the relevant documentation accordingly.\n\n**Project Context:**\n- This is a Next.js 14 application called 'cybernex-academy'\n- Uses TypeScript, React, Supabase, Tailwind CSS\n- Has a comprehensive /docs folder with various documentation files\n- Key areas: authentication, database, components, API routes, styling\n\n**Documentation Update Tasks:**\n\n1. **Analyze Changed Files**:\n   - Identify what functionality was added, modified, or removed\n   - Determine which documentation sections are affected\n\n2. **Update Relevant Documentation**:\n   - **docs/tech-stack.md** - If new dependencies or technologies were added\n   - **docs/DEVELOPMENT_STATUS.md** - If major features were completed or started\n   - **docs/design-notes.md** - If architectural changes were made\n   - **docs/security.md** - If authentication or security-related changes occurred\n   - **docs/README.md** - For general project overview updates\n   - **Other specific docs** - Based on the nature of changes\n\n3. **Documentation Standards**:\n   - Keep documentation concise but comprehensive\n   - Include code examples where relevant\n   - Update any outdated information\n   - Maintain consistent formatting and structure\n   - Add new sections if entirely new functionality was introduced\n\n4. **Focus Areas**:\n   - API changes and new endpoints\n   - Component updates and new components\n   - Database schema changes\n   - Configuration changes\n   - New features or removed features\n   - Breaking changes that affect usage\n\nPlease review the changed files and update the appropriate documentation files to reflect the current state of the codebase."
+  }
+}
